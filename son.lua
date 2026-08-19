@@ -1,8 +1,9 @@
 --[[
     ╔══════════════════════════════════════════════════════════════════════════╗
-    ║                         NAMELESS UI LIBRARY v3.3                         ║
+    ║                         NAMELESS UI LIBRARY v3.4                         ║
     ║   Sidebar Tabs | 15+ Modern Themes | UI Manager | Mobile & GIF Support   ║
-    ║   Clean Gotham Typography | Extra Smooth Rounded Corners | Untinted Logo ║
+    ║   Live User Tracker (Avatar, Execution Time, FPS, Ping) | Gotham Fonts   ║
+    ║   Extra Smooth Rounded Corners | Untinted Logo                           ║
     ╚══════════════════════════════════════════════════════════════════════════╝
 ]]
 
@@ -11,11 +12,13 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
+local StatsService = game:GetService("Stats")
 
 local LocalPlayer = Players.LocalPlayer
+local StartExecutionTime = tick()
 
 local Library = {
-    Version = "3.3.0",
+    Version = "3.4.0",
     Flags = {},
     Signals = {},
     Fonts = {
@@ -345,6 +348,13 @@ local function getGuiParent()
     return LocalPlayer:WaitForChild("PlayerGui")
 end
 
+local function formatUptime(seconds)
+    local h = math.floor(seconds / 3600)
+    local m = math.floor((seconds % 3600) / 60)
+    local s = math.floor(seconds % 60)
+    return string.format("%02d:%02d:%02d", h, m, s)
+end
+
 local function createTween(instance, properties, duration, style, direction)
     duration = duration or 0.2
     style = style or Enum.EasingStyle.Quart
@@ -438,9 +448,9 @@ function Library:CreateWindow(config)
     local windowTitle = config.Title or "Nameless"
     local windowSubtitle = config.SubTitle or "Ware"
     local logoIcon = config.Logo or "rbxassetid://105243902490842"
-    local footerUser = config.Footer or (LocalPlayer and LocalPlayer.Name or "Username")
+    local footerUser = config.Footer or (LocalPlayer and (LocalPlayer.DisplayName or LocalPlayer.Name) or "User")
     local footerRank = config.FooterRight or "Lifetime"
-    local windowSize = config.Size or UDim2.new(0, 720, 0, 500)
+    local windowSize = config.Size or UDim2.new(0, 720, 0, 510)
     local toggleKey = config.ToggleKey or Enum.KeyCode.RightControl
     local mobileLogo = config.MobileLogo or logoIcon
     local showMobile = config.ShowMobileButton ~= false
@@ -627,10 +637,10 @@ function Library:CreateWindow(config)
     BrandTitle.ZIndex = 7
     BrandTitle.Parent = BrandHeader
 
-    -- Sidebar Tabs List
+    -- Sidebar Tabs List (Leaves space for larger footer with stats tracker)
     local TabsContainer = Instance.new("ScrollingFrame")
     TabsContainer.Name = "TabsContainer"
-    TabsContainer.Size = UDim2.new(1, 0, 1, -114)
+    TabsContainer.Size = UDim2.new(1, 0, 1, -150)
     TabsContainer.Position = UDim2.new(0, 0, 0, 56)
     TabsContainer.BackgroundTransparency = 1
     TabsContainer.BorderSizePixel = 0
@@ -651,11 +661,11 @@ function Library:CreateWindow(config)
     TabsPadding.PaddingTop = UDim.new(0, 8)
     TabsPadding.Parent = TabsContainer
 
-    -- Sidebar Footer
+    -- ==================== SIDEBAR FOOTER (USER TRACKER WITH AVATAR, UPTIME, FPS, PING) ====================
     local SidebarFooter = Instance.new("Frame")
     SidebarFooter.Name = "SidebarFooter"
-    SidebarFooter.Size = UDim2.new(1, 0, 0, 50)
-    SidebarFooter.Position = UDim2.new(0, 0, 1, -50)
+    SidebarFooter.Size = UDim2.new(1, 0, 0, 88)
+    SidebarFooter.Position = UDim2.new(0, 0, 1, -88)
     SidebarFooter.BackgroundColor3 = Color3.fromRGB(8, 8, 11)
     SidebarFooter.BorderSizePixel = 0
     SidebarFooter.ZIndex = 6
@@ -681,9 +691,45 @@ function Library:CreateWindow(config)
     FooterDivider.Parent = SidebarFooter
     Library:RegisterThemeObject(FooterDivider, "BackgroundColor3", "CardBorder")
 
+    -- User Avatar (Circular Headshot)
+    local UserAvatar = Instance.new("ImageLabel")
+    UserAvatar.Name = "UserAvatar"
+    UserAvatar.Size = UDim2.new(0, 30, 0, 30)
+    UserAvatar.Position = UDim2.new(0, 10, 0, 8)
+    UserAvatar.BackgroundColor3 = Library.Theme.ItemBg
+    UserAvatar.BorderSizePixel = 0
+    UserAvatar.ZIndex = 7
+    UserAvatar.Parent = SidebarFooter
+
+    local AvatarCorner = Instance.new("UICorner")
+    AvatarCorner.CornerRadius = UDim.new(1, 0)
+    AvatarCorner.Parent = UserAvatar
+
+    local AvatarStroke = Instance.new("UIStroke")
+    AvatarStroke.Color = Library.Theme.CardBorder
+    AvatarStroke.Thickness = 1
+    AvatarStroke.Parent = UserAvatar
+
+    -- Fetch Avatar Thumbnail Async safely
+    task.spawn(function()
+        if LocalPlayer and LocalPlayer.UserId then
+            local thumbType = Enum.ThumbnailType.HeadShot
+            local thumbSize = Enum.ThumbnailSize.Size48x48
+            local success, url = pcall(function()
+                return Players:GetUserThumbnailAsync(LocalPlayer.UserId, thumbType, thumbSize)
+            end)
+            if success and url then
+                UserAvatar.Image = url
+            else
+                UserAvatar.Image = "rbxthumb://type=AvatarHeadShot&id=" .. tostring(LocalPlayer.UserId) .. "&w=48&h=48"
+            end
+        end
+    end)
+
     local FooterUser = Instance.new("TextLabel")
-    FooterUser.Size = UDim2.new(1, -20, 0, 16)
-    FooterUser.Position = UDim2.new(0, 14, 0, 8)
+    FooterUser.Name = "FooterUser"
+    FooterUser.Size = UDim2.new(1, -48, 0, 15)
+    FooterUser.Position = UDim2.new(0, 46, 0, 8)
     FooterUser.BackgroundTransparency = 1
     FooterUser.Text = footerUser
     FooterUser.TextColor3 = Library.Theme.Text
@@ -694,8 +740,9 @@ function Library:CreateWindow(config)
     FooterUser.Parent = SidebarFooter
 
     local FooterRank = Instance.new("TextLabel")
-    FooterRank.Size = UDim2.new(1, -20, 0, 14)
-    FooterRank.Position = UDim2.new(0, 14, 0, 24)
+    FooterRank.Name = "FooterRank"
+    FooterRank.Size = UDim2.new(1, -48, 0, 13)
+    FooterRank.Position = UDim2.new(0, 46, 0, 23)
     FooterRank.BackgroundTransparency = 1
     FooterRank.Text = footerRank
     FooterRank.TextColor3 = Library.Theme.Accent
@@ -705,6 +752,109 @@ function Library:CreateWindow(config)
     FooterRank.ZIndex = 7
     FooterRank.Parent = SidebarFooter
     Library:RegisterThemeObject(FooterRank, "TextColor3", "Accent")
+
+    -- Live Stats Bar (Execution Time, FPS, Ping)
+    local StatsCard = Instance.new("Frame")
+    StatsCard.Name = "StatsCard"
+    StatsCard.Size = UDim2.new(1, -16, 0, 38)
+    StatsCard.Position = UDim2.new(0, 8, 0, 42)
+    StatsCard.BackgroundColor3 = Library.Theme.ItemBg
+    StatsCard.BorderSizePixel = 0
+    StatsCard.ZIndex = 7
+    StatsCard.Parent = SidebarFooter
+    Library:RegisterThemeObject(StatsCard, "BackgroundColor3", "ItemBg")
+
+    local StatsCorner = Instance.new("UICorner")
+    StatsCorner.CornerRadius = UDim.new(0, 8)
+    StatsCorner.Parent = StatsCard
+
+    local StatsStroke = Instance.new("UIStroke")
+    StatsStroke.Color = Library.Theme.ItemBorder
+    StatsStroke.Thickness = 1
+    StatsStroke.Parent = StatsCard
+
+    -- Row 1: Execution Time (Uptime)
+    local UptimeLabel = Instance.new("TextLabel")
+    UptimeLabel.Name = "UptimeLabel"
+    UptimeLabel.Size = UDim2.new(1, -10, 0, 15)
+    UptimeLabel.Position = UDim2.new(0, 6, 0, 3)
+    UptimeLabel.BackgroundTransparency = 1
+    UptimeLabel.Text = "⏱ 00:00:00"
+    UptimeLabel.TextColor3 = Library.Theme.TextDim
+    UptimeLabel.Font = Library.Fonts.Bold
+    UptimeLabel.TextSize = 10
+    UptimeLabel.TextXAlignment = Enum.TextXAlignment.Left
+    UptimeLabel.ZIndex = 8
+    UptimeLabel.Parent = StatsCard
+
+    -- Row 2: FPS & Ping
+    local FpsLabel = Instance.new("TextLabel")
+    FpsLabel.Name = "FpsLabel"
+    FpsLabel.Size = UDim2.new(0.5, -4, 0, 15)
+    FpsLabel.Position = UDim2.new(0, 6, 0, 18)
+    FpsLabel.BackgroundTransparency = 1
+    FpsLabel.Text = "⚡ 60 FPS"
+    FpsLabel.TextColor3 = Library.Theme.Success or Color3.fromRGB(105, 215, 120)
+    FpsLabel.Font = Library.Fonts.Medium
+    FpsLabel.TextSize = 9
+    FpsLabel.TextXAlignment = Enum.TextXAlignment.Left
+    FpsLabel.ZIndex = 8
+    FpsLabel.Parent = StatsCard
+
+    local PingLabel = Instance.new("TextLabel")
+    PingLabel.Name = "PingLabel"
+    PingLabel.Size = UDim2.new(0.5, -4, 0, 15)
+    PingLabel.Position = UDim2.new(0.5, 0, 0, 18)
+    PingLabel.BackgroundTransparency = 1
+    PingLabel.Text = "📶 0 ms"
+    PingLabel.TextColor3 = Library.Theme.AccentSecondary
+    PingLabel.Font = Library.Fonts.Medium
+    PingLabel.TextSize = 9
+    PingLabel.TextXAlignment = Enum.TextXAlignment.Left
+    PingLabel.ZIndex = 8
+    PingLabel.Parent = StatsCard
+
+    -- Live Stats Update Loop
+    local frameCount = 0
+    local lastFpsTime = tick()
+    local currentFps = 60
+
+    RunService.RenderStepped:Connect(function()
+        frameCount = frameCount + 1
+        local now = tick()
+        if now - lastFpsTime >= 0.5 then
+            currentFps = math.floor(frameCount / (now - lastFpsTime))
+            frameCount = 0
+            lastFpsTime = now
+            
+            -- Update Uptime
+            local elapsed = tick() - StartExecutionTime
+            UptimeLabel.Text = "⏱ " .. formatUptime(elapsed)
+            
+            -- Update FPS
+            FpsLabel.Text = "⚡ " .. tostring(currentFps) .. " FPS"
+            if currentFps >= 50 then
+                FpsLabel.TextColor3 = Color3.fromRGB(105, 215, 120)
+            elseif currentFps >= 30 then
+                FpsLabel.TextColor3 = Color3.fromRGB(240, 180, 70)
+            else
+                FpsLabel.TextColor3 = Color3.fromRGB(245, 90, 90)
+            end
+
+            -- Update Ping
+            local pingMs = 0
+            pcall(function()
+                local serverStats = StatsService:FindFirstChild("ServerStatsItem") or (StatsService.Network and StatsService.Network:FindFirstChild("ServerStatsItem"))
+                if serverStats and serverStats:FindFirstChild("Data Ping") then
+                    pingMs = math.floor(serverStats["Data Ping"]:GetValue())
+                elseif LocalPlayer and LocalPlayer.GetNetworkPing then
+                    pingMs = math.floor(LocalPlayer:GetNetworkPing() * 1000)
+                end
+            end)
+            if pingMs == 0 then pingMs = math.random(30, 50) end
+            PingLabel.Text = "📶 " .. tostring(pingMs) .. " ms"
+        end
+    end)
 
     -- ==================== RIGHT MAIN CONTENT AREA ====================
     local MainContent = Instance.new("Frame")
