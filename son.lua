@@ -1,8 +1,8 @@
 --[[
     ╔══════════════════════════════════════════════════════════════════════════╗
-    ║                         NAMELESS UI LIBRARY v3.2                         ║
-    ║   Sidebar Tabs | Theme Manager | UI Manager | Mobile & GIF Support       ║
-    ║   Extra Smooth Rounded Corners | Untinted Logo | Mobile Friendly         ║
+    ║                         NAMELESS UI LIBRARY v3.3                         ║
+    ║   Sidebar Tabs | 15+ Modern Themes | UI Manager | Mobile & GIF Support   ║
+    ║   Clean Gotham Typography | Extra Smooth Rounded Corners | Untinted Logo ║
     ╚══════════════════════════════════════════════════════════════════════════╝
 ]]
 
@@ -15,9 +15,14 @@ local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 
 local Library = {
-    Version = "3.2.0",
+    Version = "3.3.0",
     Flags = {},
     Signals = {},
+    Fonts = {
+        Bold = Enum.Font.GothamBold,
+        Medium = Enum.Font.GothamMedium,
+        Regular = Enum.Font.Gotham
+    },
     Themes = {
         Nameless = {
             Background = Color3.fromRGB(13, 13, 17),
@@ -118,6 +123,206 @@ local Library = {
             SliderFill = Color3.fromRGB(245, 115, 180),
             ToggleOff = Color3.fromRGB(34, 24, 36),
             ToggleOn = Color3.fromRGB(245, 115, 180)
+        },
+        Cyberpunk = {
+            Background = Color3.fromRGB(14, 14, 14),
+            Sidebar = Color3.fromRGB(10, 10, 10),
+            CardBackground = Color3.fromRGB(20, 20, 20),
+            CardBorder = Color3.fromRGB(38, 38, 38),
+            CardBorderHover = Color3.fromRGB(60, 60, 60),
+            Accent = Color3.fromRGB(255, 230, 40),
+            AccentSecondary = Color3.fromRGB(40, 240, 230),
+            AccentDark = Color3.fromRGB(180, 160, 20),
+            Text = Color3.fromRGB(250, 250, 250),
+            TextDim = Color3.fromRGB(160, 160, 160),
+            TextDark = Color3.fromRGB(90, 90, 90),
+            ItemBg = Color3.fromRGB(26, 26, 26),
+            ItemBgHover = Color3.fromRGB(34, 34, 34),
+            ItemBorder = Color3.fromRGB(44, 44, 44),
+            SliderTrack = Color3.fromRGB(24, 24, 24),
+            SliderFill = Color3.fromRGB(255, 230, 40),
+            ToggleOff = Color3.fromRGB(26, 26, 26),
+            ToggleOn = Color3.fromRGB(255, 230, 40)
+        },
+        TokyoNight = {
+            Background = Color3.fromRGB(15, 16, 24),
+            Sidebar = Color3.fromRGB(11, 12, 18),
+            CardBackground = Color3.fromRGB(22, 24, 36),
+            CardBorder = Color3.fromRGB(36, 40, 60),
+            CardBorderHover = Color3.fromRGB(56, 62, 90),
+            Accent = Color3.fromRGB(122, 162, 247),
+            AccentSecondary = Color3.fromRGB(187, 154, 247),
+            AccentDark = Color3.fromRGB(61, 89, 161),
+            Text = Color3.fromRGB(240, 244, 255),
+            TextDim = Color3.fromRGB(140, 150, 180),
+            TextDark = Color3.fromRGB(80, 90, 120),
+            ItemBg = Color3.fromRGB(26, 28, 44),
+            ItemBgHover = Color3.fromRGB(34, 38, 58),
+            ItemBorder = Color3.fromRGB(42, 46, 70),
+            SliderTrack = Color3.fromRGB(20, 22, 34),
+            SliderFill = Color3.fromRGB(122, 162, 247),
+            ToggleOff = Color3.fromRGB(26, 28, 44),
+            ToggleOn = Color3.fromRGB(122, 162, 247)
+        },
+        Synthwave = {
+            Background = Color3.fromRGB(18, 12, 26),
+            Sidebar = Color3.fromRGB(13, 8, 19),
+            CardBackground = Color3.fromRGB(28, 18, 40),
+            CardBorder = Color3.fromRGB(48, 30, 68),
+            CardBorderHover = Color3.fromRGB(78, 48, 108),
+            Accent = Color3.fromRGB(255, 45, 135),
+            AccentSecondary = Color3.fromRGB(45, 235, 255),
+            AccentDark = Color3.fromRGB(180, 25, 95),
+            Text = Color3.fromRGB(255, 240, 250),
+            TextDim = Color3.fromRGB(175, 140, 180),
+            TextDark = Color3.fromRGB(115, 85, 120),
+            ItemBg = Color3.fromRGB(36, 22, 50),
+            ItemBgHover = Color3.fromRGB(48, 30, 66),
+            ItemBorder = Color3.fromRGB(60, 36, 82),
+            SliderTrack = Color3.fromRGB(30, 18, 42),
+            SliderFill = Color3.fromRGB(255, 45, 135),
+            ToggleOff = Color3.fromRGB(36, 22, 50),
+            ToggleOn = Color3.fromRGB(255, 45, 135)
+        },
+        NordFrost = {
+            Background = Color3.fromRGB(14, 17, 22),
+            Sidebar = Color3.fromRGB(10, 13, 17),
+            CardBackground = Color3.fromRGB(20, 25, 32),
+            CardBorder = Color3.fromRGB(32, 42, 54),
+            CardBorderHover = Color3.fromRGB(50, 65, 84),
+            Accent = Color3.fromRGB(136, 192, 208),
+            AccentSecondary = Color3.fromRGB(129, 161, 193),
+            AccentDark = Color3.fromRGB(94, 129, 172),
+            Text = Color3.fromRGB(236, 239, 244),
+            TextDim = Color3.fromRGB(145, 158, 178),
+            TextDark = Color3.fromRGB(85, 98, 118),
+            ItemBg = Color3.fromRGB(24, 30, 40),
+            ItemBgHover = Color3.fromRGB(32, 40, 52),
+            ItemBorder = Color3.fromRGB(40, 50, 65),
+            SliderTrack = Color3.fromRGB(18, 22, 30),
+            SliderFill = Color3.fromRGB(136, 192, 208),
+            ToggleOff = Color3.fromRGB(24, 30, 40),
+            ToggleOn = Color3.fromRGB(136, 192, 208)
+        },
+        Monokai = {
+            Background = Color3.fromRGB(16, 16, 15),
+            Sidebar = Color3.fromRGB(12, 12, 11),
+            CardBackground = Color3.fromRGB(24, 24, 22),
+            CardBorder = Color3.fromRGB(42, 42, 38),
+            CardBorderHover = Color3.fromRGB(65, 65, 58),
+            Accent = Color3.fromRGB(255, 135, 40),
+            AccentSecondary = Color3.fromRGB(166, 226, 46),
+            AccentDark = Color3.fromRGB(185, 90, 20),
+            Text = Color3.fromRGB(248, 248, 242),
+            TextDim = Color3.fromRGB(160, 160, 150),
+            TextDark = Color3.fromRGB(100, 100, 90),
+            ItemBg = Color3.fromRGB(32, 32, 28),
+            ItemBgHover = Color3.fromRGB(42, 42, 36),
+            ItemBorder = Color3.fromRGB(50, 50, 44),
+            SliderTrack = Color3.fromRGB(24, 24, 20),
+            SliderFill = Color3.fromRGB(255, 135, 40),
+            ToggleOff = Color3.fromRGB(32, 32, 28),
+            ToggleOn = Color3.fromRGB(255, 135, 40)
+        },
+        Dracula = {
+            Background = Color3.fromRGB(16, 14, 20),
+            Sidebar = Color3.fromRGB(12, 10, 16),
+            CardBackground = Color3.fromRGB(25, 22, 32),
+            CardBorder = Color3.fromRGB(45, 38, 58),
+            CardBorderHover = Color3.fromRGB(70, 60, 90),
+            Accent = Color3.fromRGB(189, 147, 249),
+            AccentSecondary = Color3.fromRGB(255, 121, 198),
+            AccentDark = Color3.fromRGB(130, 90, 190),
+            Text = Color3.fromRGB(248, 248, 242),
+            TextDim = Color3.fromRGB(160, 150, 175),
+            TextDark = Color3.fromRGB(98, 114, 164),
+            ItemBg = Color3.fromRGB(34, 30, 44),
+            ItemBgHover = Color3.fromRGB(44, 38, 58),
+            ItemBorder = Color3.fromRGB(54, 46, 70),
+            SliderTrack = Color3.fromRGB(26, 22, 34),
+            SliderFill = Color3.fromRGB(189, 147, 249),
+            ToggleOff = Color3.fromRGB(34, 30, 44),
+            ToggleOn = Color3.fromRGB(189, 147, 249)
+        },
+        AcidGreen = {
+            Background = Color3.fromRGB(10, 12, 10),
+            Sidebar = Color3.fromRGB(7, 9, 7),
+            CardBackground = Color3.fromRGB(16, 20, 16),
+            CardBorder = Color3.fromRGB(26, 36, 26),
+            CardBorderHover = Color3.fromRGB(45, 65, 45),
+            Accent = Color3.fromRGB(140, 255, 50),
+            AccentSecondary = Color3.fromRGB(90, 230, 80),
+            AccentDark = Color3.fromRGB(90, 180, 25),
+            Text = Color3.fromRGB(240, 255, 240),
+            TextDim = Color3.fromRGB(140, 170, 140),
+            TextDark = Color3.fromRGB(80, 105, 80),
+            ItemBg = Color3.fromRGB(20, 26, 20),
+            ItemBgHover = Color3.fromRGB(28, 36, 28),
+            ItemBorder = Color3.fromRGB(34, 46, 34),
+            SliderTrack = Color3.fromRGB(16, 22, 16),
+            SliderFill = Color3.fromRGB(140, 255, 50),
+            ToggleOff = Color3.fromRGB(20, 26, 20),
+            ToggleOn = Color3.fromRGB(140, 255, 50)
+        },
+        SunsetAmber = {
+            Background = Color3.fromRGB(16, 13, 11),
+            Sidebar = Color3.fromRGB(12, 9, 8),
+            CardBackground = Color3.fromRGB(26, 20, 16),
+            CardBorder = Color3.fromRGB(46, 34, 26),
+            CardBorderHover = Color3.fromRGB(75, 54, 40),
+            Accent = Color3.fromRGB(250, 160, 45),
+            AccentSecondary = Color3.fromRGB(245, 100, 50),
+            AccentDark = Color3.fromRGB(180, 105, 25),
+            Text = Color3.fromRGB(255, 245, 235),
+            TextDim = Color3.fromRGB(175, 150, 135),
+            TextDark = Color3.fromRGB(115, 90, 75),
+            ItemBg = Color3.fromRGB(34, 26, 20),
+            ItemBgHover = Color3.fromRGB(46, 34, 26),
+            ItemBorder = Color3.fromRGB(56, 42, 32),
+            SliderTrack = Color3.fromRGB(28, 20, 16),
+            SliderFill = Color3.fromRGB(250, 160, 45),
+            ToggleOff = Color3.fromRGB(34, 26, 20),
+            ToggleOn = Color3.fromRGB(250, 160, 45)
+        },
+        RoseGold = {
+            Background = Color3.fromRGB(17, 13, 15),
+            Sidebar = Color3.fromRGB(13, 9, 11),
+            CardBackground = Color3.fromRGB(27, 20, 23),
+            CardBorder = Color3.fromRGB(48, 34, 40),
+            CardBorderHover = Color3.fromRGB(78, 54, 64),
+            Accent = Color3.fromRGB(235, 155, 165),
+            AccentSecondary = Color3.fromRGB(245, 190, 198),
+            AccentDark = Color3.fromRGB(170, 100, 110),
+            Text = Color3.fromRGB(255, 245, 248),
+            TextDim = Color3.fromRGB(175, 150, 160),
+            TextDark = Color3.fromRGB(115, 90, 100),
+            ItemBg = Color3.fromRGB(36, 26, 30),
+            ItemBgHover = Color3.fromRGB(48, 34, 40),
+            ItemBorder = Color3.fromRGB(58, 42, 50),
+            SliderTrack = Color3.fromRGB(30, 20, 24),
+            SliderFill = Color3.fromRGB(235, 155, 165),
+            ToggleOff = Color3.fromRGB(36, 26, 30),
+            ToggleOn = Color3.fromRGB(235, 155, 165)
+        },
+        PureObsidian = {
+            Background = Color3.fromRGB(9, 9, 11),
+            Sidebar = Color3.fromRGB(6, 6, 8),
+            CardBackground = Color3.fromRGB(15, 15, 18),
+            CardBorder = Color3.fromRGB(28, 28, 34),
+            CardBorderHover = Color3.fromRGB(50, 50, 60),
+            Accent = Color3.fromRGB(240, 240, 245),
+            AccentSecondary = Color3.fromRGB(180, 180, 190),
+            AccentDark = Color3.fromRGB(140, 140, 150),
+            Text = Color3.fromRGB(250, 250, 255),
+            TextDim = Color3.fromRGB(150, 150, 160),
+            TextDark = Color3.fromRGB(80, 80, 90),
+            ItemBg = Color3.fromRGB(20, 20, 24),
+            ItemBgHover = Color3.fromRGB(28, 28, 34),
+            ItemBorder = Color3.fromRGB(36, 36, 44),
+            SliderTrack = Color3.fromRGB(18, 18, 22),
+            SliderFill = Color3.fromRGB(240, 240, 245),
+            ToggleOff = Color3.fromRGB(20, 20, 24),
+            ToggleOn = Color3.fromRGB(240, 240, 245)
         }
     },
     CurrentTheme = "Nameless",
@@ -355,7 +560,7 @@ function Library:CreateWindow(config)
         setBackgroundImg(config.BackgroundImage, config.BackgroundTransparency or 0.85)
     end
 
-    -- ==================== LEFT SIDEBAR (Rounded 18px on Left) ====================
+    -- ==================== LEFT SIDEBAR ====================
     local Sidebar = Instance.new("Frame")
     Sidebar.Name = "Sidebar"
     Sidebar.Size = UDim2.new(0, 160, 1, 0)
@@ -369,7 +574,6 @@ function Library:CreateWindow(config)
     SidebarCorner.CornerRadius = UDim.new(0, 18)
     SidebarCorner.Parent = Sidebar
 
-    -- Right Seam Filler for Sidebar (to keep interior seam flat against content)
     local SidebarSeam = Instance.new("Frame")
     SidebarSeam.Name = "SidebarSeam"
     SidebarSeam.Size = UDim2.new(0, 20, 1, 0)
@@ -399,7 +603,6 @@ function Library:CreateWindow(config)
 
     makeDraggable(BrandHeader, MainFrame)
 
-    -- Untinted Logo
     local BrandLogo = Instance.new("ImageLabel")
     BrandLogo.Name = "BrandLogo"
     BrandLogo.Size = UDim2.new(0, 26, 0, 26)
@@ -418,7 +621,7 @@ function Library:CreateWindow(config)
     BrandTitle.RichText = true
     BrandTitle.Text = '<b>' .. windowTitle .. '</b><font color="#8984f5">' .. windowSubtitle .. '</font>'
     BrandTitle.TextColor3 = Library.Theme.Text
-    BrandTitle.Font = Enum.Font.GothamBold
+    BrandTitle.Font = Library.Fonts.Bold
     BrandTitle.TextSize = 14
     BrandTitle.TextXAlignment = Enum.TextXAlignment.Left
     BrandTitle.ZIndex = 7
@@ -484,7 +687,7 @@ function Library:CreateWindow(config)
     FooterUser.BackgroundTransparency = 1
     FooterUser.Text = footerUser
     FooterUser.TextColor3 = Library.Theme.Text
-    FooterUser.Font = Enum.Font.GothamBold
+    FooterUser.Font = Library.Fonts.Bold
     FooterUser.TextSize = 11
     FooterUser.TextXAlignment = Enum.TextXAlignment.Left
     FooterUser.ZIndex = 7
@@ -496,7 +699,7 @@ function Library:CreateWindow(config)
     FooterRank.BackgroundTransparency = 1
     FooterRank.Text = footerRank
     FooterRank.TextColor3 = Library.Theme.Accent
-    FooterRank.Font = Enum.Font.GothamMedium
+    FooterRank.Font = Library.Fonts.Medium
     FooterRank.TextSize = 10
     FooterRank.TextXAlignment = Enum.TextXAlignment.Left
     FooterRank.ZIndex = 7
@@ -528,7 +731,7 @@ function Library:CreateWindow(config)
     CurrentTabTitle.BackgroundTransparency = 1
     CurrentTabTitle.Text = "Visuals"
     CurrentTabTitle.TextColor3 = Library.Theme.Text
-    CurrentTabTitle.Font = Enum.Font.GothamBold
+    CurrentTabTitle.Font = Library.Fonts.Bold
     CurrentTabTitle.TextSize = 14
     CurrentTabTitle.TextXAlignment = Enum.TextXAlignment.Left
     CurrentTabTitle.ZIndex = 7
@@ -679,7 +882,6 @@ function Library:CreateWindow(config)
         TabBtn.ZIndex = 7
         TabBtn.Parent = TabsContainer
 
-        -- Extra Rounded 10px Tab
         local TabCorner = Instance.new("UICorner")
         TabCorner.CornerRadius = UDim.new(0, 10)
         TabCorner.Parent = TabBtn
@@ -706,7 +908,7 @@ function Library:CreateWindow(config)
         TabText.BackgroundTransparency = 1
         TabText.Text = name
         TabText.TextColor3 = Library.Theme.TextDark
-        TabText.Font = Enum.Font.GothamMedium
+        TabText.Font = Library.Fonts.Bold
         TabText.TextSize = 12
         TabText.TextXAlignment = Enum.TextXAlignment.Left
         TabText.ZIndex = 8
@@ -816,7 +1018,6 @@ function Library:CreateWindow(config)
             side = side or "Left"
             local parentCol = (side:lower() == "right") and RightCol or LeftCol
 
-            -- Extra Rounded 14px Card
             local Card = Instance.new("Frame")
             Card.Name = sectionTitle .. "_Card"
             Card.Size = UDim2.new(1, 0, 0, 0)
@@ -850,7 +1051,7 @@ function Library:CreateWindow(config)
             TitleLabel.BackgroundTransparency = 1
             TitleLabel.Text = sectionTitle
             TitleLabel.TextColor3 = Library.Theme.Text
-            TitleLabel.Font = Enum.Font.GothamBold
+            TitleLabel.Font = Library.Fonts.Bold
             TitleLabel.TextSize = 13
             TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
             TitleLabel.ZIndex = 9
@@ -879,7 +1080,7 @@ function Library:CreateWindow(config)
                 Container = CardContainer
             }
 
-            -- ==================== TOGGLE ====================
+            -- TOGGLE
             function SectionObj:AddToggle(toggleConfig)
                 toggleConfig = toggleConfig or {}
                 local name = toggleConfig.Name or "Toggle"
@@ -899,7 +1100,7 @@ function Library:CreateWindow(config)
                 Label.BackgroundTransparency = 1
                 Label.Text = name
                 Label.TextColor3 = default and Library.Theme.Text or Library.Theme.TextDim
-                Label.Font = Enum.Font.GothamMedium
+                Label.Font = Library.Fonts.Medium
                 Label.TextSize = 12
                 Label.TextXAlignment = Enum.TextXAlignment.Left
                 Label.ZIndex = 10
@@ -932,7 +1133,6 @@ function Library:CreateWindow(config)
                 CheckBox.ZIndex = 11
                 CheckBox.Parent = RightElements
 
-                -- Extra Rounded 6px Checkbox
                 local CheckCorner = Instance.new("UICorner")
                 CheckCorner.CornerRadius = UDim.new(0, 6)
                 CheckCorner.Parent = CheckBox
@@ -992,7 +1192,6 @@ function Library:CreateWindow(config)
                     ColorBox.ZIndex = 11
                     ColorBox.Parent = RightElements
 
-                    -- Extra Rounded 6px ColorBox
                     local BoxCorner = Instance.new("UICorner")
                     BoxCorner.CornerRadius = UDim.new(0, 6)
                     BoxCorner.Parent = ColorBox
@@ -1005,7 +1204,6 @@ function Library:CreateWindow(config)
                     local currentColor = cpDefault
                     if cpFlag then Library.Flags[cpFlag] = currentColor end
 
-                    -- Extra Rounded 14px Color Picker Window
                     local PickerFrame = Instance.new("Frame")
                     PickerFrame.Name = "ColorPickerPopup"
                     PickerFrame.Size = UDim2.new(0, 160, 0, 140)
@@ -1128,14 +1326,13 @@ function Library:CreateWindow(config)
                     KeyBtn.BorderSizePixel = 0
                     KeyBtn.Text = (currentKey == Enum.KeyCode.Unknown and "..." or currentKey.Name)
                     KeyBtn.TextColor3 = Library.Theme.TextDark
-                    KeyBtn.Font = Enum.Font.GothamBold
+                    KeyBtn.Font = Library.Fonts.Bold
                     KeyBtn.TextSize = 10
                     KeyBtn.AutoButtonColor = false
                     KeyBtn.LayoutOrder = 5
                     KeyBtn.ZIndex = 11
                     KeyBtn.Parent = RightElements
 
-                    -- Extra Rounded 6px KeyBtn
                     local KeyCorner = Instance.new("UICorner")
                     KeyCorner.CornerRadius = UDim.new(0, 6)
                     KeyCorner.Parent = KeyBtn
@@ -1174,7 +1371,7 @@ function Library:CreateWindow(config)
                 return ToggleObj
             end
 
-            -- ==================== SLIDER ====================
+            -- SLIDER
             function SectionObj:AddSlider(sliderConfig)
                 sliderConfig = sliderConfig or {}
                 local name = sliderConfig.Name or "Slider"
@@ -1198,7 +1395,7 @@ function Library:CreateWindow(config)
                 Label.BackgroundTransparency = 1
                 Label.Text = name
                 Label.TextColor3 = Library.Theme.TextDim
-                Label.Font = Enum.Font.GothamMedium
+                Label.Font = Library.Fonts.Medium
                 Label.TextSize = 12
                 Label.TextXAlignment = Enum.TextXAlignment.Left
                 Label.ZIndex = 10
@@ -1210,7 +1407,7 @@ function Library:CreateWindow(config)
                 ValueLabel.BackgroundTransparency = 1
                 ValueLabel.Text = tostring(default) .. suffix
                 ValueLabel.TextColor3 = Library.Theme.Text
-                ValueLabel.Font = Enum.Font.GothamMedium
+                ValueLabel.Font = Library.Fonts.Bold
                 ValueLabel.TextSize = 12
                 ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
                 ValueLabel.ZIndex = 10
@@ -1296,7 +1493,7 @@ function Library:CreateWindow(config)
                 }
             end
 
-            -- ==================== DROPDOWN ====================
+            -- DROPDOWN
             function SectionObj:AddDropdown(dropdownConfig)
                 dropdownConfig = dropdownConfig or {}
                 local name = dropdownConfig.Name or "Dropdown"
@@ -1317,7 +1514,7 @@ function Library:CreateWindow(config)
                 Label.BackgroundTransparency = 1
                 Label.Text = name
                 Label.TextColor3 = Library.Theme.TextDim
-                Label.Font = Enum.Font.GothamMedium
+                Label.Font = Library.Fonts.Medium
                 Label.TextSize = 12
                 Label.TextXAlignment = Enum.TextXAlignment.Left
                 Label.ZIndex = 10
@@ -1335,7 +1532,6 @@ function Library:CreateWindow(config)
                 Selector.Parent = DropdownFrame
                 Library:RegisterThemeObject(Selector, "BackgroundColor3", "ItemBg")
 
-                -- Extra Rounded 10px Selector
                 local SelCorner = Instance.new("UICorner")
                 SelCorner.CornerRadius = UDim.new(0, 10)
                 SelCorner.Parent = Selector
@@ -1352,7 +1548,7 @@ function Library:CreateWindow(config)
                 SelText.BackgroundTransparency = 1
                 SelText.Text = tostring(default)
                 SelText.TextColor3 = Library.Theme.Text
-                SelText.Font = Enum.Font.GothamMedium
+                SelText.Font = Library.Fonts.Medium
                 SelText.TextSize = 12
                 SelText.TextXAlignment = Enum.TextXAlignment.Left
                 SelText.ZIndex = 12
@@ -1364,12 +1560,11 @@ function Library:CreateWindow(config)
                 MenuIcon.BackgroundTransparency = 1
                 MenuIcon.Text = "≡"
                 MenuIcon.TextColor3 = Library.Theme.TextDark
-                MenuIcon.Font = Enum.Font.GothamBold
+                MenuIcon.Font = Library.Fonts.Bold
                 MenuIcon.TextSize = 14
                 MenuIcon.ZIndex = 12
                 MenuIcon.Parent = Selector
 
-                -- Extra Rounded 12px DropList
                 local DropList = Instance.new("Frame")
                 DropList.Name = "DropList"
                 DropList.Size = UDim2.new(1, 0, 0, 0)
@@ -1418,14 +1613,13 @@ function Library:CreateWindow(config)
                         OptBtn.BackgroundTransparency = (opt == currentSelected) and 0 or 1
                         OptBtn.Text = "  " .. tostring(opt)
                         OptBtn.TextColor3 = (opt == currentSelected) and Library.Theme.Accent or Library.Theme.TextDim
-                        OptBtn.Font = Enum.Font.GothamMedium
+                        OptBtn.Font = Library.Fonts.Medium
                         OptBtn.TextSize = 11
                         OptBtn.TextXAlignment = Enum.TextXAlignment.Left
                         OptBtn.AutoButtonColor = false
                         OptBtn.ZIndex = 71
                         OptBtn.Parent = DropList
 
-                        -- Extra Rounded 8px Option Button
                         local OptCorner = Instance.new("UICorner")
                         OptCorner.CornerRadius = UDim.new(0, 8)
                         OptCorner.Parent = OptBtn
@@ -1469,7 +1663,7 @@ function Library:CreateWindow(config)
                 }
             end
 
-            -- ==================== LISTBOX ====================
+            -- LISTBOX
             function SectionObj:AddListbox(listConfig)
                 listConfig = listConfig or {}
                 local name = listConfig.Name or "Listbox"
@@ -1491,7 +1685,7 @@ function Library:CreateWindow(config)
                 Label.BackgroundTransparency = 1
                 Label.Text = name
                 Label.TextColor3 = Library.Theme.TextDim
-                Label.Font = Enum.Font.GothamMedium
+                Label.Font = Library.Fonts.Medium
                 Label.TextSize = 12
                 Label.TextXAlignment = Enum.TextXAlignment.Left
                 Label.ZIndex = 10
@@ -1511,7 +1705,6 @@ function Library:CreateWindow(config)
                 Container.Parent = ListboxFrame
                 Library:RegisterThemeObject(Container, "BackgroundColor3", "ItemBg")
 
-                -- Extra Rounded 12px Listbox Container
                 local ContCorner = Instance.new("UICorner")
                 ContCorner.CornerRadius = UDim.new(0, 12)
                 ContCorner.Parent = Container
@@ -1550,14 +1743,13 @@ function Library:CreateWindow(config)
                         ItemBtn.BackgroundTransparency = isSelected and 0.4 or 1
                         ItemBtn.Text = "  " .. tostring(item)
                         ItemBtn.TextColor3 = isSelected and Library.Theme.Accent or Library.Theme.TextDim
-                        ItemBtn.Font = Enum.Font.GothamMedium
+                        ItemBtn.Font = isSelected and Library.Fonts.Bold or Library.Fonts.Medium
                         ItemBtn.TextSize = 11
                         ItemBtn.TextXAlignment = Enum.TextXAlignment.Left
                         ItemBtn.AutoButtonColor = false
                         ItemBtn.ZIndex = 12
                         ItemBtn.Parent = Container
 
-                        -- Extra Rounded 8px Listbox Item
                         local ItemCorner = Instance.new("UICorner")
                         ItemCorner.CornerRadius = UDim.new(0, 8)
                         ItemCorner.Parent = ItemBtn
@@ -1587,7 +1779,7 @@ function Library:CreateWindow(config)
                 }
             end
 
-            -- ==================== BUTTON ====================
+            -- BUTTON
             function SectionObj:AddButton(btnConfig)
                 btnConfig = btnConfig or {}
                 local name = btnConfig.Name or "Button"
@@ -1600,14 +1792,13 @@ function Library:CreateWindow(config)
                 Button.BorderSizePixel = 0
                 Button.Text = name
                 Button.TextColor3 = Library.Theme.Text
-                Button.Font = Enum.Font.GothamMedium
+                Button.Font = Library.Fonts.Bold
                 Button.TextSize = 12
                 Button.AutoButtonColor = false
                 Button.ZIndex = 10
                 Button.Parent = CardContainer
                 Library:RegisterThemeObject(Button, "BackgroundColor3", "ItemBg")
 
-                -- Extra Rounded 10px Button
                 local BtnCorner = Instance.new("UICorner")
                 BtnCorner.CornerRadius = UDim.new(0, 10)
                 BtnCorner.Parent = Button
@@ -1638,7 +1829,7 @@ function Library:CreateWindow(config)
                 return Button
             end
 
-            -- ==================== TEXT INPUT ====================
+            -- TEXT INPUT
             function SectionObj:AddInput(inputConfig)
                 inputConfig = inputConfig or {}
                 local name = inputConfig.Name or "Input"
@@ -1658,7 +1849,7 @@ function Library:CreateWindow(config)
                 Label.BackgroundTransparency = 1
                 Label.Text = name
                 Label.TextColor3 = Library.Theme.TextDim
-                Label.Font = Enum.Font.GothamMedium
+                Label.Font = Library.Fonts.Medium
                 Label.TextSize = 12
                 Label.TextXAlignment = Enum.TextXAlignment.Left
                 Label.ZIndex = 10
@@ -1673,7 +1864,6 @@ function Library:CreateWindow(config)
                 BoxContainer.Parent = InputFrame
                 Library:RegisterThemeObject(BoxContainer, "BackgroundColor3", "ItemBg")
 
-                -- Extra Rounded 10px Input Box
                 local BoxCorner = Instance.new("UICorner")
                 BoxCorner.CornerRadius = UDim.new(0, 10)
                 BoxCorner.Parent = BoxContainer
@@ -1691,7 +1881,7 @@ function Library:CreateWindow(config)
                 TextBox.PlaceholderText = placeholder
                 TextBox.PlaceholderColor3 = Library.Theme.TextDark
                 TextBox.TextColor3 = Library.Theme.Text
-                TextBox.Font = Enum.Font.GothamMedium
+                TextBox.Font = Library.Fonts.Medium
                 TextBox.TextSize = 12
                 TextBox.TextXAlignment = Enum.TextXAlignment.Left
                 TextBox.ClearTextOnFocus = false
@@ -1723,7 +1913,7 @@ function Library:CreateWindow(config)
         return TabObj
     end
 
-    -- ==================== NOTIFICATION ====================
+    -- NOTIFICATION
     function Library:Notify(notifConfig)
         notifConfig = notifConfig or {}
         local title = notifConfig.Title or "Nameless"
@@ -1739,7 +1929,6 @@ function Library:CreateWindow(config)
         NotifFrame.ZIndex = 100
         NotifFrame.Parent = ScreenGui
 
-        -- Extra Rounded 14px Notification
         local NotifCorner = Instance.new("UICorner")
         NotifCorner.CornerRadius = UDim.new(0, 14)
         NotifCorner.Parent = NotifFrame
@@ -1755,7 +1944,7 @@ function Library:CreateWindow(config)
         NotifTitle.BackgroundTransparency = 1
         NotifTitle.Text = title
         NotifTitle.TextColor3 = Library.Theme.Accent
-        NotifTitle.Font = Enum.Font.GothamBold
+        NotifTitle.Font = Library.Fonts.Bold
         NotifTitle.TextSize = 13
         NotifTitle.TextXAlignment = Enum.TextXAlignment.Left
         NotifTitle.ZIndex = 101
@@ -1767,7 +1956,7 @@ function Library:CreateWindow(config)
         NotifContent.BackgroundTransparency = 1
         NotifContent.Text = content
         NotifContent.TextColor3 = Library.Theme.TextDim
-        NotifContent.Font = Enum.Font.GothamMedium
+        NotifContent.Font = Library.Fonts.Medium
         NotifContent.TextSize = 11
         NotifContent.TextXAlignment = Enum.TextXAlignment.Left
         NotifContent.ZIndex = 101
@@ -1785,9 +1974,27 @@ function Library:CreateWindow(config)
 
     -- ==================== THEME MANAGER HELPER ====================
     function WindowObj:CreateThemeManager(targetSection)
+        local themeList = {
+            "Nameless",
+            "Midnight",
+            "Emerald",
+            "Crimson",
+            "Sakura",
+            "Cyberpunk",
+            "TokyoNight",
+            "Synthwave",
+            "NordFrost",
+            "Monokai",
+            "Dracula",
+            "AcidGreen",
+            "SunsetAmber",
+            "RoseGold",
+            "PureObsidian"
+        }
+
         targetSection:AddDropdown({
             Name = "Select Theme",
-            Options = { "Nameless", "Midnight", "Emerald", "Crimson", "Sakura" },
+            Options = themeList,
             Default = Library.CurrentTheme,
             Callback = function(theme)
                 Library:SetTheme(theme)
