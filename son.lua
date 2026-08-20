@@ -1328,17 +1328,33 @@ function Library:CreateWindow(config)
         }
 
         local function activateTab()
+            if WindowObj.CurrentTab == TabObj then return end
+
             for _, tab in pairs(WindowObj.Tabs) do
-                tab.Page.Visible = false
-                createTween(tab.Button, { BackgroundTransparency = 1 }, 0.15)
-                createTween(tab.Button.TabText, { TextColor3 = Library.Theme.TextDark }, 0.15)
-                createTween(tab.Button.Indicator, { BackgroundTransparency = 1 }, 0.15)
+                if tab ~= TabObj then
+                    tab.Page.Visible = false
+                    createTween(tab.Button, { BackgroundTransparency = 1, BackgroundColor3 = Library.Theme.Sidebar }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    createTween(tab.Button.TabText, { TextColor3 = Library.Theme.TextDark }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    createTween(tab.Button.Indicator, { BackgroundTransparency = 1, Size = UDim2.new(0, 4, 0, 0) }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                end
             end
+
+            -- Smooth Page Content Slide-In
+            TabPage.Position = UDim2.new(0, 0, 0, 8)
             TabPage.Visible = true
+            createTween(TabPage, { Position = UDim2.new(0, 0, 0, 0) }, 0.24, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+
+            -- Smooth Header Title Slide & Fade
+            CurrentTabTitle.TextTransparency = 0.4
+            CurrentTabTitle.Position = UDim2.new(0, 18, 0, -4)
             CurrentTabTitle.Text = name
-            createTween(TabBtn, { BackgroundTransparency = 0.45, BackgroundColor3 = Library.Theme.ItemBgHover }, 0.15)
-            createTween(TabText, { TextColor3 = Library.Theme.Text }, 0.15)
-            createTween(TabIndicator, { BackgroundTransparency = 0 }, 0.15)
+            createTween(CurrentTabTitle, { TextTransparency = 0, Position = UDim2.new(0, 18, 0, 0) }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+
+            -- Smooth Active Tab Button & Indicator Expansion
+            createTween(TabBtn, { BackgroundTransparency = 0.45, BackgroundColor3 = Library.Theme.ItemBgHover }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            createTween(TabText, { TextColor3 = Library.Theme.Text }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            createTween(TabIndicator, { BackgroundTransparency = 0, Size = UDim2.new(0, 4, 0, 20) }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+
             WindowObj.CurrentTab = TabObj
         end
 
@@ -1346,15 +1362,15 @@ function Library:CreateWindow(config)
 
         TabBtn.MouseEnter:Connect(function()
             if WindowObj.CurrentTab ~= TabObj then
-                createTween(TabBtn, { BackgroundTransparency = 0.8, BackgroundColor3 = Library.Theme.ItemBgHover }, 0.15)
-                createTween(TabText, { TextColor3 = Library.Theme.TextDim }, 0.15)
+                createTween(TabBtn, { BackgroundTransparency = 0.75, BackgroundColor3 = Library.Theme.ItemBgHover }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                createTween(TabText, { TextColor3 = Library.Theme.TextDim }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
             end
         end)
 
         TabBtn.MouseLeave:Connect(function()
             if WindowObj.CurrentTab ~= TabObj then
-                createTween(TabBtn, { BackgroundTransparency = 1 }, 0.15)
-                createTween(TabText, { TextColor3 = Library.Theme.TextDark }, 0.15)
+                createTween(TabBtn, { BackgroundTransparency = 1 }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                createTween(TabText, { TextColor3 = Library.Theme.TextDark }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
             end
         end)
 
@@ -1490,15 +1506,12 @@ function Library:CreateWindow(config)
                 RightLayout.Parent = RightElements
 
                 local CheckBox = Instance.new("TextButton")
-                CheckBox.Name = "CheckBox"
-                CheckBox.Size = UDim2.new(0, 38, 0, 18)
+                CheckBox.Name = "ToggleSwitch"
+                CheckBox.Size = UDim2.new(0, 36, 0, 18)
                 CheckBox.LayoutOrder = 100
-                CheckBox.BackgroundColor3 = default and Library.Theme.Accent or Color3.fromRGB(20, 16, 28)
+                CheckBox.BackgroundColor3 = default and Library.Theme.Accent or Library.Theme.ToggleOff
                 CheckBox.BorderSizePixel = 0
-                CheckBox.Text = default and "ON" or "OFF"
-                CheckBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-                CheckBox.Font = Library.Fonts.Bold
-                CheckBox.TextSize = 9
+                CheckBox.Text = ""
                 CheckBox.AutoButtonColor = false
                 CheckBox.ZIndex = 11
                 CheckBox.Parent = RightElements
@@ -1511,6 +1524,20 @@ function Library:CreateWindow(config)
                 CheckStroke.Color = default and Library.Theme.Accent or Library.Theme.CardBorder
                 CheckStroke.Thickness = 1.2
                 CheckStroke.Parent = CheckBox
+
+                local SwitchKnob = Instance.new("Frame")
+                SwitchKnob.Name = "Knob"
+                SwitchKnob.Size = UDim2.new(0, 12, 0, 12)
+                SwitchKnob.AnchorPoint = Vector2.new(0, 0.5)
+                SwitchKnob.Position = default and UDim2.new(1, -15, 0.5, 0) or UDim2.new(0, 3, 0.5, 0)
+                SwitchKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                SwitchKnob.BorderSizePixel = 0
+                SwitchKnob.ZIndex = 12
+                SwitchKnob.Parent = CheckBox
+
+                local KnobCorner = Instance.new("UICorner")
+                KnobCorner.CornerRadius = UDim.new(1, 0)
+                KnobCorner.Parent = SwitchKnob
 
                 local state = default
                 if flag then Library.Flags[flag] = state end
@@ -1538,15 +1565,15 @@ function Library:CreateWindow(config)
                     if flag then Library.Flags[flag] = state end
                     
                     if state then
-                        createTween(CheckBox, { BackgroundColor3 = Library.Theme.Accent }, 0.15)
-                        createTween(CheckStroke, { Color = Library.Theme.Accent }, 0.15)
-                        createTween(Label, { TextColor3 = Library.Theme.Text }, 0.15)
-                        CheckBox.Text = "ON"
+                        createTween(CheckBox, { BackgroundColor3 = Library.Theme.Accent }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(CheckStroke, { Color = Library.Theme.Accent }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(SwitchKnob, { Position = UDim2.new(1, -15, 0.5, 0), Size = UDim2.new(0, 12, 0, 12) }, 0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                        createTween(Label, { TextColor3 = Library.Theme.Text }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                     else
-                        createTween(CheckBox, { BackgroundColor3 = Color3.fromRGB(20, 16, 28) }, 0.15)
-                        createTween(CheckStroke, { Color = Library.Theme.CardBorder }, 0.15)
-                        createTween(Label, { TextColor3 = Library.Theme.TextDim }, 0.15)
-                        CheckBox.Text = "OFF"
+                        createTween(CheckBox, { BackgroundColor3 = Library.Theme.ToggleOff }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(CheckStroke, { Color = Library.Theme.CardBorder }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(SwitchKnob, { Position = UDim2.new(0, 3, 0.5, 0), Size = UDim2.new(0, 12, 0, 12) }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(Label, { TextColor3 = Library.Theme.TextDim }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                     end
                     
                     if not ignoreCallback then
@@ -1571,6 +1598,14 @@ function Library:CreateWindow(config)
                         targetFn(s)
                     end
                 end
+
+                CheckBox.MouseButton1Down:Connect(function()
+                    createTween(SwitchKnob, { Size = UDim2.new(0, 15, 0, 12) }, 0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+                end)
+
+                CheckBox.MouseButton1Up:Connect(function()
+                    createTween(SwitchKnob, { Size = UDim2.new(0, 12, 0, 12) }, 0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                end)
 
                 CheckBox.MouseButton1Click:Connect(function()
                     setToggle(not state)
