@@ -436,15 +436,36 @@ function Library:SetTheme(themeName)
     end
 end
 
+function Library:SetCustomThemeColor(themeKey, color)
+    if not self.Theme then return end
+    self.Theme[themeKey] = color
+    if self.CurrentTheme ~= "Custom" then
+        self.CurrentTheme = "Custom"
+    end
+    
+    local objects = self.ThemeObjects[themeKey] or {}
+    for _, obj in ipairs(objects) do
+        if obj.Instance and obj.Instance.Parent then
+            createTween(obj.Instance, { [obj.Property] = color }, 0.2)
+        end
+    end
+end
+
 function Library:SetAccent(color)
     self.Theme.Accent = color
     self.Theme.SliderFill = color
     self.Theme.ToggleOn = color
+    if self.CurrentTheme ~= "Custom" then
+        self.CurrentTheme = "Custom"
+    end
     
-    local accentObjects = self.ThemeObjects["Accent"] or {}
-    for _, obj in ipairs(accentObjects) do
-        if obj.Instance and obj.Instance.Parent then
-            createTween(obj.Instance, { [obj.Property] = color }, 0.2)
+    local keys = {"Accent", "SliderFill", "ToggleOn"}
+    for _, key in ipairs(keys) do
+        local objects = self.ThemeObjects[key] or {}
+        for _, obj in ipairs(objects) do
+            if obj.Instance and obj.Instance.Parent then
+                createTween(obj.Instance, { [obj.Property] = color }, 0.2)
+            end
         end
     end
 end
@@ -1123,6 +1144,12 @@ function Library:CreateWindow(config)
 
     function WindowObj:SetBackgroundGif(frames, fps, transparency)
         setBackgroundGif(frames, fps, transparency)
+    end
+
+    function WindowObj:SetBackgroundTransparency(transparency)
+        if BackgroundImage then
+            BackgroundImage.ImageTransparency = transparency
+        end
     end
 
     function WindowObj:Hide()
@@ -3688,27 +3715,187 @@ function Library:CreateWindow(config)
             "AcidGreen",
             "SunsetAmber",
             "RoseGold",
-            "PureObsidian"
+            "PureObsidian",
+            "Custom"
         }
 
-        targetSection:AddDropdown("ThemeDropdown", {
-            Text = "Select Theme",
+        local ThemeDropdown = targetSection:AddDropdown("ThemeDropdown", {
+            Text = "Preset Theme",
             Options = themeList,
             Default = Library.CurrentTheme,
             Callback = function(theme)
-                Library:SetTheme(theme)
+                if theme ~= "Custom" then
+                    Library:SetTheme(theme)
+                end
             end
         })
 
-        local AccentToggle = targetSection:AddToggle("CustomAccentToggle", {
-            Text = "Custom Accent Color",
-            Default = false,
-            Callback = function() end
-        })
-        AccentToggle:AddColorPicker("CustomAccent", {
+        targetSection:AddDivider()
+        targetSection:AddLabel("Palette & Custom Colors")
+
+        -- 1. Main Accent Color
+        local AccentLabel = targetSection:AddLabel("Accent Color")
+        AccentLabel:AddColorPicker("Theme_Accent", {
             Default = Library.Theme.Accent,
             Callback = function(col)
                 Library:SetAccent(col)
+                if ThemeDropdown and ThemeDropdown.Set then
+                    ThemeDropdown:Set("Custom", true)
+                end
+            end
+        })
+
+        -- 2. Accent Secondary / Glow
+        local AccentSecLabel = targetSection:AddLabel("Accent Secondary")
+        AccentSecLabel:AddColorPicker("Theme_AccentSecondary", {
+            Default = Library.Theme.AccentSecondary,
+            Callback = function(col)
+                Library:SetCustomThemeColor("AccentSecondary", col)
+                if ThemeDropdown and ThemeDropdown.Set then
+                    ThemeDropdown:Set("Custom", true)
+                end
+            end
+        })
+
+        -- 3. Window Background
+        local BgLabel = targetSection:AddLabel("Window Background")
+        BgLabel:AddColorPicker("Theme_Background", {
+            Default = Library.Theme.Background,
+            Callback = function(col)
+                Library:SetCustomThemeColor("Background", col)
+                if ThemeDropdown and ThemeDropdown.Set then
+                    ThemeDropdown:Set("Custom", true)
+                end
+            end
+        })
+
+        -- 4. Sidebar Background
+        local SidebarLabel = targetSection:AddLabel("Sidebar Background")
+        SidebarLabel:AddColorPicker("Theme_Sidebar", {
+            Default = Library.Theme.Sidebar,
+            Callback = function(col)
+                Library:SetCustomThemeColor("Sidebar", col)
+                if ThemeDropdown and ThemeDropdown.Set then
+                    ThemeDropdown:Set("Custom", true)
+                end
+            end
+        })
+
+        -- 5. Card Background
+        local CardBgLabel = targetSection:AddLabel("Card Background")
+        CardBgLabel:AddColorPicker("Theme_CardBackground", {
+            Default = Library.Theme.CardBackground,
+            Callback = function(col)
+                Library:SetCustomThemeColor("CardBackground", col)
+                if ThemeDropdown and ThemeDropdown.Set then
+                    ThemeDropdown:Set("Custom", true)
+                end
+            end
+        })
+
+        -- 6. Card Border
+        local CardBorderLabel = targetSection:AddLabel("Card Border")
+        CardBorderLabel:AddColorPicker("Theme_CardBorder", {
+            Default = Library.Theme.CardBorder,
+            Callback = function(col)
+                Library:SetCustomThemeColor("CardBorder", col)
+                if ThemeDropdown and ThemeDropdown.Set then
+                    ThemeDropdown:Set("Custom", true)
+                end
+            end
+        })
+
+        -- 7. Element Background (ItemBg)
+        local ItemBgLabel = targetSection:AddLabel("Element Background")
+        ItemBgLabel:AddColorPicker("Theme_ItemBg", {
+            Default = Library.Theme.ItemBg,
+            Callback = function(col)
+                Library:SetCustomThemeColor("ItemBg", col)
+                if ThemeDropdown and ThemeDropdown.Set then
+                    ThemeDropdown:Set("Custom", true)
+                end
+            end
+        })
+
+        -- 8. Element Border (ItemBorder)
+        local ItemBorderLabel = targetSection:AddLabel("Element Border")
+        ItemBorderLabel:AddColorPicker("Theme_ItemBorder", {
+            Default = Library.Theme.ItemBorder,
+            Callback = function(col)
+                Library:SetCustomThemeColor("ItemBorder", col)
+                if ThemeDropdown and ThemeDropdown.Set then
+                    ThemeDropdown:Set("Custom", true)
+                end
+            end
+        })
+
+        -- 9. Main Text Color
+        local TextLabel = targetSection:AddLabel("Main Text Color")
+        TextLabel:AddColorPicker("Theme_Text", {
+            Default = Library.Theme.Text,
+            Callback = function(col)
+                Library:SetCustomThemeColor("Text", col)
+                if ThemeDropdown and ThemeDropdown.Set then
+                    ThemeDropdown:Set("Custom", true)
+                end
+            end
+        })
+
+        -- 10. Muted / Dim Text
+        local TextDimLabel = targetSection:AddLabel("Muted Text Color")
+        TextDimLabel:AddColorPicker("Theme_TextDim", {
+            Default = Library.Theme.TextDim,
+            Callback = function(col)
+                Library:SetCustomThemeColor("TextDim", col)
+                if ThemeDropdown and ThemeDropdown.Set then
+                    ThemeDropdown:Set("Custom", true)
+                end
+            end
+        })
+
+        -- 11. Slider Track & Toggle Off
+        local SliderTrackLabel = targetSection:AddLabel("Slider Track & Toggle Off")
+        SliderTrackLabel:AddColorPicker("Theme_SliderTrack", {
+            Default = Library.Theme.SliderTrack,
+            Callback = function(col)
+                Library:SetCustomThemeColor("SliderTrack", col)
+                Library:SetCustomThemeColor("ToggleOff", col)
+                if ThemeDropdown and ThemeDropdown.Set then
+                    ThemeDropdown:Set("Custom", true)
+                end
+            end
+        })
+
+        targetSection:AddDivider()
+        targetSection:AddLabel("Theme Sliders & Adjustments")
+
+        -- Background Image Transparency Slider
+        targetSection:AddSlider("Theme_BgTransparency", {
+            Text = "Background Transparency",
+            Min = 0,
+            Max = 100,
+            Default = 85,
+            Suffix = "%",
+            Callback = function(val)
+                if WindowObj and WindowObj.SetBackgroundTransparency then
+                    WindowObj:SetBackgroundTransparency(val / 100)
+                end
+            end
+        })
+
+        -- Reset Button
+        targetSection:AddButton({
+            Text = "Reset to Nameless Theme",
+            Func = function()
+                Library:SetTheme("Nameless")
+                if ThemeDropdown and ThemeDropdown.Set then
+                    ThemeDropdown:Set("Nameless", true)
+                end
+                Library:Notify({
+                    Title = "Theme Manager",
+                    Content = "Reset to default Nameless theme.",
+                    Duration = 2
+                })
             end
         })
     end
@@ -3758,6 +3945,18 @@ function Library:CreateWindow(config)
         self.IgnoreIndexes["ThemeDropdown"] = true
         self.IgnoreIndexes["CustomAccent"] = true
         self.IgnoreIndexes["CustomAccentToggle"] = true
+        self.IgnoreIndexes["Theme_Accent"] = true
+        self.IgnoreIndexes["Theme_AccentSecondary"] = true
+        self.IgnoreIndexes["Theme_Background"] = true
+        self.IgnoreIndexes["Theme_Sidebar"] = true
+        self.IgnoreIndexes["Theme_CardBackground"] = true
+        self.IgnoreIndexes["Theme_CardBorder"] = true
+        self.IgnoreIndexes["Theme_ItemBg"] = true
+        self.IgnoreIndexes["Theme_ItemBorder"] = true
+        self.IgnoreIndexes["Theme_Text"] = true
+        self.IgnoreIndexes["Theme_TextDim"] = true
+        self.IgnoreIndexes["Theme_SliderTrack"] = true
+        self.IgnoreIndexes["Theme_BgTransparency"] = true
         self.IgnoreIndexes["SaveManager_ConfigList"] = true
         self.IgnoreIndexes["SaveManager_CustomConfigName"] = true
     end
