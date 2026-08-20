@@ -1691,33 +1691,53 @@ function Library:CreateWindow(config)
                     PickerStroke.Thickness = 1.2
                     PickerStroke.Parent = PickerFrame
 
-                    local SatVal = Instance.new("TextButton")
+                    local SatVal = Instance.new("ImageButton")
                     SatVal.Name = "SatVal"
                     SatVal.Size = UDim2.new(1, -16, 0, 90)
                     SatVal.Position = UDim2.new(0, 8, 0, 8)
                     SatVal.BackgroundColor3 = cpDefault
+                    SatVal.Image = "rbxassetid://4155801252"
                     SatVal.BorderSizePixel = 0
-                    SatVal.Text = ""
                     SatVal.AutoButtonColor = false
                     SatVal.ZIndex = 61
                     SatVal.Parent = PickerFrame
 
                     local SatValCorner = Instance.new("UICorner")
-                    SatValCorner.CornerRadius = UDim.new(0, 10)
+                    SatValCorner.CornerRadius = UDim.new(0, 8)
                     SatValCorner.Parent = SatVal
 
-                    local HueBar = Instance.new("TextButton")
+                    local h, s, v = cpDefault:ToHSV()
+
+                    local SVCursor = Instance.new("Frame")
+                    SVCursor.Name = "SVCursor"
+                    SVCursor.Size = UDim2.new(0, 10, 0, 10)
+                    SVCursor.AnchorPoint = Vector2.new(0.5, 0.5)
+                    SVCursor.Position = UDim2.new(s, 0, 1 - v, 0)
+                    SVCursor.BackgroundColor3 = currentColor
+                    SVCursor.ZIndex = 65
+                    SVCursor.Parent = SatVal
+
+                    local SVCursorCorner = Instance.new("UICorner")
+                    SVCursorCorner.CornerRadius = UDim.new(1, 0)
+                    SVCursorCorner.Parent = SVCursor
+
+                    local SVCursorStroke = Instance.new("UIStroke")
+                    SVCursorStroke.Color = Color3.fromRGB(255, 255, 255)
+                    SVCursorStroke.Thickness = 1.8
+                    SVCursorStroke.Parent = SVCursor
+
+                    local HueBar = Instance.new("ImageButton")
                     HueBar.Name = "HueBar"
                     HueBar.Size = UDim2.new(1, -16, 0, 14)
                     HueBar.Position = UDim2.new(0, 8, 0, 106)
                     HueBar.BorderSizePixel = 0
-                    HueBar.Text = ""
                     HueBar.AutoButtonColor = false
+                    HueBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                     HueBar.ZIndex = 61
                     HueBar.Parent = PickerFrame
 
                     local HueCorner = Instance.new("UICorner")
-                    HueCorner.CornerRadius = UDim.new(0, 8)
+                    HueCorner.CornerRadius = UDim.new(0, 7)
                     HueCorner.Parent = HueBar
 
                     local HueGradient = Instance.new("UIGradient")
@@ -1732,7 +1752,23 @@ function Library:CreateWindow(config)
                     })
                     HueGradient.Parent = HueBar
 
-                    local h, s, v = cpDefault:ToHSV()
+                    local HueCursor = Instance.new("Frame")
+                    HueCursor.Name = "HueCursor"
+                    HueCursor.Size = UDim2.new(0, 8, 0, 18)
+                    HueCursor.AnchorPoint = Vector2.new(0.5, 0.5)
+                    HueCursor.Position = UDim2.new(1 - h, 0, 0.5, 0)
+                    HueCursor.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+                    HueCursor.ZIndex = 65
+                    HueCursor.Parent = HueBar
+
+                    local HueCursorCorner = Instance.new("UICorner")
+                    HueCursorCorner.CornerRadius = UDim.new(1, 0)
+                    HueCursorCorner.Parent = HueCursor
+
+                    local HueCursorStroke = Instance.new("UIStroke")
+                    HueCursorStroke.Color = Color3.fromRGB(255, 255, 255)
+                    HueCursorStroke.Thickness = 1.8
+                    HueCursorStroke.Parent = HueCursor
 
                     local ColorPickerObj = {
                         Type = "ColorPicker",
@@ -1746,6 +1782,10 @@ function Library:CreateWindow(config)
                         ColorPickerObj.Value = currentColor
                         ColorBox.BackgroundColor3 = currentColor
                         SatVal.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+                        SVCursor.Position = UDim2.new(s, 0, 1 - v, 0)
+                        SVCursor.BackgroundColor3 = currentColor
+                        HueCursor.Position = UDim2.new(1 - h, 0, 0.5, 0)
+                        HueCursor.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
                         if cpFlag then Library.Flags[cpFlag] = currentColor end
                         if not ignoreCallback then
                             task.spawn(cpCallback, currentColor)
@@ -1772,13 +1812,7 @@ function Library:CreateWindow(config)
                             currentColor = Color3.fromRGB(col[1], col[2], col[3])
                         end
                         h, s, v = currentColor:ToHSV()
-                        ColorPickerObj.Value = currentColor
-                        ColorBox.BackgroundColor3 = currentColor
-                        SatVal.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
-                        if cpFlag then Library.Flags[cpFlag] = currentColor end
-                        if not ignoreCallback then
-                            task.spawn(cpCallback, currentColor)
-                        end
+                        updateColor(ignoreCallback)
                     end
 
                     ColorPickerObj.Set = setColor
@@ -1827,27 +1861,53 @@ function Library:CreateWindow(config)
                         end
                     end)
 
+                    local draggingSV = false
                     local draggingHue = false
+
+                    local function updateSV(input)
+                        local absPos = SatVal.AbsolutePosition
+                        local absSize = SatVal.AbsoluteSize
+                        s = math.clamp((input.Position.X - absPos.X) / absSize.X, 0, 1)
+                        v = 1 - math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
+                        updateColor()
+                    end
+
+                    local function updateHue(input)
+                        local absPos = HueBar.AbsolutePosition
+                        local absSize = HueBar.AbsoluteSize
+                        local percent = math.clamp((input.Position.X - absPos.X) / absSize.X, 0, 1)
+                        h = 1 - percent
+                        updateColor()
+                    end
+
+                    SatVal.InputBegan:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                            draggingSV = true
+                            updateSV(input)
+                        end
+                    end)
+
                     HueBar.InputBegan:Connect(function(input)
                         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                             draggingHue = true
-                            local percent = math.clamp((input.Position.X - HueBar.AbsolutePosition.X) / HueBar.AbsoluteSize.X, 0, 1)
-                            h = 1 - percent
-                            updateColor()
+                            updateHue(input)
                         end
                     end)
 
                     UserInputService.InputEnded:Connect(function(input)
                         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                            draggingSV = false
                             draggingHue = false
                         end
                     end)
 
                     UserInputService.InputChanged:Connect(function(input)
-                        if draggingHue and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                            local percent = math.clamp((input.Position.X - HueBar.AbsolutePosition.X) / HueBar.AbsoluteSize.X, 0, 1)
-                            h = 1 - percent
-                            updateColor()
+                        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                            if draggingSV then
+                                updateSV(input)
+                            elseif draggingHue then
+                                updateHue(input)
+                            end
                         end
                     end)
 
@@ -3026,33 +3086,53 @@ function Library:CreateWindow(config)
                     PickerStroke.Thickness = 1.2
                     PickerStroke.Parent = PickerFrame
 
-                    local SatVal = Instance.new("TextButton")
+                    local SatVal = Instance.new("ImageButton")
                     SatVal.Name = "SatVal"
                     SatVal.Size = UDim2.new(1, -16, 0, 90)
                     SatVal.Position = UDim2.new(0, 8, 0, 8)
                     SatVal.BackgroundColor3 = cpDefault
+                    SatVal.Image = "rbxassetid://4155801252"
                     SatVal.BorderSizePixel = 0
-                    SatVal.Text = ""
                     SatVal.AutoButtonColor = false
                     SatVal.ZIndex = 61
                     SatVal.Parent = PickerFrame
 
                     local SatValCorner = Instance.new("UICorner")
-                    SatValCorner.CornerRadius = UDim.new(0, 10)
+                    SatValCorner.CornerRadius = UDim.new(0, 8)
                     SatValCorner.Parent = SatVal
 
-                    local HueBar = Instance.new("TextButton")
+                    local h, s, v = cpDefault:ToHSV()
+
+                    local SVCursor = Instance.new("Frame")
+                    SVCursor.Name = "SVCursor"
+                    SVCursor.Size = UDim2.new(0, 10, 0, 10)
+                    SVCursor.AnchorPoint = Vector2.new(0.5, 0.5)
+                    SVCursor.Position = UDim2.new(s, 0, 1 - v, 0)
+                    SVCursor.BackgroundColor3 = currentColor
+                    SVCursor.ZIndex = 65
+                    SVCursor.Parent = SatVal
+
+                    local SVCursorCorner = Instance.new("UICorner")
+                    SVCursorCorner.CornerRadius = UDim.new(1, 0)
+                    SVCursorCorner.Parent = SVCursor
+
+                    local SVCursorStroke = Instance.new("UIStroke")
+                    SVCursorStroke.Color = Color3.fromRGB(255, 255, 255)
+                    SVCursorStroke.Thickness = 1.8
+                    SVCursorStroke.Parent = SVCursor
+
+                    local HueBar = Instance.new("ImageButton")
                     HueBar.Name = "HueBar"
                     HueBar.Size = UDim2.new(1, -16, 0, 14)
                     HueBar.Position = UDim2.new(0, 8, 0, 106)
                     HueBar.BorderSizePixel = 0
-                    HueBar.Text = ""
                     HueBar.AutoButtonColor = false
+                    HueBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                     HueBar.ZIndex = 61
                     HueBar.Parent = PickerFrame
 
                     local HueCorner = Instance.new("UICorner")
-                    HueCorner.CornerRadius = UDim.new(0, 8)
+                    HueCorner.CornerRadius = UDim.new(0, 7)
                     HueCorner.Parent = HueBar
 
                     local HueGradient = Instance.new("UIGradient")
@@ -3067,7 +3147,23 @@ function Library:CreateWindow(config)
                     })
                     HueGradient.Parent = HueBar
 
-                    local h, s, v = cpDefault:ToHSV()
+                    local HueCursor = Instance.new("Frame")
+                    HueCursor.Name = "HueCursor"
+                    HueCursor.Size = UDim2.new(0, 8, 0, 18)
+                    HueCursor.AnchorPoint = Vector2.new(0.5, 0.5)
+                    HueCursor.Position = UDim2.new(1 - h, 0, 0.5, 0)
+                    HueCursor.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+                    HueCursor.ZIndex = 65
+                    HueCursor.Parent = HueBar
+
+                    local HueCursorCorner = Instance.new("UICorner")
+                    HueCursorCorner.CornerRadius = UDim.new(1, 0)
+                    HueCursorCorner.Parent = HueCursor
+
+                    local HueCursorStroke = Instance.new("UIStroke")
+                    HueCursorStroke.Color = Color3.fromRGB(255, 255, 255)
+                    HueCursorStroke.Thickness = 1.8
+                    HueCursorStroke.Parent = HueCursor
 
                     local ColorPickerObj = {
                         Type = "ColorPicker",
@@ -3081,6 +3177,10 @@ function Library:CreateWindow(config)
                         ColorPickerObj.Value = currentColor
                         ColorBox.BackgroundColor3 = currentColor
                         SatVal.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+                        SVCursor.Position = UDim2.new(s, 0, 1 - v, 0)
+                        SVCursor.BackgroundColor3 = currentColor
+                        HueCursor.Position = UDim2.new(1 - h, 0, 0.5, 0)
+                        HueCursor.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
                         if cpFlag then Library.Flags[cpFlag] = currentColor end
                         if not ignoreCallback then
                             task.spawn(cpCallback, currentColor)
@@ -3107,13 +3207,7 @@ function Library:CreateWindow(config)
                             currentColor = Color3.fromRGB(col[1], col[2], col[3])
                         end
                         h, s, v = currentColor:ToHSV()
-                        ColorPickerObj.Value = currentColor
-                        ColorBox.BackgroundColor3 = currentColor
-                        SatVal.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
-                        if cpFlag then Library.Flags[cpFlag] = currentColor end
-                        if not ignoreCallback then
-                            task.spawn(cpCallback, currentColor)
-                        end
+                        updateColor(ignoreCallback)
                     end
 
                     ColorPickerObj.Set = setColor
@@ -3162,27 +3256,53 @@ function Library:CreateWindow(config)
                         end
                     end)
 
+                    local draggingSV = false
                     local draggingHue = false
+
+                    local function updateSV(input)
+                        local absPos = SatVal.AbsolutePosition
+                        local absSize = SatVal.AbsoluteSize
+                        s = math.clamp((input.Position.X - absPos.X) / absSize.X, 0, 1)
+                        v = 1 - math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
+                        updateColor()
+                    end
+
+                    local function updateHue(input)
+                        local absPos = HueBar.AbsolutePosition
+                        local absSize = HueBar.AbsoluteSize
+                        local percent = math.clamp((input.Position.X - HueBar.AbsolutePosition.X) / HueBar.AbsoluteSize.X, 0, 1)
+                        h = 1 - percent
+                        updateColor()
+                    end
+
+                    SatVal.InputBegan:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                            draggingSV = true
+                            updateSV(input)
+                        end
+                    end)
+
                     HueBar.InputBegan:Connect(function(input)
                         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                             draggingHue = true
-                            local percent = math.clamp((input.Position.X - HueBar.AbsolutePosition.X) / HueBar.AbsoluteSize.X, 0, 1)
-                            h = 1 - percent
-                            updateColor()
+                            updateHue(input)
                         end
                     end)
 
                     UserInputService.InputEnded:Connect(function(input)
                         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                            draggingSV = false
                             draggingHue = false
                         end
                     end)
 
                     UserInputService.InputChanged:Connect(function(input)
-                        if draggingHue and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                            local percent = math.clamp((input.Position.X - HueBar.AbsolutePosition.X) / HueBar.AbsoluteSize.X, 0, 1)
-                            h = 1 - percent
-                            updateColor()
+                        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                            if draggingSV then
+                                updateSV(input)
+                            elseif draggingHue then
+                                updateHue(input)
+                            end
                         end
                     end)
 
@@ -3281,33 +3401,53 @@ function Library:CreateWindow(config)
                 PickerStroke.Thickness = 1.2
                 PickerStroke.Parent = PickerFrame
 
-                local SatVal = Instance.new("TextButton")
+                local SatVal = Instance.new("ImageButton")
                 SatVal.Name = "SatVal"
                 SatVal.Size = UDim2.new(1, -16, 0, 90)
                 SatVal.Position = UDim2.new(0, 8, 0, 8)
                 SatVal.BackgroundColor3 = default
+                SatVal.Image = "rbxassetid://4155801252"
                 SatVal.BorderSizePixel = 0
-                SatVal.Text = ""
                 SatVal.AutoButtonColor = false
                 SatVal.ZIndex = 61
                 SatVal.Parent = PickerFrame
 
                 local SatValCorner = Instance.new("UICorner")
-                SatValCorner.CornerRadius = UDim.new(0, 10)
+                SatValCorner.CornerRadius = UDim.new(0, 8)
                 SatValCorner.Parent = SatVal
 
-                local HueBar = Instance.new("TextButton")
+                local h, s, v = default:ToHSV()
+
+                local SVCursor = Instance.new("Frame")
+                SVCursor.Name = "SVCursor"
+                SVCursor.Size = UDim2.new(0, 10, 0, 10)
+                SVCursor.AnchorPoint = Vector2.new(0.5, 0.5)
+                SVCursor.Position = UDim2.new(s, 0, 1 - v, 0)
+                SVCursor.BackgroundColor3 = currentColor
+                SVCursor.ZIndex = 65
+                SVCursor.Parent = SatVal
+
+                local SVCursorCorner = Instance.new("UICorner")
+                SVCursorCorner.CornerRadius = UDim.new(1, 0)
+                SVCursorCorner.Parent = SVCursor
+
+                local SVCursorStroke = Instance.new("UIStroke")
+                SVCursorStroke.Color = Color3.fromRGB(255, 255, 255)
+                SVCursorStroke.Thickness = 1.8
+                SVCursorStroke.Parent = SVCursor
+
+                local HueBar = Instance.new("ImageButton")
                 HueBar.Name = "HueBar"
                 HueBar.Size = UDim2.new(1, -16, 0, 14)
                 HueBar.Position = UDim2.new(0, 8, 0, 106)
                 HueBar.BorderSizePixel = 0
-                HueBar.Text = ""
                 HueBar.AutoButtonColor = false
+                HueBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 HueBar.ZIndex = 61
                 HueBar.Parent = PickerFrame
 
                 local HueCorner = Instance.new("UICorner")
-                HueCorner.CornerRadius = UDim.new(0, 8)
+                HueCorner.CornerRadius = UDim.new(0, 7)
                 HueCorner.Parent = HueBar
 
                 local HueGradient = Instance.new("UIGradient")
@@ -3322,7 +3462,23 @@ function Library:CreateWindow(config)
                 })
                 HueGradient.Parent = HueBar
 
-                local h, s, v = default:ToHSV()
+                local HueCursor = Instance.new("Frame")
+                HueCursor.Name = "HueCursor"
+                HueCursor.Size = UDim2.new(0, 8, 0, 18)
+                HueCursor.AnchorPoint = Vector2.new(0.5, 0.5)
+                HueCursor.Position = UDim2.new(1 - h, 0, 0.5, 0)
+                HueCursor.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+                HueCursor.ZIndex = 65
+                HueCursor.Parent = HueBar
+
+                local HueCursorCorner = Instance.new("UICorner")
+                HueCursorCorner.CornerRadius = UDim.new(1, 0)
+                HueCursorCorner.Parent = HueCursor
+
+                local HueCursorStroke = Instance.new("UIStroke")
+                HueCursorStroke.Color = Color3.fromRGB(255, 255, 255)
+                HueCursorStroke.Thickness = 1.8
+                HueCursorStroke.Parent = HueCursor
 
                 local ColorPickerObj = {
                     Type = "ColorPicker",
@@ -3337,6 +3493,10 @@ function Library:CreateWindow(config)
                     ColorPickerObj.Value = currentColor
                     ColorBox.BackgroundColor3 = currentColor
                     SatVal.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+                    SVCursor.Position = UDim2.new(s, 0, 1 - v, 0)
+                    SVCursor.BackgroundColor3 = currentColor
+                    HueCursor.Position = UDim2.new(1 - h, 0, 0.5, 0)
+                    HueCursor.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
                     if flag then Library.Flags[flag] = currentColor end
                     if not ignoreCallback then
                         task.spawn(callback, currentColor)
@@ -3363,13 +3523,7 @@ function Library:CreateWindow(config)
                         currentColor = Color3.fromRGB(col[1], col[2], col[3])
                     end
                     h, s, v = currentColor:ToHSV()
-                    ColorPickerObj.Value = currentColor
-                    ColorBox.BackgroundColor3 = currentColor
-                    SatVal.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
-                    if flag then Library.Flags[flag] = currentColor end
-                    if not ignoreCallback then
-                        task.spawn(callback, currentColor)
-                    end
+                    updateColor(ignoreCallback)
                 end
 
                 ColorPickerObj.Set = setColor
@@ -3418,27 +3572,53 @@ function Library:CreateWindow(config)
                     end
                 end)
 
+                local draggingSV = false
                 local draggingHue = false
+
+                local function updateSV(input)
+                    local absPos = SatVal.AbsolutePosition
+                    local absSize = SatVal.AbsoluteSize
+                    s = math.clamp((input.Position.X - absPos.X) / absSize.X, 0, 1)
+                    v = 1 - math.clamp((input.Position.Y - absPos.Y) / absSize.Y, 0, 1)
+                    updateColor()
+                end
+
+                local function updateHue(input)
+                    local absPos = HueBar.AbsolutePosition
+                    local absSize = HueBar.AbsoluteSize
+                    local percent = math.clamp((input.Position.X - absPos.X) / absSize.X, 0, 1)
+                    h = 1 - percent
+                    updateColor()
+                end
+
+                SatVal.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        draggingSV = true
+                        updateSV(input)
+                    end
+                end)
+
                 HueBar.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         draggingHue = true
-                        local percent = math.clamp((input.Position.X - HueBar.AbsolutePosition.X) / HueBar.AbsoluteSize.X, 0, 1)
-                        h = 1 - percent
-                        updateColor()
+                        updateHue(input)
                     end
                 end)
 
                 UserInputService.InputEnded:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        draggingSV = false
                         draggingHue = false
                     end
                 end)
 
                 UserInputService.InputChanged:Connect(function(input)
-                    if draggingHue and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                        local percent = math.clamp((input.Position.X - HueBar.AbsolutePosition.X) / HueBar.AbsoluteSize.X, 0, 1)
-                        h = 1 - percent
-                        updateColor()
+                    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                        if draggingSV then
+                            updateSV(input)
+                        elseif draggingHue then
+                            updateHue(input)
+                        end
                     end
                 end)
 
