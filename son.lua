@@ -640,7 +640,7 @@ function Library:CreateWindow(config)
     -- Sidebar Tabs List (Leaves space for larger footer with stats tracker)
     local TabsContainer = Instance.new("ScrollingFrame")
     TabsContainer.Name = "TabsContainer"
-    TabsContainer.Size = UDim2.new(1, 0, 1, -150)
+    TabsContainer.Size = UDim2.new(1, 0, 1, -182)
     TabsContainer.Position = UDim2.new(0, 0, 0, 56)
     TabsContainer.BackgroundTransparency = 1
     TabsContainer.BorderSizePixel = 0
@@ -661,11 +661,11 @@ function Library:CreateWindow(config)
     TabsPadding.PaddingTop = UDim.new(0, 8)
     TabsPadding.Parent = TabsContainer
 
-    -- ==================== SIDEBAR FOOTER (USER TRACKER WITH AVATAR, UPTIME, FPS, PING) ====================
+    -- ==================== ULTRA-MODERN USER PROFILE & LIVE TRACKER ====================
     local SidebarFooter = Instance.new("Frame")
     SidebarFooter.Name = "SidebarFooter"
-    SidebarFooter.Size = UDim2.new(1, 0, 0, 88)
-    SidebarFooter.Position = UDim2.new(0, 0, 1, -88)
+    SidebarFooter.Size = UDim2.new(1, 0, 0, 120)
+    SidebarFooter.Position = UDim2.new(0, 0, 1, -120)
     SidebarFooter.BackgroundColor3 = Color3.fromRGB(8, 8, 11)
     SidebarFooter.BorderSizePixel = 0
     SidebarFooter.ZIndex = 6
@@ -683,32 +683,83 @@ function Library:CreateWindow(config)
     FooterSeam.ZIndex = 6
     FooterSeam.Parent = SidebarFooter
 
-    local FooterDivider = Instance.new("Frame")
-    FooterDivider.Size = UDim2.new(1, 0, 0, 1)
-    FooterDivider.BackgroundColor3 = Library.Theme.CardBorder
-    FooterDivider.BorderSizePixel = 0
-    FooterDivider.ZIndex = 7
-    FooterDivider.Parent = SidebarFooter
-    Library:RegisterThemeObject(FooterDivider, "BackgroundColor3", "CardBorder")
+    local FooterTopDivider = Instance.new("Frame")
+    FooterTopDivider.Size = UDim2.new(1, 0, 0, 1)
+    FooterTopDivider.BackgroundColor3 = Library.Theme.CardBorder
+    FooterTopDivider.BorderSizePixel = 0
+    FooterTopDivider.ZIndex = 7
+    FooterTopDivider.Parent = SidebarFooter
+    Library:RegisterThemeObject(FooterTopDivider, "BackgroundColor3", "CardBorder")
 
-    -- User Avatar (Circular Headshot)
+    -- Modern Floating Profile Card
+    local ProfileCard = Instance.new("Frame")
+    ProfileCard.Name = "ProfileCard"
+    ProfileCard.Size = UDim2.new(1, -14, 1, -12)
+    ProfileCard.Position = UDim2.new(0, 7, 0, 6)
+    ProfileCard.BackgroundColor3 = Library.Theme.CardBackground
+    ProfileCard.BorderSizePixel = 0
+    ProfileCard.ZIndex = 7
+    ProfileCard.Parent = SidebarFooter
+    Library:RegisterThemeObject(ProfileCard, "BackgroundColor3", "CardBackground")
+
+    local ProfileCorner = Instance.new("UICorner")
+    ProfileCorner.CornerRadius = UDim.new(0, 12)
+    ProfileCorner.Parent = ProfileCard
+
+    local ProfileStroke = Instance.new("UIStroke")
+    ProfileStroke.Color = Library.Theme.CardBorder
+    ProfileStroke.Thickness = 1.2
+    ProfileStroke.Parent = ProfileCard
+    Library:RegisterThemeObject(ProfileStroke, "Color", "CardBorder")
+
+    -- Avatar Wrapper with Online Status Dot
+    local AvatarWrapper = Instance.new("Frame")
+    AvatarWrapper.Name = "AvatarWrapper"
+    AvatarWrapper.Size = UDim2.new(0, 32, 0, 32)
+    AvatarWrapper.Position = UDim2.new(0, 7, 0, 7)
+    AvatarWrapper.BackgroundColor3 = Library.Theme.ItemBg
+    AvatarWrapper.BorderSizePixel = 0
+    AvatarWrapper.ZIndex = 8
+    AvatarWrapper.Parent = ProfileCard
+
+    local AvatarWrapperCorner = Instance.new("UICorner")
+    AvatarWrapperCorner.CornerRadius = UDim.new(1, 0)
+    AvatarWrapperCorner.Parent = AvatarWrapper
+
     local UserAvatar = Instance.new("ImageLabel")
     UserAvatar.Name = "UserAvatar"
-    UserAvatar.Size = UDim2.new(0, 30, 0, 30)
-    UserAvatar.Position = UDim2.new(0, 10, 0, 8)
-    UserAvatar.BackgroundColor3 = Library.Theme.ItemBg
-    UserAvatar.BorderSizePixel = 0
-    UserAvatar.ZIndex = 7
-    UserAvatar.Parent = SidebarFooter
+    UserAvatar.Size = UDim2.new(1, 0, 1, 0)
+    UserAvatar.BackgroundTransparency = 1
+    UserAvatar.ZIndex = 8
+    UserAvatar.Parent = AvatarWrapper
 
     local AvatarCorner = Instance.new("UICorner")
     AvatarCorner.CornerRadius = UDim.new(1, 0)
     AvatarCorner.Parent = UserAvatar
 
     local AvatarStroke = Instance.new("UIStroke")
-    AvatarStroke.Color = Library.Theme.CardBorder
-    AvatarStroke.Thickness = 1
-    AvatarStroke.Parent = UserAvatar
+    AvatarStroke.Color = Library.Theme.Accent
+    AvatarStroke.Thickness = 1.2
+    AvatarStroke.Parent = AvatarWrapper
+    Library:RegisterThemeObject(AvatarStroke, "Color", "Accent")
+
+    local OnlineDot = Instance.new("Frame")
+    OnlineDot.Name = "OnlineDot"
+    OnlineDot.Size = UDim2.new(0, 8, 0, 8)
+    OnlineDot.Position = UDim2.new(1, -7, 1, -7)
+    OnlineDot.BackgroundColor3 = Color3.fromRGB(34, 197, 94)
+    OnlineDot.BorderSizePixel = 0
+    OnlineDot.ZIndex = 9
+    OnlineDot.Parent = AvatarWrapper
+
+    local DotCorner = Instance.new("UICorner")
+    DotCorner.CornerRadius = UDim.new(1, 0)
+    DotCorner.Parent = OnlineDot
+
+    local DotStroke = Instance.new("UIStroke")
+    DotStroke.Color = Color3.fromRGB(15, 15, 20)
+    DotStroke.Thickness = 1.5
+    DotStroke.Parent = OnlineDot
 
     -- Fetch Avatar Thumbnail Async safely
     task.spawn(function()
@@ -726,93 +777,171 @@ function Library:CreateWindow(config)
         end
     end)
 
-    local FooterUser = Instance.new("TextLabel")
-    FooterUser.Name = "FooterUser"
-    FooterUser.Size = UDim2.new(1, -48, 0, 15)
-    FooterUser.Position = UDim2.new(0, 46, 0, 8)
-    FooterUser.BackgroundTransparency = 1
-    FooterUser.Text = footerUser
-    FooterUser.TextColor3 = Library.Theme.Text
-    FooterUser.Font = Library.Fonts.Bold
-    FooterUser.TextSize = 11
-    FooterUser.TextXAlignment = Enum.TextXAlignment.Left
-    FooterUser.ZIndex = 7
-    FooterUser.Parent = SidebarFooter
+    -- User Info
+    local DisplayNameLabel = Instance.new("TextLabel")
+    DisplayNameLabel.Name = "DisplayName"
+    DisplayNameLabel.Size = UDim2.new(1, -46, 0, 14)
+    DisplayNameLabel.Position = UDim2.new(0, 44, 0, 6)
+    DisplayNameLabel.BackgroundTransparency = 1
+    DisplayNameLabel.Text = LocalPlayer and LocalPlayer.DisplayName or footerUser
+    DisplayNameLabel.TextColor3 = Library.Theme.Text
+    DisplayNameLabel.Font = Library.Fonts.Bold
+    DisplayNameLabel.TextSize = 11
+    DisplayNameLabel.TextTruncate = Enum.TextTruncate.AtEnd
+    DisplayNameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    DisplayNameLabel.ZIndex = 8
+    DisplayNameLabel.Parent = ProfileCard
+    Library:RegisterThemeObject(DisplayNameLabel, "TextColor3", "Text")
 
-    local FooterRank = Instance.new("TextLabel")
-    FooterRank.Name = "FooterRank"
-    FooterRank.Size = UDim2.new(1, -48, 0, 13)
-    FooterRank.Position = UDim2.new(0, 46, 0, 23)
-    FooterRank.BackgroundTransparency = 1
-    FooterRank.Text = footerRank
-    FooterRank.TextColor3 = Library.Theme.Accent
-    FooterRank.Font = Library.Fonts.Medium
-    FooterRank.TextSize = 10
-    FooterRank.TextXAlignment = Enum.TextXAlignment.Left
-    FooterRank.ZIndex = 7
-    FooterRank.Parent = SidebarFooter
-    Library:RegisterThemeObject(FooterRank, "TextColor3", "Accent")
+    local RankPill = Instance.new("Frame")
+    RankPill.Name = "RankPill"
+    RankPill.Size = UDim2.new(0, 56, 0, 13)
+    RankPill.Position = UDim2.new(0, 44, 0, 22)
+    RankPill.BackgroundColor3 = Library.Theme.Accent
+    RankPill.BackgroundTransparency = 0.85
+    RankPill.BorderSizePixel = 0
+    RankPill.ZIndex = 8
+    RankPill.Parent = ProfileCard
 
-    -- Live Stats Bar (Execution Time, FPS, Ping)
-    local StatsCard = Instance.new("Frame")
-    StatsCard.Name = "StatsCard"
-    StatsCard.Size = UDim2.new(1, -16, 0, 38)
-    StatsCard.Position = UDim2.new(0, 8, 0, 42)
-    StatsCard.BackgroundColor3 = Library.Theme.ItemBg
-    StatsCard.BorderSizePixel = 0
-    StatsCard.ZIndex = 7
-    StatsCard.Parent = SidebarFooter
-    Library:RegisterThemeObject(StatsCard, "BackgroundColor3", "ItemBg")
+    local RankPillCorner = Instance.new("UICorner")
+    RankPillCorner.CornerRadius = UDim.new(1, 0)
+    RankPillCorner.Parent = RankPill
 
-    local StatsCorner = Instance.new("UICorner")
-    StatsCorner.CornerRadius = UDim.new(0, 8)
-    StatsCorner.Parent = StatsCard
+    local RankPillStroke = Instance.new("UIStroke")
+    RankPillStroke.Color = Library.Theme.Accent
+    RankPillStroke.Thickness = 0.8
+    RankPillStroke.Parent = RankPill
+    Library:RegisterThemeObject(RankPillStroke, "Color", "Accent")
 
-    local StatsStroke = Instance.new("UIStroke")
-    StatsStroke.Color = Library.Theme.ItemBorder
-    StatsStroke.Thickness = 1
-    StatsStroke.Parent = StatsCard
+    local RankText = Instance.new("TextLabel")
+    RankText.Name = "RankText"
+    RankText.Size = UDim2.new(1, 0, 1, 0)
+    RankText.BackgroundTransparency = 1
+    RankText.Text = tostring(footerRank):upper()
+    RankText.TextColor3 = Library.Theme.Accent
+    RankText.Font = Library.Fonts.Bold
+    RankText.TextSize = 8
+    RankText.ZIndex = 9
+    RankText.Parent = RankPill
+    Library:RegisterThemeObject(RankText, "TextColor3", "Accent")
 
-    -- Row 1: Execution Time (Uptime)
+    -- Divider
+    local CardDivider = Instance.new("Frame")
+    CardDivider.Name = "Divider"
+    CardDivider.Size = UDim2.new(1, -12, 0, 1)
+    CardDivider.Position = UDim2.new(0, 6, 0, 44)
+    CardDivider.BackgroundColor3 = Library.Theme.CardBorder
+    CardDivider.BorderSizePixel = 0
+    CardDivider.ZIndex = 8
+    CardDivider.Parent = ProfileCard
+    Library:RegisterThemeObject(CardDivider, "BackgroundColor3", "CardBorder")
+
+    -- Row 1: Uptime Pill
+    local UptimePill = Instance.new("Frame")
+    UptimePill.Name = "UptimePill"
+    UptimePill.Size = UDim2.new(1, -12, 0, 24)
+    UptimePill.Position = UDim2.new(0, 6, 0, 50)
+    UptimePill.BackgroundColor3 = Library.Theme.ItemBg
+    UptimePill.BorderSizePixel = 0
+    UptimePill.ZIndex = 8
+    UptimePill.Parent = ProfileCard
+    Library:RegisterThemeObject(UptimePill, "BackgroundColor3", "ItemBg")
+
+    local UptimeCorner = Instance.new("UICorner")
+    UptimeCorner.CornerRadius = UDim.new(0, 6)
+    UptimeCorner.Parent = UptimePill
+
+    local UptimeStroke = Instance.new("UIStroke")
+    UptimeStroke.Color = Library.Theme.ItemBorder
+    UptimeStroke.Thickness = 0.8
+    UptimeStroke.Parent = UptimePill
+    Library:RegisterThemeObject(UptimeStroke, "Color", "ItemBorder")
+
     local UptimeLabel = Instance.new("TextLabel")
     UptimeLabel.Name = "UptimeLabel"
-    UptimeLabel.Size = UDim2.new(1, -10, 0, 15)
-    UptimeLabel.Position = UDim2.new(0, 6, 0, 3)
+    UptimeLabel.Size = UDim2.new(1, -8, 1, 0)
+    UptimeLabel.Position = UDim2.new(0, 6, 0, 0)
     UptimeLabel.BackgroundTransparency = 1
-    UptimeLabel.Text = "⏱ 00:00:00"
+    UptimeLabel.Text = "⏱ Uptime: 00:00:00"
     UptimeLabel.TextColor3 = Library.Theme.TextDim
     UptimeLabel.Font = Library.Fonts.Bold
-    UptimeLabel.TextSize = 10
+    UptimeLabel.TextSize = 9
     UptimeLabel.TextXAlignment = Enum.TextXAlignment.Left
-    UptimeLabel.ZIndex = 8
-    UptimeLabel.Parent = StatsCard
+    UptimeLabel.ZIndex = 9
+    UptimeLabel.Parent = UptimePill
 
-    -- Row 2: FPS & Ping
+    -- Row 2: Performance Badges (FPS + Ping)
+    local PerfRow = Instance.new("Frame")
+    PerfRow.Name = "PerfRow"
+    PerfRow.Size = UDim2.new(1, -12, 0, 24)
+    PerfRow.Position = UDim2.new(0, 6, 0, 78)
+    PerfRow.BackgroundTransparency = 1
+    PerfRow.ZIndex = 8
+    PerfRow.Parent = ProfileCard
+
+    -- FPS Badge
+    local FpsBadge = Instance.new("Frame")
+    FpsBadge.Name = "FpsBadge"
+    FpsBadge.Size = UDim2.new(0.5, -3, 1, 0)
+    FpsBadge.Position = UDim2.new(0, 0, 0, 0)
+    FpsBadge.BackgroundColor3 = Library.Theme.ItemBg
+    FpsBadge.BorderSizePixel = 0
+    FpsBadge.ZIndex = 8
+    FpsBadge.Parent = PerfRow
+    Library:RegisterThemeObject(FpsBadge, "BackgroundColor3", "ItemBg")
+
+    local FpsCorner = Instance.new("UICorner")
+    FpsCorner.CornerRadius = UDim.new(0, 6)
+    FpsCorner.Parent = FpsBadge
+
+    local FpsStroke = Instance.new("UIStroke")
+    FpsStroke.Color = Library.Theme.ItemBorder
+    FpsStroke.Thickness = 0.8
+    FpsStroke.Parent = FpsBadge
+    Library:RegisterThemeObject(FpsStroke, "Color", "ItemBorder")
+
     local FpsLabel = Instance.new("TextLabel")
     FpsLabel.Name = "FpsLabel"
-    FpsLabel.Size = UDim2.new(0.5, -4, 0, 15)
-    FpsLabel.Position = UDim2.new(0, 6, 0, 18)
+    FpsLabel.Size = UDim2.new(1, 0, 1, 0)
     FpsLabel.BackgroundTransparency = 1
     FpsLabel.Text = "⚡ 60 FPS"
-    FpsLabel.TextColor3 = Library.Theme.Success or Color3.fromRGB(105, 215, 120)
-    FpsLabel.Font = Library.Fonts.Medium
+    FpsLabel.TextColor3 = Color3.fromRGB(105, 215, 120)
+    FpsLabel.Font = Library.Fonts.Bold
     FpsLabel.TextSize = 9
-    FpsLabel.TextXAlignment = Enum.TextXAlignment.Left
-    FpsLabel.ZIndex = 8
-    FpsLabel.Parent = StatsCard
+    FpsLabel.ZIndex = 9
+    FpsLabel.Parent = FpsBadge
+
+    -- Ping Badge
+    local PingBadge = Instance.new("Frame")
+    PingBadge.Name = "PingBadge"
+    PingBadge.Size = UDim2.new(0.5, -3, 1, 0)
+    PingBadge.Position = UDim2.new(0.5, 3, 0, 0)
+    PingBadge.BackgroundColor3 = Library.Theme.ItemBg
+    PingBadge.BorderSizePixel = 0
+    PingBadge.ZIndex = 8
+    PingBadge.Parent = PerfRow
+    Library:RegisterThemeObject(PingBadge, "BackgroundColor3", "ItemBg")
+
+    local PingCorner = Instance.new("UICorner")
+    PingCorner.CornerRadius = UDim.new(0, 6)
+    PingCorner.Parent = PingBadge
+
+    local PingStroke = Instance.new("UIStroke")
+    PingStroke.Color = Library.Theme.ItemBorder
+    PingStroke.Thickness = 0.8
+    PingStroke.Parent = PingBadge
+    Library:RegisterThemeObject(PingStroke, "Color", "ItemBorder")
 
     local PingLabel = Instance.new("TextLabel")
     PingLabel.Name = "PingLabel"
-    PingLabel.Size = UDim2.new(0.5, -4, 0, 15)
-    PingLabel.Position = UDim2.new(0.5, 0, 0, 18)
+    PingLabel.Size = UDim2.new(1, 0, 1, 0)
     PingLabel.BackgroundTransparency = 1
-    PingLabel.Text = "📶 0 ms"
-    PingLabel.TextColor3 = Library.Theme.AccentSecondary
-    PingLabel.Font = Library.Fonts.Medium
+    PingLabel.Text = "📶 0 MS"
+    PingLabel.TextColor3 = Color3.fromRGB(93, 197, 216)
+    PingLabel.Font = Library.Fonts.Bold
     PingLabel.TextSize = 9
-    PingLabel.TextXAlignment = Enum.TextXAlignment.Left
-    PingLabel.ZIndex = 8
-    PingLabel.Parent = StatsCard
+    PingLabel.ZIndex = 9
+    PingLabel.Parent = PingBadge
 
     -- Live Stats Update Loop
     local frameCount = 0
@@ -829,7 +958,7 @@ function Library:CreateWindow(config)
             
             -- Update Uptime
             local elapsed = tick() - StartExecutionTime
-            UptimeLabel.Text = "⏱ " .. formatUptime(elapsed)
+            UptimeLabel.Text = "⏱ Uptime: " .. formatUptime(elapsed)
             
             -- Update FPS
             FpsLabel.Text = "⚡ " .. tostring(currentFps) .. " FPS"
