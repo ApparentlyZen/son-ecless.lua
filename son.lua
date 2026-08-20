@@ -1122,16 +1122,16 @@ function Library:CreateWindow(config)
                     if child:IsA("GuiObject") and child.Visible then
                         local absPos = child.AbsolutePosition
                         local absSize = child.AbsoluteSize
-                        local inChild = (mousePos.X >= absPos.X and mousePos.X <= absPos.X + absSize.X and
-                                         mousePos.Y >= absPos.Y and mousePos.Y <= absPos.Y + absSize.Y)
+                        local inChild = (mousePos.X >= (absPos.X - 4) and mousePos.X <= (absPos.X + absSize.X + 4) and
+                                         mousePos.Y >= (absPos.Y - 4) and mousePos.Y <= (absPos.Y + absSize.Y + 4))
                         local inActivator = false
                         local actX = child:GetAttribute("ActivatorPosX")
                         local actY = child:GetAttribute("ActivatorPosY")
                         local actW = child:GetAttribute("ActivatorSizeX")
                         local actH = child:GetAttribute("ActivatorSizeY")
                         if actX and actY and actW and actH then
-                            inActivator = (mousePos.X >= actX and mousePos.X <= actX + actW and
-                                           mousePos.Y >= actY and mousePos.Y <= actY + actH)
+                            inActivator = (mousePos.X >= (actX - 4) and mousePos.X <= (actX + actW + 4) and
+                                           mousePos.Y >= (actY - 4) and mousePos.Y <= (actY + actH + 4))
                         else
                             local tag = child:GetAttribute("ActivatorPos")
                             if tag then
@@ -2123,25 +2123,44 @@ function Library:CreateWindow(config)
                     Callback = callback
                 }
 
+                local function updateOptionVisuals()
+                    for _, child in ipairs(DropdownList:GetChildren()) do
+                        if child:IsA("TextButton") then
+                            local optName = child.Name
+                            local isSel = false
+                            if multi and type(currentSelected) == "table" then
+                                isSel = (currentSelected[optName] == true) or table.find(currentSelected, optName) ~= nil
+                            else
+                                isSel = (tostring(currentSelected) == optName)
+                            end
+                            child.BackgroundColor3 = isSel and Library.Theme.ItemBgHover or Color3.fromRGB(0,0,0)
+                            child.BackgroundTransparency = isSel and 0.4 or 1
+                            child.TextColor3 = isSel and Library.Theme.Accent or Library.Theme.TextDim
+                            child.Font = isSel and Library.Fonts.Bold or Library.Fonts.Medium
+                        end
+                    end
+                end
+
                 local function refreshOptions()
                     for _, child in ipairs(DropdownList:GetChildren()) do
                         if child:IsA("TextButton") then child:Destroy() end
                     end
 
                     for _, opt in ipairs(options) do
+                        local optStr = tostring(opt)
                         local isSel = false
                         if multi and type(currentSelected) == "table" then
-                            isSel = (currentSelected[opt] == true) or table.find(currentSelected, opt) ~= nil
+                            isSel = (currentSelected[opt] == true) or (currentSelected[optStr] == true) or table.find(currentSelected, opt) ~= nil
                         else
-                            isSel = (currentSelected == opt)
+                            isSel = (currentSelected == opt or tostring(currentSelected) == optStr)
                         end
 
                         local OptBtn = Instance.new("TextButton")
-                        OptBtn.Name = tostring(opt)
+                        OptBtn.Name = optStr
                         OptBtn.Size = UDim2.new(1, 0, 0, 24)
                         OptBtn.BackgroundColor3 = isSel and Library.Theme.ItemBgHover or Color3.fromRGB(0,0,0)
                         OptBtn.BackgroundTransparency = isSel and 0.4 or 1
-                        OptBtn.Text = "  " .. tostring(opt)
+                        OptBtn.Text = "  " .. optStr
                         OptBtn.TextColor3 = isSel and Library.Theme.Accent or Library.Theme.TextDim
                         OptBtn.Font = isSel and Library.Fonts.Bold or Library.Fonts.Medium
                         OptBtn.TextSize = 11
@@ -2157,10 +2176,12 @@ function Library:CreateWindow(config)
                         OptBtn.MouseButton1Click:Connect(function()
                             if multi then
                                 if type(currentSelected) ~= "table" then currentSelected = {} end
-                                if currentSelected[opt] then
+                                if currentSelected[opt] or currentSelected[optStr] then
                                     currentSelected[opt] = nil
+                                    currentSelected[optStr] = nil
                                 else
                                     currentSelected[opt] = true
+                                    currentSelected[optStr] = true
                                 end
                                 DropdownObj.Value = currentSelected
                                 if flag then Library.Flags[flag] = currentSelected end
@@ -2169,14 +2190,14 @@ function Library:CreateWindow(config)
                                     if v == true then table.insert(selKeys, tostring(k)) end
                                 end
                                 SelectedText.Text = (#selKeys > 0 and table.concat(selKeys, ", ") or "None")
-                                refreshOptions()
+                                updateOptionVisuals()
                                 task.spawn(callback, currentSelected)
                             else
                                 currentSelected = opt
                                 DropdownObj.Value = currentSelected
-                                SelectedText.Text = tostring(opt)
+                                SelectedText.Text = optStr
                                 if flag then Library.Flags[flag] = currentSelected end
-                                DropdownList.Visible = false
+                                updateOptionVisuals()
                                 task.spawn(callback, opt)
                             end
                         end)
