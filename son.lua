@@ -4093,15 +4093,16 @@ function Library:CreateWindow(config)
             end
         })
 
-        local ConfigList = section:AddListbox("SaveManager_ConfigList", {
-            Text = "Config List",
-            Items = configs,
-            Default = self.SelectedConfig,
-            Height = 120,
+        local ConfigDropdown = section:AddDropdown("SaveManager_ConfigList", {
+            Text = "Select Config",
+            Options = #configs > 0 and configs or {"None"},
+            Default = self.SelectedConfig ~= "" and self.SelectedConfig or (#configs > 0 and configs[1] or "None"),
             Callback = function(selected)
-                self.SelectedConfig = selected
-                if ConfigNameInput and ConfigNameInput.Set then
-                    ConfigNameInput:Set(selected, true)
+                if selected and selected ~= "None" then
+                    self.SelectedConfig = selected
+                    if ConfigNameInput and ConfigNameInput.Set then
+                        ConfigNameInput:Set(selected, true)
+                    end
                 end
             end
         })
@@ -4118,13 +4119,13 @@ function Library:CreateWindow(config)
         section:AddButton({
             Text = "Create / Save Config",
             Func = function()
-                local name = (ConfigNameInput and ConfigNameInput.Value and #ConfigNameInput.Value > 0) and ConfigNameInput.Value or self.SelectedConfig
-                if name and #name > 0 then
+                local name = (ConfigNameInput and ConfigNameInput.Value and #ConfigNameInput.Value > 0) and ConfigNameInput.Value or (self.SelectedConfig ~= "None" and self.SelectedConfig)
+                if name and #name > 0 and name ~= "None" then
                     self:Save(name)
                     local updatedList = self:GetConfigs()
-                    if ConfigList and ConfigList.Refresh then
-                        ConfigList:Refresh(updatedList)
-                        ConfigList:Set(name, true)
+                    if ConfigDropdown and ConfigDropdown.Refresh then
+                        ConfigDropdown:Refresh(#updatedList > 0 and updatedList or {"None"})
+                        ConfigDropdown:Set(name, true)
                     end
                 else
                     self.Library:Notify({
@@ -4139,8 +4140,8 @@ function Library:CreateWindow(config)
         section:AddButton({
             Text = "Load Selected Config",
             Func = function()
-                local name = (ConfigList and ConfigList.Value and #ConfigList.Value > 0) and ConfigList.Value or self.SelectedConfig or (ConfigNameInput and ConfigNameInput.Value)
-                if name and #name > 0 then
+                local name = (ConfigDropdown and ConfigDropdown.Value and #ConfigDropdown.Value > 0 and ConfigDropdown.Value ~= "None") and ConfigDropdown.Value or (self.SelectedConfig ~= "None" and self.SelectedConfig) or (ConfigNameInput and ConfigNameInput.Value)
+                if name and #name > 0 and name ~= "None" then
                     self:Load(name)
                 else
                     self.Library:Notify({
@@ -4155,8 +4156,8 @@ function Library:CreateWindow(config)
         section:AddButton({
             Text = "Overwrite Config",
             Func = function()
-                local name = (ConfigList and ConfigList.Value and #ConfigList.Value > 0) and ConfigList.Value or self.SelectedConfig or (ConfigNameInput and ConfigNameInput.Value)
-                if name and #name > 0 then
+                local name = (ConfigDropdown and ConfigDropdown.Value and #ConfigDropdown.Value > 0 and ConfigDropdown.Value ~= "None") and ConfigDropdown.Value or (self.SelectedConfig ~= "None" and self.SelectedConfig) or (ConfigNameInput and ConfigNameInput.Value)
+                if name and #name > 0 and name ~= "None" then
                     self:Save(name)
                 else
                     self.Library:Notify({
@@ -4171,15 +4172,17 @@ function Library:CreateWindow(config)
         section:AddButton({
             Text = "Delete Config",
             Func = function()
-                local name = (ConfigList and ConfigList.Value and #ConfigList.Value > 0) and ConfigList.Value or self.SelectedConfig or (ConfigNameInput and ConfigNameInput.Value)
-                if name and #name > 0 then
+                local name = (ConfigDropdown and ConfigDropdown.Value and #ConfigDropdown.Value > 0 and ConfigDropdown.Value ~= "None") and ConfigDropdown.Value or (self.SelectedConfig ~= "None" and self.SelectedConfig) or (ConfigNameInput and ConfigNameInput.Value)
+                if name and #name > 0 and name ~= "None" then
                     self:Delete(name)
                     local updatedList = self:GetConfigs()
                     self.SelectedConfig = updatedList[1] or ""
-                    if ConfigList and ConfigList.Refresh then
-                        ConfigList:Refresh(updatedList)
+                    if ConfigDropdown and ConfigDropdown.Refresh then
+                        ConfigDropdown:Refresh(#updatedList > 0 and updatedList or {"None"})
                         if #updatedList > 0 then
-                            ConfigList:Set(updatedList[1], true)
+                            ConfigDropdown:Set(updatedList[1], true)
+                        else
+                            ConfigDropdown:Set("None", true)
                         end
                     end
                     if ConfigNameInput and ConfigNameInput.Set then
@@ -4193,8 +4196,8 @@ function Library:CreateWindow(config)
         section:AddButton({
             Text = "Set as Autoload",
             Func = function()
-                local name = (ConfigList and ConfigList.Value and #ConfigList.Value > 0) and ConfigList.Value or self.SelectedConfig or (ConfigNameInput and ConfigNameInput.Value)
-                if name and #name > 0 then
+                local name = (ConfigDropdown and ConfigDropdown.Value and #ConfigDropdown.Value > 0 and ConfigDropdown.Value ~= "None") and ConfigDropdown.Value or (self.SelectedConfig ~= "None" and self.SelectedConfig) or (ConfigNameInput and ConfigNameInput.Value)
+                if name and #name > 0 and name ~= "None" then
                     self:SetAutoload(name)
                     refreshAutoload()
                 else
@@ -4219,8 +4222,11 @@ function Library:CreateWindow(config)
             Text = "Refresh List",
             Func = function()
                 local updatedList = self:GetConfigs()
-                if ConfigList and ConfigList.Refresh then
-                    ConfigList:Refresh(updatedList)
+                if ConfigDropdown and ConfigDropdown.Refresh then
+                    ConfigDropdown:Refresh(#updatedList > 0 and updatedList or {"None"})
+                    if #updatedList > 0 and (not ConfigDropdown.Value or ConfigDropdown.Value == "" or ConfigDropdown.Value == "None") then
+                        ConfigDropdown:Set(updatedList[1], true)
+                    end
                 end
                 refreshAutoload()
                 self.Library:Notify({
