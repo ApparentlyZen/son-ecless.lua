@@ -340,7 +340,10 @@ local Library = {
     CurrentWindow = nil
 }
 
-Library.Theme = Library.Themes.Nameless
+Library.Theme = {}
+for k, v in pairs(Library.Themes.Nameless) do
+    Library.Theme[k] = v
+end
 
 -- Utility Functions
 local function getGuiParent()
@@ -422,16 +425,43 @@ function Library:SetTheme(themeName)
     local targetTheme = self.Themes[themeName]
     if not targetTheme then return end
     self.CurrentTheme = themeName
-    self.Theme = targetTheme
+    
+    -- Clone theme values into self.Theme so preset templates remain pristine
+    self.Theme = {}
+    for k, v in pairs(targetTheme) do
+        self.Theme[k] = v
+    end
 
     for themeKey, objects in pairs(self.ThemeObjects) do
-        local targetColor = targetTheme[themeKey]
+        local targetColor = self.Theme[themeKey]
         if targetColor then
             for _, obj in ipairs(objects) do
                 if obj.Instance and obj.Instance.Parent then
                     createTween(obj.Instance, { [obj.Property] = targetColor }, 0.25)
                 end
             end
+        end
+    end
+
+    -- Update all ThemeManager ColorPickers so their UI boxes and pins reflect the chosen preset
+    local themePickerFlags = {
+        Accent = "Theme_Accent",
+        AccentSecondary = "Theme_AccentSecondary",
+        Background = "Theme_Background",
+        Sidebar = "Theme_Sidebar",
+        CardBackground = "Theme_CardBackground",
+        CardBorder = "Theme_CardBorder",
+        ItemBg = "Theme_ItemBg",
+        ItemBorder = "Theme_ItemBorder",
+        Text = "Theme_Text",
+        TextDim = "Theme_TextDim",
+        SliderTrack = "Theme_SliderTrack"
+    }
+    for themeKey, flag in pairs(themePickerFlags) do
+        local picker = self.Options[flag] or self.Registry[flag]
+        local col = self.Theme[themeKey]
+        if picker and picker.Set and col then
+            picker:Set(col, true)
         end
     end
 end
@@ -527,9 +557,10 @@ function Library:CreateWindow(config)
     BackgroundImage.Name = "BackgroundImage"
     BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
     BackgroundImage.BackgroundTransparency = 1
-    BackgroundImage.ImageTransparency = 0.85
+    BackgroundImage.ImageTransparency = 0.35
     BackgroundImage.ScaleType = Enum.ScaleType.Crop
     BackgroundImage.ZIndex = 1
+    BackgroundImage.Visible = false
     BackgroundImage.Parent = BackgroundContainer
 
     local BgImgCorner = Instance.new("UICorner")
@@ -540,8 +571,9 @@ function Library:CreateWindow(config)
     BackgroundOverlay.Name = "DarkOverlay"
     BackgroundOverlay.Size = UDim2.new(1, 0, 1, 0)
     BackgroundOverlay.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
-    BackgroundOverlay.BackgroundTransparency = 0.25
+    BackgroundOverlay.BackgroundTransparency = 0.55
     BackgroundOverlay.ZIndex = 2
+    BackgroundOverlay.Visible = false
     BackgroundOverlay.Parent = BackgroundContainer
 
     local BgOverlayCorner = Instance.new("UICorner")
@@ -556,9 +588,20 @@ function Library:CreateWindow(config)
     }
 
     local function setBackgroundImg(assetId, transparency)
-        BackgroundImage.Image = assetId or ""
-        BackgroundImage.ImageTransparency = transparency or 0.85
-        BackgroundImage.Visible = (assetId ~= nil and assetId ~= "")
+        if GifPlayer.Connection then
+            GifPlayer.Connection:Disconnect()
+            GifPlayer.Connection = nil
+        end
+        if assetId and #assetId > 0 and assetId ~= "none" then
+            BackgroundImage.Image = assetId
+            BackgroundImage.ImageTransparency = transparency or 0.35
+            BackgroundImage.Visible = true
+            BackgroundOverlay.Visible = true
+        else
+            BackgroundImage.Image = ""
+            BackgroundImage.Visible = false
+            BackgroundOverlay.Visible = false
+        end
     end
 
     local function setBackgroundGif(frames, fps, transparency)
@@ -573,11 +616,13 @@ function Library:CreateWindow(config)
 
         if #GifPlayer.Frames == 0 then
             BackgroundImage.Visible = false
+            BackgroundOverlay.Visible = false
             return
         end
 
         BackgroundImage.Visible = true
-        BackgroundImage.ImageTransparency = transparency or 0.85
+        BackgroundOverlay.Visible = true
+        BackgroundImage.ImageTransparency = transparency or 0.35
         
         local frameDuration = 1 / GifPlayer.FPS
         local lastUpdate = tick()
@@ -596,7 +641,7 @@ function Library:CreateWindow(config)
     end
 
     if config.BackgroundImage then
-        setBackgroundImg(config.BackgroundImage, config.BackgroundTransparency or 0.85)
+        setBackgroundImg(config.BackgroundImage, config.BackgroundTransparency or 0.35)
     end
 
     -- ==================== LEFT SIDEBAR ====================
