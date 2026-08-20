@@ -466,6 +466,7 @@ function Library:CreateWindow(config)
     ScreenGui.Name = "NamelessUI_" .. tostring(math.random(1000, 9999))
     ScreenGui.ResetOnSpawn = false
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    ScreenGui.IgnoreGuiInset = true
     ScreenGui.Parent = getGuiParent()
 
     -- Main Container Window (Extra Rounded 18px)
@@ -1026,6 +1027,18 @@ function Library:CreateWindow(config)
     Overlay.ZIndex = 50
     Overlay.Parent = MainFrame
 
+    local CurrentPopup = nil
+    local function CloseCurrentPopup()
+        if CurrentPopup then
+            if CurrentPopup.Close then
+                CurrentPopup.Close()
+            elseif CurrentPopup.Menu then
+                CurrentPopup.Menu.Visible = false
+            end
+            CurrentPopup = nil
+        end
+    end
+
     -- ==================== MOBILE DRAGGABLE ROUND BUTTON ====================
     local MobileButton = Instance.new("ImageButton")
     MobileButton.Name = "NamelessMobileBtn"
@@ -1115,38 +1128,31 @@ function Library:CreateWindow(config)
     -- Outside-click popover dismiss handler
     UserInputService.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            local mousePos = UserInputService:GetMouseLocation()
+            if CurrentPopup and CurrentPopup.Menu and CurrentPopup.Menu.Visible then
+                local location = input.Position
+                local menu = CurrentPopup.Menu
+                local holder = CurrentPopup.Holder
+                local inMenu = false
+                local inHolder = false
 
-            task.defer(function()
-                for _, child in ipairs(Overlay:GetChildren()) do
-                    if child:IsA("GuiObject") and child.Visible then
-                        local absPos = child.AbsolutePosition
-                        local absSize = child.AbsoluteSize
-                        local inChild = (mousePos.X >= (absPos.X - 4) and mousePos.X <= (absPos.X + absSize.X + 4) and
-                                         mousePos.Y >= (absPos.Y - 4) and mousePos.Y <= (absPos.Y + absSize.Y + 4))
-                        local inActivator = false
-                        local actX = child:GetAttribute("ActivatorPosX")
-                        local actY = child:GetAttribute("ActivatorPosY")
-                        local actW = child:GetAttribute("ActivatorSizeX")
-                        local actH = child:GetAttribute("ActivatorSizeY")
-                        if actX and actY and actW and actH then
-                            inActivator = (mousePos.X >= (actX - 4) and mousePos.X <= (actX + actW + 4) and
-                                           mousePos.Y >= (actY - 4) and mousePos.Y <= (actY + actH + 4))
-                        else
-                            local tag = child:GetAttribute("ActivatorPos")
-                            if tag then
-                                local actPos = Vector2.new(tag.X, tag.Y)
-                                if (mousePos - actPos).Magnitude <= 50 then
-                                    inActivator = true
-                                end
-                            end
-                        end
-                        if not inChild and not inActivator then
-                            child.Visible = false
-                        end
-                    end
+                if menu and menu.Visible then
+                    local p = menu.AbsolutePosition
+                    local s = menu.AbsoluteSize
+                    inMenu = (location.X >= (p.X - 5) and location.X <= (p.X + s.X + 5) and
+                              location.Y >= (p.Y - 5) and location.Y <= (p.Y + s.Y + 5))
                 end
-            end)
+
+                if holder and holder.Visible then
+                    local p = holder.AbsolutePosition
+                    local s = holder.AbsoluteSize
+                    inHolder = (location.X >= (p.X - 5) and location.X <= (p.X + s.X + 5) and
+                                location.Y >= (p.Y - 5) and location.Y <= (p.Y + s.Y + 5))
+                end
+
+                if not inMenu and not inHolder then
+                    CloseCurrentPopup()
+                end
+            end
         end
     end)
 
@@ -1678,21 +1684,24 @@ function Library:CreateWindow(config)
                     end
 
                     ColorBox.MouseButton1Click:Connect(function()
-                        PickerFrame.Visible = not PickerFrame.Visible
                         if PickerFrame.Visible then
-                            for _, other in ipairs(Overlay:GetChildren()) do
-                                if other ~= PickerFrame and other:IsA("GuiObject") then
-                                    other.Visible = false
-                                end
+                            PickerFrame.Visible = false
+                            if CurrentPopup and CurrentPopup.Menu == PickerFrame then
+                                CurrentPopup = nil
                             end
+                        else
+                            CloseCurrentPopup()
                             local absPos = ColorBox.AbsolutePosition
                             local mainPos = MainFrame.AbsolutePosition
                             PickerFrame.Position = UDim2.new(0, absPos.X - mainPos.X - 140, 0, absPos.Y - mainPos.Y + 20)
-                            PickerFrame:SetAttribute("ActivatorPosX", absPos.X)
-                            PickerFrame:SetAttribute("ActivatorPosY", absPos.Y)
-                            PickerFrame:SetAttribute("ActivatorSizeX", ColorBox.AbsoluteSize.X)
-                            PickerFrame:SetAttribute("ActivatorSizeY", ColorBox.AbsoluteSize.Y)
-                            PickerFrame:SetAttribute("ActivatorPos", Vector2.new(absPos.X, absPos.Y))
+                            PickerFrame.Visible = true
+                            CurrentPopup = {
+                                Menu = PickerFrame,
+                                Holder = ColorBox,
+                                Close = function()
+                                    PickerFrame.Visible = false
+                                end
+                            }
                         end
                     end)
 
@@ -2262,23 +2271,27 @@ function Library:CreateWindow(config)
                 end
 
                 Selector.MouseButton1Click:Connect(function()
-                    DropdownList.Visible = not DropdownList.Visible
                     if DropdownList.Visible then
-                        for _, other in ipairs(Overlay:GetChildren()) do
-                            if other ~= DropdownList and other:IsA("GuiObject") then
-                                other.Visible = false
-                            end
+                        DropdownList.Visible = false
+                        if CurrentPopup and CurrentPopup.Menu == DropdownList then
+                            CurrentPopup = nil
                         end
+                    else
+                        CloseCurrentPopup()
                         local absPos = Selector.AbsolutePosition
                         local mainPos = MainFrame.AbsolutePosition
                         DropdownList.Position = UDim2.new(0, absPos.X - mainPos.X, 0, absPos.Y - mainPos.Y + 32)
                         DropdownList.Size = UDim2.new(0, Selector.AbsoluteSize.X, 0, math.min(math.max(#options * 28 + 12, 36), 160))
-                        DropdownList:SetAttribute("ActivatorPosX", absPos.X)
-                        DropdownList:SetAttribute("ActivatorPosY", absPos.Y)
-                        DropdownList:SetAttribute("ActivatorSizeX", Selector.AbsoluteSize.X)
-                        DropdownList:SetAttribute("ActivatorSizeY", Selector.AbsoluteSize.Y)
-                        DropdownList:SetAttribute("ActivatorPos", Vector2.new(absPos.X, absPos.Y))
+                        DropdownList.Visible = true
                         refreshOptions()
+
+                        CurrentPopup = {
+                            Menu = DropdownList,
+                            Holder = Selector,
+                            Close = function()
+                                DropdownList.Visible = false
+                            end
+                        }
                     end
                 end)
 
@@ -3006,21 +3019,24 @@ function Library:CreateWindow(config)
                     end
 
                     ColorBox.MouseButton1Click:Connect(function()
-                        PickerFrame.Visible = not PickerFrame.Visible
                         if PickerFrame.Visible then
-                            for _, other in ipairs(Overlay:GetChildren()) do
-                                if other ~= PickerFrame and other:IsA("GuiObject") then
-                                    other.Visible = false
-                                end
+                            PickerFrame.Visible = false
+                            if CurrentPopup and CurrentPopup.Menu == PickerFrame then
+                                CurrentPopup = nil
                             end
+                        else
+                            CloseCurrentPopup()
                             local absPos = ColorBox.AbsolutePosition
                             local mainPos = MainFrame.AbsolutePosition
                             PickerFrame.Position = UDim2.new(0, absPos.X - mainPos.X - 140, 0, absPos.Y - mainPos.Y + 20)
-                            PickerFrame:SetAttribute("ActivatorPosX", absPos.X)
-                            PickerFrame:SetAttribute("ActivatorPosY", absPos.Y)
-                            PickerFrame:SetAttribute("ActivatorSizeX", ColorBox.AbsoluteSize.X)
-                            PickerFrame:SetAttribute("ActivatorSizeY", ColorBox.AbsoluteSize.Y)
-                            PickerFrame:SetAttribute("ActivatorPos", Vector2.new(absPos.X, absPos.Y))
+                            PickerFrame.Visible = true
+                            CurrentPopup = {
+                                Menu = PickerFrame,
+                                Holder = ColorBox,
+                                Close = function()
+                                    PickerFrame.Visible = false
+                                end
+                            }
                         end
                     end)
 
@@ -3259,21 +3275,24 @@ function Library:CreateWindow(config)
                 end
 
                 ColorBox.MouseButton1Click:Connect(function()
-                    PickerFrame.Visible = not PickerFrame.Visible
                     if PickerFrame.Visible then
-                        for _, other in ipairs(Overlay:GetChildren()) do
-                            if other ~= PickerFrame and other:IsA("GuiObject") then
-                                other.Visible = false
-                            end
+                        PickerFrame.Visible = false
+                        if CurrentPopup and CurrentPopup.Menu == PickerFrame then
+                            CurrentPopup = nil
                         end
+                    else
+                        CloseCurrentPopup()
                         local absPos = ColorBox.AbsolutePosition
                         local mainPos = MainFrame.AbsolutePosition
                         PickerFrame.Position = UDim2.new(0, absPos.X - mainPos.X - 140, 0, absPos.Y - mainPos.Y + 20)
-                        PickerFrame:SetAttribute("ActivatorPosX", absPos.X)
-                        PickerFrame:SetAttribute("ActivatorPosY", absPos.Y)
-                        PickerFrame:SetAttribute("ActivatorSizeX", ColorBox.AbsoluteSize.X)
-                        PickerFrame:SetAttribute("ActivatorSizeY", ColorBox.AbsoluteSize.Y)
-                        PickerFrame:SetAttribute("ActivatorPos", Vector2.new(absPos.X, absPos.Y))
+                        PickerFrame.Visible = true
+                        CurrentPopup = {
+                            Menu = PickerFrame,
+                            Holder = ColorBox,
+                            Close = function()
+                                PickerFrame.Visible = false
+                            end
+                        }
                     end
                 end)
 
