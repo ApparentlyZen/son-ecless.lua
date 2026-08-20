@@ -1125,6 +1125,101 @@ function Library:CreateWindow(config)
         setBackgroundGif(frames, fps, transparency)
     end
 
+    function WindowObj:Hide()
+        CloseCurrentPopup()
+        self.IsOpen = false
+        self.IsHidden = true
+        Library.Hidden = true
+        MainFrame.Visible = false
+        if MobileButton then
+            MobileButton.Visible = false
+        end
+        if ScreenGui then
+            ScreenGui.Enabled = false
+        end
+    end
+
+    function WindowObj:Show()
+        if ScreenGui then
+            ScreenGui.Enabled = true
+        end
+        self.IsHidden = false
+        Library.Hidden = false
+        self.IsOpen = true
+        MainFrame.Visible = true
+        if MobileButton and showMobile then
+            MobileButton.Visible = true
+        end
+        createTween(MainFrame, {
+            Size = windowSize,
+            BackgroundTransparency = 0
+        }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        Library:Notify({
+            Title = "Nameless",
+            Content = "Menu visible (type /e hide to hide)",
+            Duration = 2
+        })
+    end
+
+    -- Chat Command Support (/e show, /e hide, /show, /hide)
+    local function handleChatCmd(msg)
+        if type(msg) ~= "string" then return end
+        local clean = msg:lower():gsub("^%s+", ""):gsub("%s+$", "")
+        if clean == "/e hide" or clean == "/hide" or clean == ":hide" or clean == ".hide" then
+            WindowObj:Hide()
+        elseif clean == "/e show" or clean == "/show" or clean == ":show" or clean == ".show" then
+            WindowObj:Show()
+        elseif clean == "/e toggle" or clean == "/toggle" or clean == ":toggle" or clean == ".toggle" then
+            if WindowObj.IsHidden or not ScreenGui.Enabled then
+                WindowObj:Show()
+            else
+                WindowObj:Toggle()
+            end
+        end
+    end
+
+    -- Hook Legacy Chatted
+    if LocalPlayer and LocalPlayer.Chatted then
+        local chatConn = LocalPlayer.Chatted:Connect(handleChatCmd)
+        table.insert(Library.Signals, chatConn)
+    end
+
+    -- Hook Modern TextChatService
+    pcall(function()
+        local TextChatService = game:GetService("TextChatService")
+        if TextChatService then
+            local textChannels = TextChatService:FindFirstChild("TextChannels")
+            local function hookChannel(channel)
+                if channel:IsA("TextChannel") then
+                    local conn = channel.MessageReceived:Connect(function(textChatMessage)
+                        if textChatMessage and textChatMessage.TextSource and LocalPlayer and textChatMessage.TextSource.UserId == LocalPlayer.UserId then
+                            handleChatCmd(textChatMessage.Text)
+                        end
+                    end)
+                    table.insert(Library.Signals, conn)
+                end
+            end
+
+            if textChannels then
+                for _, ch in ipairs(textChannels:GetChildren()) do
+                    hookChannel(ch)
+                end
+                local addedConn = textChannels.ChildAdded:Connect(hookChannel)
+                table.insert(Library.Signals, addedConn)
+            end
+
+            local oldIncoming = TextChatService.OnIncomingMessage
+            TextChatService.OnIncomingMessage = function(textChatMessage)
+                if textChatMessage and textChatMessage.TextSource and LocalPlayer and textChatMessage.TextSource.UserId == LocalPlayer.UserId then
+                    handleChatCmd(textChatMessage.Text)
+                end
+                if oldIncoming then
+                    return oldIncoming(textChatMessage)
+                end
+            end
+        end
+    end)
+
     -- Outside-click popover dismiss handler
     UserInputService.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -4157,12 +4252,13 @@ function Library:CreateWindow(config)
         end
 
         section:AddButton({
-            Text = "Create / Save Config",
+            Text = "Create Config",
             Func = function()
-                local name = (ConfigNameInput and ConfigNameInput.Value and #ConfigNameInput.Value > 0) and ConfigNameInput.Value or (self.SelectedConfig ~= "None" and self.SelectedConfig)
+                local name = ConfigNameInput and ConfigNameInput.Value
                 if name and #name > 0 and name ~= "None" then
                     self:Save(name)
                     local updatedList = self:GetConfigs()
+                    self.SelectedConfig = name
                     if ConfigDropdown and ConfigDropdown.Refresh then
                         ConfigDropdown:Refresh(#updatedList > 0 and updatedList or {"None"})
                         ConfigDropdown:Set(name, true)
@@ -4170,7 +4266,28 @@ function Library:CreateWindow(config)
                 else
                     self.Library:Notify({
                         Title = "Save Manager",
-                        Content = "Please enter a valid config name.",
+                        Content = "Please enter a valid name in 'Config Name'.",
+                        Duration = 3
+                    })
+                end
+            end
+        })
+
+        section:AddButton({
+            Text = "Overwrite Config",
+            Func = function()
+                local name = (ConfigDropdown and ConfigDropdown.Value and #ConfigDropdown.Value > 0 and ConfigDropdown.Value ~= "None") and ConfigDropdown.Value or (self.SelectedConfig ~= "None" and self.SelectedConfig)
+                if name and #name > 0 and name ~= "None" then
+                    self:Save(name)
+                    self.Library:Notify({
+                        Title = "Save Manager",
+                        Content = "Overwritten '" .. name .. "' with current settings.",
+                        Duration = 3
+                    })
+                else
+                    self.Library:Notify({
+                        Title = "Save Manager",
+                        Content = "Please select an existing config to overwrite.",
                         Duration = 3
                     })
                 end
@@ -4187,22 +4304,6 @@ function Library:CreateWindow(config)
                     self.Library:Notify({
                         Title = "Save Manager",
                         Content = "Please select a config to load.",
-                        Duration = 3
-                    })
-                end
-            end
-        })
-
-        section:AddButton({
-            Text = "Overwrite Config",
-            Func = function()
-                local name = (ConfigDropdown and ConfigDropdown.Value and #ConfigDropdown.Value > 0 and ConfigDropdown.Value ~= "None") and ConfigDropdown.Value or (self.SelectedConfig ~= "None" and self.SelectedConfig) or (ConfigNameInput and ConfigNameInput.Value)
-                if name and #name > 0 and name ~= "None" then
-                    self:Save(name)
-                else
-                    self.Library:Notify({
-                        Title = "Save Manager",
-                        Content = "Please select a config to overwrite.",
                         Duration = 3
                     })
                 end
@@ -4229,6 +4330,12 @@ function Library:CreateWindow(config)
                         ConfigNameInput:Set(self.SelectedConfig, true)
                     end
                     refreshAutoload()
+                else
+                    self.Library:Notify({
+                        Title = "Save Manager",
+                        Content = "Please select a config to delete.",
+                        Duration = 3
+                    })
                 end
             end
         })
@@ -4318,6 +4425,18 @@ function Library:CreateWindow(config)
         table.clear(Library.Options or {})
         table.clear(Library.Flags or {})
         table.clear(Library.Buttons or {})
+    end
+
+    function Library:Hide()
+        if Library.CurrentWindow and Library.CurrentWindow.Hide then
+            Library.CurrentWindow:Hide()
+        end
+    end
+
+    function Library:Show()
+        if Library.CurrentWindow and Library.CurrentWindow.Show then
+            Library.CurrentWindow:Show()
+        end
     end
 
     -- Toggle Menu Keybind Listener
