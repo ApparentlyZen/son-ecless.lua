@@ -536,12 +536,12 @@ function Library:CreateWindow(config)
     MainCorner.Parent = MainFrame
 
     local MainStroke = Instance.new("UIStroke")
-    MainStroke.Color = Library.Theme.CardBorder
-    MainStroke.Thickness = 1.5
+    MainStroke.Color = Library.Theme.Accent
+    MainStroke.Thickness = 1.8
     MainStroke.Parent = MainFrame
-    Library:RegisterThemeObject(MainStroke, "Color", "CardBorder")
+    Library:RegisterThemeObject(MainStroke, "Color", "Accent")
 
-    -- ==================== BACKGROUND IMAGE & GIF SUPPORT ====================
+    -- ==================== BACKGROUND IMAGE SUPPORT ====================
     local BackgroundContainer = Instance.new("Frame")
     BackgroundContainer.Name = "BackgroundContainer"
     BackgroundContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -557,7 +557,7 @@ function Library:CreateWindow(config)
     BackgroundImage.Name = "BackgroundImage"
     BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
     BackgroundImage.BackgroundTransparency = 1
-    BackgroundImage.ImageTransparency = 0.35
+    BackgroundImage.ImageTransparency = 0.1
     BackgroundImage.ScaleType = Enum.ScaleType.Crop
     BackgroundImage.ZIndex = 1
     BackgroundImage.Visible = false
@@ -570,8 +570,8 @@ function Library:CreateWindow(config)
     local BackgroundOverlay = Instance.new("Frame")
     BackgroundOverlay.Name = "DarkOverlay"
     BackgroundOverlay.Size = UDim2.new(1, 0, 1, 0)
-    BackgroundOverlay.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
-    BackgroundOverlay.BackgroundTransparency = 0.55
+    BackgroundOverlay.BackgroundColor3 = Color3.fromRGB(10, 8, 16)
+    BackgroundOverlay.BackgroundTransparency = 0.45
     BackgroundOverlay.ZIndex = 2
     BackgroundOverlay.Visible = false
     BackgroundOverlay.Parent = BackgroundContainer
@@ -580,21 +580,10 @@ function Library:CreateWindow(config)
     BgOverlayCorner.CornerRadius = UDim.new(0, 18)
     BgOverlayCorner.Parent = BackgroundOverlay
 
-    local GifPlayer = {
-        Frames = {},
-        FPS = 30,
-        CurrentIndex = 1,
-        Connection = nil
-    }
-
     local function setBackgroundImg(assetId, transparency)
-        if GifPlayer.Connection then
-            GifPlayer.Connection:Disconnect()
-            GifPlayer.Connection = nil
-        end
         if assetId and #assetId > 0 and assetId ~= "none" then
             BackgroundImage.Image = assetId
-            BackgroundImage.ImageTransparency = transparency or 0.35
+            BackgroundImage.ImageTransparency = transparency or 0.1
             BackgroundImage.Visible = true
             BackgroundOverlay.Visible = true
         else
@@ -604,44 +593,8 @@ function Library:CreateWindow(config)
         end
     end
 
-    local function setBackgroundGif(frames, fps, transparency)
-        if GifPlayer.Connection then
-            GifPlayer.Connection:Disconnect()
-            GifPlayer.Connection = nil
-        end
-
-        GifPlayer.Frames = frames or {}
-        GifPlayer.FPS = fps or 30
-        GifPlayer.CurrentIndex = 1
-
-        if #GifPlayer.Frames == 0 then
-            BackgroundImage.Visible = false
-            BackgroundOverlay.Visible = false
-            return
-        end
-
-        BackgroundImage.Visible = true
-        BackgroundOverlay.Visible = true
-        BackgroundImage.ImageTransparency = transparency or 0.35
-        
-        local frameDuration = 1 / GifPlayer.FPS
-        local lastUpdate = tick()
-
-        GifPlayer.Connection = RunService.RenderStepped:Connect(function()
-            local now = tick()
-            if now - lastUpdate >= frameDuration then
-                lastUpdate = now
-                GifPlayer.CurrentIndex = GifPlayer.CurrentIndex + 1
-                if GifPlayer.CurrentIndex > #GifPlayer.Frames then
-                    GifPlayer.CurrentIndex = 1
-                end
-                BackgroundImage.Image = GifPlayer.Frames[GifPlayer.CurrentIndex]
-            end
-        end)
-    end
-
     if config.BackgroundImage then
-        setBackgroundImg(config.BackgroundImage, config.BackgroundTransparency or 0.35)
+        setBackgroundImg(config.BackgroundImage, config.BackgroundTransparency or 0.1)
     end
 
     -- ==================== LEFT SIDEBAR ====================
@@ -649,6 +602,7 @@ function Library:CreateWindow(config)
     Sidebar.Name = "Sidebar"
     Sidebar.Size = UDim2.new(0, 160, 1, 0)
     Sidebar.BackgroundColor3 = Library.Theme.Sidebar
+    Sidebar.BackgroundTransparency = 0.5
     Sidebar.BorderSizePixel = 0
     Sidebar.ZIndex = 5
     Sidebar.Parent = MainFrame
@@ -663,6 +617,7 @@ function Library:CreateWindow(config)
     SidebarSeam.Size = UDim2.new(0, 20, 1, 0)
     SidebarSeam.Position = UDim2.new(1, -20, 0, 0)
     SidebarSeam.BackgroundColor3 = Library.Theme.Sidebar
+    SidebarSeam.BackgroundTransparency = 0.5
     SidebarSeam.BorderSizePixel = 0
     SidebarSeam.ZIndex = 5
     SidebarSeam.Parent = Sidebar
@@ -1187,10 +1142,6 @@ function Library:CreateWindow(config)
         setBackgroundImg(assetId, transparency)
     end
 
-    function WindowObj:SetBackgroundGif(frames, fps, transparency)
-        setBackgroundGif(frames, fps, transparency)
-    end
-
     function WindowObj:SetBackgroundTransparency(transparency)
         if BackgroundImage then
             BackgroundImage.ImageTransparency = transparency
@@ -1481,6 +1432,7 @@ function Library:CreateWindow(config)
             Card.Size = UDim2.new(1, 0, 0, 0)
             Card.AutomaticSize = Enum.AutomaticSize.Y
             Card.BackgroundColor3 = Library.Theme.CardBackground
+            Card.BackgroundTransparency = 0.65
             Card.BorderSizePixel = 0
             Card.ZIndex = 8
             Card.Parent = parentCol
@@ -1504,14 +1456,14 @@ function Library:CreateWindow(config)
             CardHeader.Parent = Card
 
             local TitleLabel = Instance.new("TextLabel")
-            TitleLabel.Size = UDim2.new(1, -24, 1, 0)
-            TitleLabel.Position = UDim2.new(0, 14, 0, 4)
+            TitleLabel.Size = UDim2.new(1, 0, 1, 0)
+            TitleLabel.Position = UDim2.new(0, 0, 0, 4)
             TitleLabel.BackgroundTransparency = 1
-            TitleLabel.Text = sectionTitle
+            TitleLabel.Text = "[ " .. sectionTitle:upper() .. " ]"
             TitleLabel.TextColor3 = Library.Theme.Text
             TitleLabel.Font = Library.Fonts.Bold
-            TitleLabel.TextSize = 13
-            TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+            TitleLabel.TextSize = 12
+            TitleLabel.TextXAlignment = Enum.TextXAlignment.Center
             TitleLabel.ZIndex = 9
             TitleLabel.Parent = CardHeader
 
@@ -1598,17 +1550,20 @@ function Library:CreateWindow(config)
 
                 local CheckBox = Instance.new("TextButton")
                 CheckBox.Name = "CheckBox"
-                CheckBox.Size = UDim2.new(0, 16, 0, 16)
+                CheckBox.Size = UDim2.new(0, 38, 0, 18)
                 CheckBox.LayoutOrder = 100
-                CheckBox.BackgroundColor3 = default and Library.Theme.ToggleOn or Library.Theme.ToggleOff
+                CheckBox.BackgroundColor3 = default and Library.Theme.Accent or Color3.fromRGB(20, 16, 28)
                 CheckBox.BorderSizePixel = 0
-                CheckBox.Text = ""
+                CheckBox.Text = default and "ON" or "OFF"
+                CheckBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+                CheckBox.Font = Library.Fonts.Bold
+                CheckBox.TextSize = 9
                 CheckBox.AutoButtonColor = false
                 CheckBox.ZIndex = 11
                 CheckBox.Parent = RightElements
 
                 local CheckCorner = Instance.new("UICorner")
-                CheckCorner.CornerRadius = UDim.new(0, 6)
+                CheckCorner.CornerRadius = UDim.new(1, 0)
                 CheckCorner.Parent = CheckBox
 
                 local CheckStroke = Instance.new("UIStroke")
@@ -1642,13 +1597,15 @@ function Library:CreateWindow(config)
                     if flag then Library.Flags[flag] = state end
                     
                     if state then
-                        createTween(CheckBox, { BackgroundColor3 = Library.Theme.ToggleOn }, 0.15)
+                        createTween(CheckBox, { BackgroundColor3 = Library.Theme.Accent }, 0.15)
                         createTween(CheckStroke, { Color = Library.Theme.Accent }, 0.15)
                         createTween(Label, { TextColor3 = Library.Theme.Text }, 0.15)
+                        CheckBox.Text = "ON"
                     else
-                        createTween(CheckBox, { BackgroundColor3 = Library.Theme.ToggleOff }, 0.15)
+                        createTween(CheckBox, { BackgroundColor3 = Color3.fromRGB(20, 16, 28) }, 0.15)
                         createTween(CheckStroke, { Color = Library.Theme.CardBorder }, 0.15)
                         createTween(Label, { TextColor3 = Library.Theme.TextDim }, 0.15)
+                        CheckBox.Text = "OFF"
                     end
                     
                     if not ignoreCallback then
