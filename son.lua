@@ -642,7 +642,7 @@ function Library:CreateWindow(config)
     SidebarCorner.Parent = Sidebar
 
     local SidebarSeam = Instance.new("Frame")
-    SidebarSeam.Name = "SidebarSaeam"
+    SidebarSeam.Name = "SidebarSeam"
     SidebarSeam.Size = UDim2.new(0, 20, 1, 0)
     SidebarSeam.Position = UDim2.new(1, -20, 0, 0)
     SidebarSeam.BackgroundColor3 = Library.Theme.Sidebar
@@ -1179,34 +1179,22 @@ function Library:CreateWindow(config)
     end
 
     -- Close popovers when clicking outside
-    local GuiService = game:GetService("GuiService")
     UserInputService.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            local mousePos = UserInputService:GetMouseLocation()
-            local guiInset = GuiService:GetGuiInset()
-            local adjustedMouse = Vector2.new(mousePos.X, mousePos.Y - guiInset.Y)
-
-            task.defer(function()
-                for _, child in ipairs(Overlay:GetChildren()) do
-                    if child:IsA("GuiObject") and child.Visible then
-                        local absPos = child.AbsolutePosition
-                        local absSize = child.AbsoluteSize
-                        local inChild = (adjustedMouse.X >= absPos.X and adjustedMouse.X <= absPos.X + absSize.X and
-                                         adjustedMouse.Y >= absPos.Y and adjustedMouse.Y <= absPos.Y + absSize.Y)
+            for _, child in ipairs(Overlay:GetChildren()) do
+                if child:IsA("GuiObject") and child.Visible then
+                    local mousePos = UserInputService:GetMouseLocation()
+                    local absPos = child.AbsolutePosition
+                    local absSize = child.AbsoluteSize
+                    if mousePos.X < absPos.X or mousePos.X > absPos.X + absSize.X or
+                       mousePos.Y < absPos.Y or mousePos.Y > absPos.Y + absSize.Y then
                         local tag = child:GetAttribute("ActivatorPos")
-                        local inActivator = false
-                        if tag then
-                            local actPos = Vector2.new(tag.X, tag.Y)
-                            if (adjustedMouse - actPos).Magnitude <= 50 then
-                                inActivator = true
-                            end
-                        end
-                        if not inChild and not inActivator then
+                        if not tag or (mousePos - Vector2.new(tag.X, tag.Y)).Magnitude > 40 then
                             child.Visible = false
                         end
                     end
                 end
-            end)
+            end
         end
     end)
 
@@ -1419,33 +1407,22 @@ function Library:CreateWindow(config)
             ContainerLayout.Padding = UDim.new(0, 10)
             ContainerLayout.Parent = CardContainer
 
-            local function normalizeArgs(arg1, arg2)
-                local idx, config
-                if type(arg1) == "string" and type(arg2) == "table" then
-                    idx = arg1
-                    config = arg2
-                    config.Flag = config.Flag or config.Pointer or idx
-                    config.Name = config.Name or config.Text or config.Title or idx
-                elseif type(arg1) == "string" and arg2 == nil then
-                    idx = arg1
-                    config = { Name = arg1, Flag = arg1, Text = arg1 }
-                elseif type(arg1) == "table" then
-                    config = arg1
-                    idx = config.Flag or config.Pointer or config.Name or config.Text or config.Title or "Element"
-                else
-                    config = {}
-                    idx = "Element"
-                end
-                return idx, config
-            end
+            local CardPadding = Instance.new("UIPadding")
+            CardPadding.PaddingBottom = UDim.new(0, 14)
+            CardPadding.Parent = CardContainer
+
+            local SectionObj = {
+                Card = Card,
+                Container = CardContainer
+            }
 
             -- TOGGLE
-            function SectionObj:AddToggle(arg1, arg2)
-                local idx, toggleConfig = normalizeArgs(arg1, arg2)
-                local name = toggleConfig.Name or toggleConfig.Text or idx or "Toggle"
+            function SectionObj:AddToggle(toggleConfig)
+                toggleConfig = toggleConfig or {}
+                local name = toggleConfig.Name or toggleConfig.Text or "Toggle"
                 local default = (toggleConfig.Default ~= nil) and toggleConfig.Default or false
                 local callback = toggleConfig.Callback or toggleConfig.Func or function() end
-                local flag = toggleConfig.Flag or toggleConfig.Pointer or idx
+                local flag = toggleConfig.Flag or toggleConfig.Pointer
 
                 local ToggleFrame = Instance.new("Frame")
                 ToggleFrame.Name = name .. "_Toggle"
@@ -1536,12 +1513,11 @@ function Library:CreateWindow(config)
                 ToggleObj.Set = setToggle
                 ToggleObj.SetValue = setToggle
                 ToggleObj.RawSet = function(val) setToggle(val, true) end
-                ToggleObj.OnChanged = function(selfOrFn, fn)
-                    local targetFn = fn or selfOrFn
+                ToggleObj.OnChanged = function(fn)
                     local oldCallback = callback
                     callback = function(s)
                         oldCallback(s)
-                        targetFn(s)
+                        fn(s)
                     end
                 end
 
@@ -1555,16 +1531,12 @@ function Library:CreateWindow(config)
                     Library.Options[flag] = ToggleObj
                 end
 
-                -- AddColorPicker on Toggle
-                function ToggleObj:AddColorPicker(cpArg1, cpArg2)
-                    local cpIdx, cpConfig = normalizeArgs(cpArg1, cpArg2)
+                -- Multi ColorPicker on Toggle
+                function ToggleObj:AddColorPicker(cpConfig)
+                    cpConfig = cpConfig or {}
                     local cpDefault = cpConfig.Default or Library.Theme.Accent
-                    if type(cpDefault) == "string" then
-                        local success, col = pcall(function() return Color3.fromHex(cpDefault) end)
-                        if success and col then cpDefault = col end
-                    end
                     local cpCallback = cpConfig.Callback or cpConfig.Func or function() end
-                    local cpFlag = cpConfig.Flag or cpConfig.Pointer or cpIdx
+                    local cpFlag = cpConfig.Flag or cpConfig.Pointer
 
                     local ColorBox = Instance.new("TextButton")
                     ColorBox.Name = "ColorBox"
@@ -1672,9 +1644,6 @@ function Library:CreateWindow(config)
                     local function setColor(col, ignoreCallback)
                         if typeof(col) == "Color3" then
                             currentColor = col
-                        elseif type(col) == "string" then
-                            local success, c = pcall(function() return Color3.fromHex(col) end)
-                            if success and c then currentColor = c end
                         elseif type(col) == "table" and col.r and col.g and col.b then
                             currentColor = Color3.fromRGB(col.r, col.g, col.b)
                         elseif type(col) == "table" and col[1] and col[2] and col[3] then
@@ -1692,14 +1661,12 @@ function Library:CreateWindow(config)
 
                     ColorPickerObj.Set = setColor
                     ColorPickerObj.SetValue = setColor
-                    ColorPickerObj.SetValueRGB = setColor
                     ColorPickerObj.RawSet = function(col) setColor(col, true) end
-                    ColorPickerObj.OnChanged = function(selfOrFn, fn)
-                        local targetFn = fn or selfOrFn
+                    ColorPickerObj.OnChanged = function(fn)
                         local oldCallback = cpCallback
                         cpCallback = function(c)
                             oldCallback(c)
-                            targetFn(c)
+                            fn(c)
                         end
                     end
 
@@ -1745,21 +1712,18 @@ function Library:CreateWindow(config)
                     return ToggleObj
                 end
 
-                -- AddKeyPicker / AddKeybind on Toggle
-                function ToggleObj:AddKeybind(kbArg1, kbArg2)
-                    local kbIdx, kbConfig = normalizeArgs(kbArg1, kbArg2)
+                -- Keybind on Toggle
+                function ToggleObj:AddKeybind(kbConfig)
+                    kbConfig = kbConfig or {}
                     local defaultKey = kbConfig.Default or Enum.KeyCode.Unknown
-                    if type(defaultKey) == "string" then
-                        defaultKey = Enum.KeyCode[defaultKey] or Enum.KeyCode.Unknown
-                    end
                     local kbCallback = kbConfig.Callback or kbConfig.Func or function() end
-                    local kbFlag = kbConfig.Flag or kbConfig.Pointer or kbIdx
+                    local kbFlag = kbConfig.Flag or kbConfig.Pointer
                     local currentKey = defaultKey
                     local binding = false
 
                     local KeyBtn = Instance.new("TextButton")
                     KeyBtn.Name = "KeybindBtn"
-                    KeyBtn.Size = UDim2.new(0, 28, 0, 16)
+                    KeyBtn.Size = UDim2.new(0, 24, 0, 15)
                     KeyBtn.BackgroundColor3 = Library.Theme.ItemBg
                     KeyBtn.BorderSizePixel = 0
                     KeyBtn.Text = (currentKey == Enum.KeyCode.Unknown and "..." or currentKey.Name)
@@ -1784,15 +1748,16 @@ function Library:CreateWindow(config)
                         Type = "Keybind",
                         Value = currentKey,
                         Flag = kbFlag,
-                        Callback = kbCallback,
-                        GetState = function() return state end
+                        Callback = kbCallback
                     }
 
-                    local function setKey(k, ignoreCallback)
-                        if type(k) == "string" then
-                            k = Enum.KeyCode[k] or Enum.KeyCode.Unknown
+                    local function setKeybind(key, ignoreCallback)
+                        if typeof(key) == "EnumItem" then
+                            currentKey = key
+                        elseif type(key) == "string" then
+                            local foundEnum = Enum.KeyCode[key]
+                            if foundEnum then currentKey = foundEnum end
                         end
-                        currentKey = k
                         KeybindObj.Value = currentKey
                         KeyBtn.Text = (currentKey == Enum.KeyCode.Unknown and "..." or currentKey.Name)
                         if kbFlag then Library.Flags[kbFlag] = currentKey end
@@ -1801,15 +1766,14 @@ function Library:CreateWindow(config)
                         end
                     end
 
-                    KeybindObj.Set = setKey
-                    KeybindObj.SetValue = setKey
-                    KeybindObj.RawSet = function(k) setKey(k, true) end
-                    KeybindObj.OnChanged = function(selfOrFn, fn)
-                        local targetFn = fn or selfOrFn
+                    KeybindObj.Set = setKeybind
+                    KeybindObj.SetValue = setKeybind
+                    KeybindObj.RawSet = function(key) setKeybind(key, true) end
+                    KeybindObj.OnChanged = function(fn)
                         local oldCallback = kbCallback
                         kbCallback = function(k)
                             oldCallback(k)
-                            targetFn(k)
+                            fn(k)
                         end
                     end
 
@@ -1828,22 +1792,18 @@ function Library:CreateWindow(config)
                         if binding and input.UserInputType == Enum.UserInputType.Keyboard then
                             if input.KeyCode == Enum.KeyCode.Escape then
                                 currentKey = Enum.KeyCode.Unknown
+                                KeyBtn.Text = "..."
                             else
                                 currentKey = input.KeyCode
+                                KeyBtn.Text = input.KeyCode.Name
                             end
-                            KeyBtn.Text = (currentKey == Enum.KeyCode.Unknown and "..." or currentKey.Name)
                             binding = false
                             KeybindObj.Value = currentKey
                             if kbFlag then Library.Flags[kbFlag] = currentKey end
                             KeyBtn.TextColor3 = Library.Theme.TextDark
                             task.spawn(kbCallback, currentKey)
                         elseif not gpe and not binding and currentKey ~= Enum.KeyCode.Unknown and input.KeyCode == currentKey then
-                            if Library.ToggleKeybind == KeybindObj or Library.ToggleKeybind == currentKey then
-                                if WindowObj and WindowObj.Toggle then
-                                    WindowObj:Toggle()
-                                end
-                            end
-                            task.spawn(kbCallback, currentKey)
+                            setToggle(not state)
                         end
                     end)
 
@@ -1855,16 +1815,16 @@ function Library:CreateWindow(config)
             end
 
             -- SLIDER
-            function SectionObj:AddSlider(arg1, arg2)
-                local idx, sliderConfig = normalizeArgs(arg1, arg2)
-                local name = sliderConfig.Name or sliderConfig.Text or idx or "Slider"
+            function SectionObj:AddSlider(sliderConfig)
+                sliderConfig = sliderConfig or {}
+                local name = sliderConfig.Name or sliderConfig.Text or "Slider"
                 local min = sliderConfig.Min or 0
                 local max = sliderConfig.Max or 100
                 local default = sliderConfig.Default or sliderConfig.Value or min
                 local precise = sliderConfig.Precise or sliderConfig.Rounding or 0
                 local suffix = sliderConfig.Suffix or ""
                 local callback = sliderConfig.Callback or sliderConfig.Func or function() end
-                local flag = sliderConfig.Flag or sliderConfig.Pointer or idx
+                local flag = sliderConfig.Flag or sliderConfig.Pointer
 
                 local SliderFrame = Instance.new("Frame")
                 SliderFrame.Name = name .. "_Slider"
@@ -1964,12 +1924,11 @@ function Library:CreateWindow(config)
                 SliderObj.Set = setSlider
                 SliderObj.SetValue = setSlider
                 SliderObj.RawSet = function(val) setSlider(val, true) end
-                SliderObj.OnChanged = function(selfOrFn, fn)
-                    local targetFn = fn or selfOrFn
+                SliderObj.OnChanged = function(fn)
                     local oldCallback = callback
                     callback = function(v)
                         oldCallback(v)
-                        targetFn(v)
+                        fn(v)
                     end
                 end
 
@@ -2004,13 +1963,13 @@ function Library:CreateWindow(config)
             end
 
             -- DROPDOWN
-            function SectionObj:AddDropdown(arg1, arg2)
-                local idx, dropdownConfig = normalizeArgs(arg1, arg2)
-                local name = dropdownConfig.Name or dropdownConfig.Text or idx or "Dropdown"
+            function SectionObj:AddDropdown(dropdownConfig)
+                dropdownConfig = dropdownConfig or {}
+                local name = dropdownConfig.Name or dropdownConfig.Text or "Dropdown"
                 local options = dropdownConfig.Options or dropdownConfig.Values or dropdownConfig.Items or {}
                 local default = dropdownConfig.Default or dropdownConfig.Value or options[1] or ""
                 local callback = dropdownConfig.Callback or dropdownConfig.Func or function() end
-                local flag = dropdownConfig.Flag or dropdownConfig.Pointer or idx
+                local flag = dropdownConfig.Flag or dropdownConfig.Pointer
 
                 local DropdownFrame = Instance.new("Frame")
                 DropdownFrame.Name = name .. "_Dropdown"
@@ -2116,37 +2075,22 @@ function Library:CreateWindow(config)
                     Value = currentSelected,
                     Flag = flag,
                     Options = options,
-                    Values = options,
                     Callback = callback
                 }
 
-                local optionButtons = {}
-
-                local function updateDropdownVisuals()
-                    SelText.Text = tostring(currentSelected)
-                    for opt, btn in pairs(optionButtons) do
-                        local isSel = (opt == currentSelected)
-                        btn.BackgroundColor3 = isSel and Library.Theme.ItemBgHover or Color3.fromRGB(0,0,0)
-                        btn.BackgroundTransparency = isSel and 0 or 1
-                        btn.TextColor3 = isSel and Library.Theme.Accent or Library.Theme.TextDim
-                    end
-                end
-
-                local function buildOptions()
+                local function refreshOptions()
                     for _, child in ipairs(DropList:GetChildren()) do
                         if child:IsA("TextButton") then child:Destroy() end
                     end
-                    optionButtons = {}
 
                     for _, opt in ipairs(options) do
-                        local isSel = (opt == currentSelected)
                         local OptBtn = Instance.new("TextButton")
                         OptBtn.Name = tostring(opt)
                         OptBtn.Size = UDim2.new(1, 0, 0, 26)
-                        OptBtn.BackgroundColor3 = isSel and Library.Theme.ItemBgHover or Color3.fromRGB(0,0,0)
-                        OptBtn.BackgroundTransparency = isSel and 0 or 1
+                        OptBtn.BackgroundColor3 = (opt == currentSelected) and Library.Theme.ItemBgHover or Color3.fromRGB(0,0,0)
+                        OptBtn.BackgroundTransparency = (opt == currentSelected) and 0 or 1
                         OptBtn.Text = "  " .. tostring(opt)
-                        OptBtn.TextColor3 = isSel and Library.Theme.Accent or Library.Theme.TextDim
+                        OptBtn.TextColor3 = (opt == currentSelected) and Library.Theme.Accent or Library.Theme.TextDim
                         OptBtn.Font = Library.Fonts.Medium
                         OptBtn.TextSize = 11
                         OptBtn.TextXAlignment = Enum.TextXAlignment.Left
@@ -2161,23 +2105,23 @@ function Library:CreateWindow(config)
                         OptBtn.MouseButton1Click:Connect(function()
                             currentSelected = opt
                             DropdownObj.Value = currentSelected
+                            SelText.Text = tostring(opt)
                             if flag then Library.Flags[flag] = currentSelected end
                             DropList.Visible = false
-                            updateDropdownVisuals()
+                            refreshOptions()
                             task.spawn(callback, opt)
                         end)
-
-                        optionButtons[opt] = OptBtn
                     end
                 end
 
-                buildOptions()
+                refreshOptions()
 
                 local function setDropdown(val, ignoreCallback)
                     currentSelected = val
                     DropdownObj.Value = currentSelected
+                    SelText.Text = tostring(val)
                     if flag then Library.Flags[flag] = currentSelected end
-                    updateDropdownVisuals()
+                    refreshOptions()
                     if not ignoreCallback then
                         task.spawn(callback, val)
                     end
@@ -2186,22 +2130,17 @@ function Library:CreateWindow(config)
                 DropdownObj.Set = setDropdown
                 DropdownObj.SetValue = setDropdown
                 DropdownObj.RawSet = function(val) setDropdown(val, true) end
-                DropdownObj.Refresh = function(selfOrOpts, opts)
-                    local newOpts = opts or selfOrOpts
-                    if type(newOpts) == "table" then
-                        options = newOpts
-                        DropdownObj.Options = newOpts
-                        DropdownObj.Values = newOpts
-                        buildOptions()
-                    end
+                DropdownObj.Refresh = function(newOpts)
+                    options = newOpts
+                    DropdownObj.Options = newOpts
+                    refreshOptions()
                 end
                 DropdownObj.SetValues = DropdownObj.Refresh
-                DropdownObj.OnChanged = function(selfOrFn, fn)
-                    local targetFn = fn or selfOrFn
+                DropdownObj.OnChanged = function(fn)
                     local oldCallback = callback
                     callback = function(v)
                         oldCallback(v)
-                        targetFn(v)
+                        fn(v)
                     end
                 end
 
@@ -2225,13 +2164,13 @@ function Library:CreateWindow(config)
             end
 
             -- LISTBOX
-            function SectionObj:AddListbox(arg1, arg2)
-                local idx, listConfig = normalizeArgs(arg1, arg2)
-                local name = listConfig.Name or listConfig.Text or idx or "Listbox"
+            function SectionObj:AddListbox(listConfig)
+                listConfig = listConfig or {}
+                local name = listConfig.Name or listConfig.Text or "Listbox"
                 local items = listConfig.Items or listConfig.Values or listConfig.Options or {}
-                local default = listConfig.Default or listConfig.Value or items[1] or ""
+                local default = listConfig.Default or listConfig.Value or items[1]
                 local callback = listConfig.Callback or listConfig.Func or function() end
-                local flag = listConfig.Flag or listConfig.Pointer or idx
+                local flag = listConfig.Flag or listConfig.Pointer
                 local height = listConfig.Height or 120
 
                 local ListboxFrame = Instance.new("Frame")
@@ -2296,27 +2235,13 @@ function Library:CreateWindow(config)
                     Value = currentSelected,
                     Flag = flag,
                     Items = items,
-                    Values = items,
                     Callback = callback
                 }
 
-                local listButtons = {}
-
-                local function updateListVisuals()
-                    for it, btn in pairs(listButtons) do
-                        local isSelected = (it == currentSelected)
-                        btn.BackgroundColor3 = isSelected and Library.Theme.ItemBgHover or Color3.fromRGB(0,0,0)
-                        btn.BackgroundTransparency = isSelected and 0.3 or 1
-                        btn.TextColor3 = isSelected and Library.Theme.Accent or Library.Theme.TextDim
-                        btn.Font = isSelected and Library.Fonts.Bold or Library.Fonts.Medium
-                    end
-                end
-
-                local function buildListItems()
+                local function refreshItems()
                     for _, child in ipairs(Container:GetChildren()) do
                         if child:IsA("TextButton") then child:Destroy() end
                     end
-                    listButtons = {}
 
                     for _, item in ipairs(items) do
                         local isSelected = (item == currentSelected)
@@ -2324,7 +2249,7 @@ function Library:CreateWindow(config)
                         ItemBtn.Name = tostring(item)
                         ItemBtn.Size = UDim2.new(1, 0, 0, 24)
                         ItemBtn.BackgroundColor3 = isSelected and Library.Theme.ItemBgHover or Color3.fromRGB(0,0,0)
-                        ItemBtn.BackgroundTransparency = isSelected and 0.3 or 1
+                        ItemBtn.BackgroundTransparency = isSelected and 0.4 or 1
                         ItemBtn.Text = "  " .. tostring(item)
                         ItemBtn.TextColor3 = isSelected and Library.Theme.Accent or Library.Theme.TextDim
                         ItemBtn.Font = isSelected and Library.Fonts.Bold or Library.Fonts.Medium
@@ -2342,21 +2267,19 @@ function Library:CreateWindow(config)
                             currentSelected = item
                             ListboxObj.Value = currentSelected
                             if flag then Library.Flags[flag] = currentSelected end
-                            updateListVisuals()
+                            refreshItems()
                             task.spawn(callback, item)
                         end)
-
-                        listButtons[item] = ItemBtn
                     end
                 end
 
-                buildListItems()
+                refreshItems()
 
                 local function setListbox(val, ignoreCallback)
                     currentSelected = val
                     ListboxObj.Value = currentSelected
                     if flag then Library.Flags[flag] = currentSelected end
-                    updateListVisuals()
+                    refreshItems()
                     if not ignoreCallback then
                         task.spawn(callback, val)
                     end
@@ -2365,22 +2288,16 @@ function Library:CreateWindow(config)
                 ListboxObj.Set = setListbox
                 ListboxObj.SetValue = setListbox
                 ListboxObj.RawSet = function(val) setListbox(val, true) end
-                ListboxObj.Refresh = function(selfOrItems, newItems)
-                    local itms = newItems or selfOrItems
-                    if type(itms) == "table" then
-                        items = itms
-                        ListboxObj.Items = items
-                        ListboxObj.Values = items
-                        buildListItems()
-                    end
+                ListboxObj.Refresh = function(newItems)
+                    items = newItems
+                    ListboxObj.Items = newItems
+                    refreshItems()
                 end
-                ListboxObj.SetValues = ListboxObj.Refresh
-                ListboxObj.OnChanged = function(selfOrFn, fn)
-                    local targetFn = fn or selfOrFn
+                ListboxObj.OnChanged = function(fn)
                     local oldCallback = callback
                     callback = function(v)
                         oldCallback(v)
-                        targetFn(v)
+                        fn(v)
                     end
                 end
 
@@ -2393,9 +2310,9 @@ function Library:CreateWindow(config)
             end
 
             -- BUTTON
-            function SectionObj:AddButton(arg1, arg2)
-                local idx, btnConfig = normalizeArgs(arg1, arg2)
-                local name = btnConfig.Name or btnConfig.Text or btnConfig.Title or idx or "Button"
+            function SectionObj:AddButton(btnConfig)
+                btnConfig = btnConfig or {}
+                local name = btnConfig.Name or btnConfig.Text or "Button"
                 local callback = btnConfig.Callback or btnConfig.Func or function() end
 
                 local Button = Instance.new("TextButton")
@@ -2439,31 +2356,17 @@ function Library:CreateWindow(config)
                     task.spawn(callback)
                 end)
 
-                local BtnObj = {
-                    Type = "Button",
-                    Name = name,
-                    Instance = Button,
-                    SetText = function(selfOrTxt, txt)
-                        local t = txt or selfOrTxt
-                        Button.Text = tostring(t)
-                    end
-                }
-
-                if idx then
-                    Library.Buttons[idx] = BtnObj
-                end
-
-                return BtnObj
+                return Button
             end
 
             -- TEXT INPUT
-            function SectionObj:AddInput(arg1, arg2)
-                local idx, inputConfig = normalizeArgs(arg1, arg2)
-                local name = inputConfig.Name or inputConfig.Text or idx or "Input"
+            function SectionObj:AddInput(inputConfig)
+                inputConfig = inputConfig or {}
+                local name = inputConfig.Name or inputConfig.Text or "Input"
                 local placeholder = inputConfig.Placeholder or inputConfig.PlaceholderText or "Type here..."
                 local default = inputConfig.Default or inputConfig.Value or inputConfig.Text or ""
                 local callback = inputConfig.Callback or inputConfig.Func or function() end
-                local flag = inputConfig.Flag or inputConfig.Pointer or idx
+                local flag = inputConfig.Flag or inputConfig.Pointer
 
                 local InputFrame = Instance.new("Frame")
                 InputFrame.Name = name .. "_InputFrame"
@@ -2528,7 +2431,7 @@ function Library:CreateWindow(config)
                 }
 
                 local function setInput(text, ignoreCallback)
-                    currentText = tostring(text or "")
+                    currentText = tostring(text)
                     TextBox.Text = currentText
                     InputObj.Value = currentText
                     if flag then Library.Flags[flag] = currentText end
@@ -2540,12 +2443,11 @@ function Library:CreateWindow(config)
                 InputObj.Set = setInput
                 InputObj.SetValue = setInput
                 InputObj.RawSet = function(text) setInput(text, true) end
-                InputObj.OnChanged = function(selfOrFn, fn)
-                    local targetFn = fn or selfOrFn
+                InputObj.OnChanged = function(fn)
                     local oldCallback = callback
                     callback = function(t, e)
                         oldCallback(t, e)
-                        targetFn(t, e)
+                        fn(t, e)
                     end
                 end
 
@@ -2570,734 +2472,28 @@ function Library:CreateWindow(config)
             end
 
             -- LABEL
-            function SectionObj:AddLabel(arg1, arg2)
-                local text = ""
-                if arg2 ~= nil then
-                    if type(arg2) == "table" then
-                        text = arg2.Text or arg2.Name or arg1
-                    else
-                        text = tostring(arg2)
-                    end
-                elseif type(arg1) == "table" then
-                    text = arg1.Text or arg1.Name or ""
-                else
-                    text = tostring(arg1 or "")
-                end
-
-                local LabelFrame = Instance.new("Frame")
-                LabelFrame.Name = "LabelFrame"
-                LabelFrame.Size = UDim2.new(1, 0, 0, 22)
-                LabelFrame.BackgroundTransparency = 1
-                LabelFrame.ZIndex = 10
-                LabelFrame.Parent = CardContainer
-
+            function SectionObj:AddLabel(text)
                 local Label = Instance.new("TextLabel")
-                Label.Size = UDim2.new(1, -60, 1, 0)
+                Label.Size = UDim2.new(1, 0, 0, 20)
                 Label.BackgroundTransparency = 1
-                Label.Text = text
+                Label.Text = tostring(text)
                 Label.TextColor3 = Library.Theme.Text
                 Label.Font = Library.Fonts.Medium
                 Label.TextSize = 12
                 Label.TextXAlignment = Enum.TextXAlignment.Left
                 Label.ZIndex = 10
-                Label.Parent = LabelFrame
+                Label.Parent = CardContainer
                 Library:RegisterThemeObject(Label, "TextColor3", "Text")
 
-                local RightElements = Instance.new("Frame")
-                RightElements.Name = "RightElements"
-                RightElements.Size = UDim2.new(0, 130, 1, 0)
-                RightElements.Position = UDim2.new(1, -130, 0, 0)
-                RightElements.BackgroundTransparency = 1
-                RightElements.ZIndex = 10
-                RightElements.Parent = LabelFrame
-
-                local RightLayout = Instance.new("UIListLayout")
-                RightLayout.FillDirection = Enum.FillDirection.Horizontal
-                RightLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
-                RightLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-                RightLayout.SortOrder = Enum.SortOrder.LayoutOrder
-                RightLayout.Padding = UDim.new(0, 6)
-                RightLayout.Parent = RightElements
-
-                local LabelObj = {
-                    Type = "Label",
-                    Text = text,
-                    Instance = Label,
-                    RightElements = RightElements
+                return {
+                    Set = function(newText)
+                        Label.Text = tostring(newText)
+                    end,
+                    SetText = function(newText)
+                        Label.Text = tostring(newText)
+                    end
                 }
-
-                local function setLabelText(newText)
-                    Label.Text = tostring(newText)
-                    LabelObj.Text = tostring(newText)
-                end
-
-                LabelObj.Set = setLabelText
-                LabelObj.SetText = setLabelText
-
-                function LabelObj:AddKeyPicker(kbArg1, kbArg2)
-                    local kbIdx, kbConfig = normalizeArgs(kbArg1, kbArg2)
-                    local defaultKey = kbConfig.Default or Enum.KeyCode.Unknown
-                    if type(defaultKey) == "string" then
-                        defaultKey = Enum.KeyCode[defaultKey] or Enum.KeyCode.Unknown
-                    end
-                    local kbCallback = kbConfig.Callback or kbConfig.Func or function() end
-                    local kbFlag = kbConfig.Flag or kbConfig.Pointer or kbIdx
-                    local currentKey = defaultKey
-                    local binding = false
-
-                    local KeyBtn = Instance.new("TextButton")
-                    KeyBtn.Name = "KeybindBtn"
-                    KeyBtn.Size = UDim2.new(0, 28, 0, 16)
-                    KeyBtn.BackgroundColor3 = Library.Theme.ItemBg
-                    KeyBtn.BorderSizePixel = 0
-                    KeyBtn.Text = (currentKey == Enum.KeyCode.Unknown and "..." or currentKey.Name)
-                    KeyBtn.TextColor3 = Library.Theme.TextDark
-                    KeyBtn.Font = Library.Fonts.Bold
-                    KeyBtn.TextSize = 10
-                    KeyBtn.AutoButtonColor = false
-                    KeyBtn.LayoutOrder = 5
-                    KeyBtn.ZIndex = 11
-                    KeyBtn.Parent = RightElements
-
-                    local KeyCorner = Instance.new("UICorner")
-                    KeyCorner.CornerRadius = UDim.new(0, 6)
-                    KeyCorner.Parent = KeyBtn
-
-                    local KeyStroke = Instance.new("UIStroke")
-                    KeyStroke.Color = Library.Theme.CardBorder
-                    KeyStroke.Thickness = 1.2
-                    KeyStroke.Parent = KeyBtn
-
-                    local KeybindObj = {
-                        Type = "Keybind",
-                        Value = currentKey,
-                        Flag = kbFlag,
-                        Callback = kbCallback
-                    }
-
-                    local function setKey(k, ignoreCallback)
-                        if type(k) == "string" then
-                            k = Enum.KeyCode[k] or Enum.KeyCode.Unknown
-                        end
-                        currentKey = k
-                        KeybindObj.Value = currentKey
-                        KeyBtn.Text = (currentKey == Enum.KeyCode.Unknown and "..." or currentKey.Name)
-                        if kbFlag then Library.Flags[kbFlag] = currentKey end
-                        if not ignoreCallback then
-                            task.spawn(kbCallback, currentKey)
-                        end
-                    end
-
-                    KeybindObj.Set = setKey
-                    KeybindObj.SetValue = setKey
-                    KeybindObj.RawSet = function(k) setKey(k, true) end
-                    KeybindObj.OnChanged = function(selfOrFn, fn)
-                        local targetFn = fn or selfOrFn
-                        local oldCallback = kbCallback
-                        kbCallback = function(k)
-                            oldCallback(k)
-                            targetFn(k)
-                        end
-                    end
-
-                    if kbFlag then
-                        Library.Registry[kbFlag] = KeybindObj
-                        Library.Options[kbFlag] = KeybindObj
-                    end
-
-                    KeyBtn.MouseButton1Click:Connect(function()
-                        binding = true
-                        KeyBtn.Text = "..."
-                        KeyBtn.TextColor3 = Library.Theme.Accent
-                    end)
-
-                    UserInputService.InputBegan:Connect(function(input, gpe)
-                        if binding and input.UserInputType == Enum.UserInputType.Keyboard then
-                            if input.KeyCode == Enum.KeyCode.Escape then
-                                currentKey = Enum.KeyCode.Unknown
-                            else
-                                currentKey = input.KeyCode
-                            end
-                            KeyBtn.Text = (currentKey == Enum.KeyCode.Unknown and "..." or currentKey.Name)
-                            binding = false
-                            KeybindObj.Value = currentKey
-                            if kbFlag then Library.Flags[kbFlag] = currentKey end
-                            KeyBtn.TextColor3 = Library.Theme.TextDark
-                            task.spawn(kbCallback, currentKey)
-                        elseif not gpe and not binding and currentKey ~= Enum.KeyCode.Unknown and input.KeyCode == currentKey then
-                            if Library.ToggleKeybind == KeybindObj or Library.ToggleKeybind == currentKey then
-                                if WindowObj and WindowObj.Toggle then
-                                    WindowObj:Toggle()
-                                end
-                            end
-                            task.spawn(kbCallback, currentKey)
-                        end
-                    end)
-
-                    return LabelObj
-                end
-                LabelObj.AddKeybind = LabelObj.AddKeyPicker
-
-                function LabelObj:AddColorPicker(cpArg1, cpArg2)
-                    local cpIdx, cpConfig = normalizeArgs(cpArg1, cpArg2)
-                    local cpDefault = cpConfig.Default or Library.Theme.Accent
-                    if type(cpDefault) == "string" then
-                        local success, col = pcall(function() return Color3.fromHex(cpDefault) end)
-                        if success and col then cpDefault = col end
-                    end
-                    local cpCallback = cpConfig.Callback or cpConfig.Func or function() end
-                    local cpFlag = cpConfig.Flag or cpConfig.Pointer or cpIdx
-
-                    local ColorBox = Instance.new("TextButton")
-                    ColorBox.Name = "ColorBox"
-                    ColorBox.Size = UDim2.new(0, 18, 0, 14)
-                    ColorBox.BackgroundColor3 = cpDefault
-                    ColorBox.BorderSizePixel = 0
-                    ColorBox.Text = ""
-                    ColorBox.AutoButtonColor = false
-                    ColorBox.LayoutOrder = 10
-                    ColorBox.ZIndex = 11
-                    ColorBox.Parent = RightElements
-
-                    local BoxCorner = Instance.new("UICorner")
-                    BoxCorner.CornerRadius = UDim.new(0, 6)
-                    BoxCorner.Parent = ColorBox
-
-                    local BoxStroke = Instance.new("UIStroke")
-                    BoxStroke.Color = Library.Theme.CardBorder
-                    BoxStroke.Thickness = 1.2
-                    BoxStroke.Parent = ColorBox
-
-                    local currentColor = cpDefault
-                    if cpFlag then Library.Flags[cpFlag] = currentColor end
-
-                    local PickerFrame = Instance.new("Frame")
-                    PickerFrame.Name = "ColorPickerPopup"
-                    PickerFrame.Size = UDim2.new(0, 160, 0, 140)
-                    PickerFrame.BackgroundColor3 = Library.Theme.CardBackground
-                    PickerFrame.BorderSizePixel = 0
-                    PickerFrame.Visible = false
-                    PickerFrame.ZIndex = 60
-                    PickerFrame.Parent = Overlay
-                    Library:RegisterThemeObject(PickerFrame, "BackgroundColor3", "CardBackground")
-
-                    local PickerCorner = Instance.new("UICorner")
-                    PickerCorner.CornerRadius = UDim.new(0, 14)
-                    PickerCorner.Parent = PickerFrame
-
-                    local PickerStroke = Instance.new("UIStroke")
-                    PickerStroke.Color = Library.Theme.CardBorder
-                    PickerStroke.Thickness = 1.2
-                    PickerStroke.Parent = PickerFrame
-
-                    local SatVal = Instance.new("TextButton")
-                    SatVal.Name = "SatVal"
-                    SatVal.Size = UDim2.new(1, -16, 0, 90)
-                    SatVal.Position = UDim2.new(0, 8, 0, 8)
-                    SatVal.BackgroundColor3 = cpDefault
-                    SatVal.BorderSizePixel = 0
-                    SatVal.Text = ""
-                    SatVal.AutoButtonColor = false
-                    SatVal.ZIndex = 61
-                    SatVal.Parent = PickerFrame
-
-                    local SatValCorner = Instance.new("UICorner")
-                    SatValCorner.CornerRadius = UDim.new(0, 10)
-                    SatValCorner.Parent = SatVal
-
-                    local HueBar = Instance.new("TextButton")
-                    HueBar.Name = "HueBar"
-                    HueBar.Size = UDim2.new(1, -16, 0, 14)
-                    HueBar.Position = UDim2.new(0, 8, 0, 106)
-                    HueBar.BorderSizePixel = 0
-                    HueBar.Text = ""
-                    HueBar.AutoButtonColor = false
-                    HueBar.ZIndex = 61
-                    HueBar.Parent = PickerFrame
-
-                    local HueCorner = Instance.new("UICorner")
-                    HueCorner.CornerRadius = UDim.new(0, 8)
-                    HueCorner.Parent = HueBar
-
-                    local HueGradient = Instance.new("UIGradient")
-                    HueGradient.Color = ColorSequence.new({
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
-                        ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),
-                        ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
-                        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)),
-                        ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),
-                        ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
-                    })
-                    HueGradient.Parent = HueBar
-
-                    local h, s, v = cpDefault:ToHSV()
-
-                    local ColorPickerObj = {
-                        Type = "ColorPicker",
-                        Value = currentColor,
-                        Flag = cpFlag,
-                        Callback = cpCallback
-                    }
-
-                    local function updateColor(ignoreCallback)
-                        currentColor = Color3.fromHSV(h, s, v)
-                        ColorPickerObj.Value = currentColor
-                        ColorBox.BackgroundColor3 = currentColor
-                        SatVal.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
-                        if cpFlag then Library.Flags[cpFlag] = currentColor end
-                        if not ignoreCallback then
-                            task.spawn(cpCallback, currentColor)
-                        end
-                    end
-
-                    local function setColor(col, ignoreCallback)
-                        if typeof(col) == "Color3" then
-                            currentColor = col
-                        elseif type(col) == "string" then
-                            local success, c = pcall(function() return Color3.fromHex(col) end)
-                            if success and c then currentColor = c end
-                        elseif type(col) == "table" and col.r and col.g and col.b then
-                            currentColor = Color3.fromRGB(col.r, col.g, col.b)
-                        elseif type(col) == "table" and col[1] and col[2] and col[3] then
-                            currentColor = Color3.fromRGB(col[1], col[2], col[3])
-                        end
-                        h, s, v = currentColor:ToHSV()
-                        ColorPickerObj.Value = currentColor
-                        ColorBox.BackgroundColor3 = currentColor
-                        SatVal.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
-                        if cpFlag then Library.Flags[cpFlag] = currentColor end
-                        if not ignoreCallback then
-                            task.spawn(cpCallback, currentColor)
-                        end
-                    end
-
-                    ColorPickerObj.Set = setColor
-                    ColorPickerObj.SetValue = setColor
-                    ColorPickerObj.SetValueRGB = setColor
-                    ColorPickerObj.RawSet = function(col) setColor(col, true) end
-                    ColorPickerObj.OnChanged = function(selfOrFn, fn)
-                        local targetFn = fn or selfOrFn
-                        local oldCallback = cpCallback
-                        cpCallback = function(c)
-                            oldCallback(c)
-                            targetFn(c)
-                        end
-                    end
-
-                    if cpFlag then
-                        Library.Registry[cpFlag] = ColorPickerObj
-                        Library.Options[cpFlag] = ColorPickerObj
-                    end
-
-                    ColorBox.MouseButton1Click:Connect(function()
-                        PickerFrame.Visible = not PickerFrame.Visible
-                        if PickerFrame.Visible then
-                            local absPos = ColorBox.AbsolutePosition
-                            local mainPos = MainFrame.AbsolutePosition
-                            PickerFrame.Position = UDim2.new(0, absPos.X - mainPos.X - 140, 0, absPos.Y - mainPos.Y + 20)
-                            PickerFrame:SetAttribute("ActivatorPos", Vector2.new(absPos.X, absPos.Y))
-                        end
-                    end)
-
-                    local draggingHue = false
-                    HueBar.InputBegan:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                            draggingHue = true
-                            local percent = math.clamp((input.Position.X - HueBar.AbsolutePosition.X) / HueBar.AbsoluteSize.X, 0, 1)
-                            h = 1 - percent
-                            updateColor()
-                        end
-                    end)
-
-                    UserInputService.InputEnded:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                            draggingHue = false
-                        end
-                    end)
-
-                    UserInputService.InputChanged:Connect(function(input)
-                        if draggingHue and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                            local percent = math.clamp((input.Position.X - HueBar.AbsolutePosition.X) / HueBar.AbsoluteSize.X, 0, 1)
-                            h = 1 - percent
-                            updateColor()
-                        end
-                    end)
-
-                    return LabelObj
-                end
-
-                return LabelObj
             end
-
-            -- COLOR PICKER ON SECTION
-            function SectionObj:AddColorPicker(arg1, arg2)
-                local idx, cpConfig = normalizeArgs(arg1, arg2)
-                local name = cpConfig.Name or cpConfig.Text or idx or "Color Picker"
-                local default = cpConfig.Default or Library.Theme.Accent
-                if type(default) == "string" then
-                    local success, col = pcall(function() return Color3.fromHex(default) end)
-                    if success and col then default = col end
-                end
-                local callback = cpConfig.Callback or cpConfig.Func or function() end
-                local flag = cpConfig.Flag or cpConfig.Pointer or idx
-
-                local CPFrame = Instance.new("Frame")
-                CPFrame.Name = name .. "_ColorPicker"
-                CPFrame.Size = UDim2.new(1, 0, 0, 24)
-                CPFrame.BackgroundTransparency = 1
-                CPFrame.ZIndex = 10
-                CPFrame.Parent = CardContainer
-
-                local Label = Instance.new("TextLabel")
-                Label.Size = UDim2.new(1, -60, 1, 0)
-                Label.BackgroundTransparency = 1
-                Label.Text = name
-                Label.TextColor3 = Library.Theme.Text
-                Label.Font = Library.Fonts.Medium
-                Label.TextSize = 12
-                Label.TextXAlignment = Enum.TextXAlignment.Left
-                Label.ZIndex = 10
-                Label.Parent = CPFrame
-                Library:RegisterThemeObject(Label, "TextColor3", "Text")
-
-                local RightElements = Instance.new("Frame")
-                RightElements.Name = "RightElements"
-                RightElements.Size = UDim2.new(0, 130, 1, 0)
-                RightElements.Position = UDim2.new(1, -130, 0, 0)
-                RightElements.BackgroundTransparency = 1
-                RightElements.ZIndex = 10
-                RightElements.Parent = CPFrame
-
-                local RightLayout = Instance.new("UIListLayout")
-                RightLayout.FillDirection = Enum.FillDirection.Horizontal
-                RightLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
-                RightLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-                RightLayout.SortOrder = Enum.SortOrder.LayoutOrder
-                RightLayout.Padding = UDim.new(0, 6)
-                RightLayout.Parent = RightElements
-
-                local ColorBox = Instance.new("TextButton")
-                ColorBox.Name = "ColorBox"
-                ColorBox.Size = UDim2.new(0, 24, 0, 16)
-                ColorBox.BackgroundColor3 = default
-                ColorBox.BorderSizePixel = 0
-                ColorBox.Text = ""
-                ColorBox.AutoButtonColor = false
-                ColorBox.LayoutOrder = 10
-                ColorBox.ZIndex = 11
-                ColorBox.Parent = RightElements
-
-                local BoxCorner = Instance.new("UICorner")
-                BoxCorner.CornerRadius = UDim.new(0, 6)
-                BoxCorner.Parent = ColorBox
-
-                local BoxStroke = Instance.new("UIStroke")
-                BoxStroke.Color = Library.Theme.CardBorder
-                BoxStroke.Thickness = 1.2
-                BoxStroke.Parent = ColorBox
-
-                local currentColor = default
-                if flag then Library.Flags[flag] = currentColor end
-
-                local PickerFrame = Instance.new("Frame")
-                PickerFrame.Name = "ColorPickerPopup"
-                PickerFrame.Size = UDim2.new(0, 160, 0, 140)
-                PickerFrame.BackgroundColor3 = Library.Theme.CardBackground
-                PickerFrame.BorderSizePixel = 0
-                PickerFrame.Visible = false
-                PickerFrame.ZIndex = 60
-                PickerFrame.Parent = Overlay
-                Library:RegisterThemeObject(PickerFrame, "BackgroundColor3", "CardBackground")
-
-                local PickerCorner = Instance.new("UICorner")
-                PickerCorner.CornerRadius = UDim.new(0, 14)
-                PickerCorner.Parent = PickerFrame
-
-                local PickerStroke = Instance.new("UIStroke")
-                PickerStroke.Color = Library.Theme.CardBorder
-                PickerStroke.Thickness = 1.2
-                PickerStroke.Parent = PickerFrame
-
-                local SatVal = Instance.new("TextButton")
-                SatVal.Name = "SatVal"
-                SatVal.Size = UDim2.new(1, -16, 0, 90)
-                SatVal.Position = UDim2.new(0, 8, 0, 8)
-                SatVal.BackgroundColor3 = default
-                SatVal.BorderSizePixel = 0
-                SatVal.Text = ""
-                SatVal.AutoButtonColor = false
-                SatVal.ZIndex = 61
-                SatVal.Parent = PickerFrame
-
-                local SatValCorner = Instance.new("UICorner")
-                SatValCorner.CornerRadius = UDim.new(0, 10)
-                SatValCorner.Parent = SatVal
-
-                local HueBar = Instance.new("TextButton")
-                HueBar.Name = "HueBar"
-                HueBar.Size = UDim2.new(1, -16, 0, 14)
-                HueBar.Position = UDim2.new(0, 8, 0, 106)
-                HueBar.BorderSizePixel = 0
-                HueBar.Text = ""
-                HueBar.AutoButtonColor = false
-                HueBar.ZIndex = 61
-                HueBar.Parent = PickerFrame
-
-                local HueCorner = Instance.new("UICorner")
-                HueCorner.CornerRadius = UDim.new(0, 8)
-                HueCorner.Parent = HueBar
-
-                local HueGradient = Instance.new("UIGradient")
-                HueGradient.Color = ColorSequence.new({
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
-                    ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),
-                    ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
-                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)),
-                    ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),
-                    ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
-                })
-                HueGradient.Parent = HueBar
-
-                local h, s, v = default:ToHSV()
-
-                local ColorPickerObj = {
-                    Type = "ColorPicker",
-                    Name = name,
-                    Value = currentColor,
-                    Flag = flag,
-                    Callback = callback
-                }
-
-                local function updateColor(ignoreCallback)
-                    currentColor = Color3.fromHSV(h, s, v)
-                    ColorPickerObj.Value = currentColor
-                    ColorBox.BackgroundColor3 = currentColor
-                    SatVal.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
-                    if flag then Library.Flags[flag] = currentColor end
-                    if not ignoreCallback then
-                        task.spawn(callback, currentColor)
-                    end
-                end
-
-                local function setColor(col, ignoreCallback)
-                    if typeof(col) == "Color3" then
-                        currentColor = col
-                    elseif type(col) == "string" then
-                        local success, c = pcall(function() return Color3.fromHex(col) end)
-                        if success and c then currentColor = c end
-                    elseif type(col) == "table" and col.r and col.g and col.b then
-                        currentColor = Color3.fromRGB(col.r, col.g, col.b)
-                    elseif type(col) == "table" and col[1] and col[2] and col[3] then
-                        currentColor = Color3.fromRGB(col[1], col[2], col[3])
-                    end
-                    h, s, v = currentColor:ToHSV()
-                    ColorPickerObj.Value = currentColor
-                    ColorBox.BackgroundColor3 = currentColor
-                    SatVal.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
-                    if flag then Library.Flags[flag] = currentColor end
-                    if not ignoreCallback then
-                        task.spawn(callback, currentColor)
-                    end
-                end
-
-                ColorPickerObj.Set = setColor
-                ColorPickerObj.SetValue = setColor
-                ColorPickerObj.SetValueRGB = setColor
-                ColorPickerObj.RawSet = function(col) setColor(col, true) end
-                ColorPickerObj.OnChanged = function(selfOrFn, fn)
-                    local targetFn = fn or selfOrFn
-                    local oldCallback = callback
-                    callback = function(c)
-                        oldCallback(c)
-                        targetFn(c)
-                    end
-                end
-
-                if flag then
-                    Library.Registry[flag] = ColorPickerObj
-                    Library.Options[flag] = ColorPickerObj
-                end
-
-                ColorBox.MouseButton1Click:Connect(function()
-                    PickerFrame.Visible = not PickerFrame.Visible
-                    if PickerFrame.Visible then
-                        local absPos = ColorBox.AbsolutePosition
-                        local mainPos = MainFrame.AbsolutePosition
-                        PickerFrame.Position = UDim2.new(0, absPos.X - mainPos.X - 140, 0, absPos.Y - mainPos.Y + 20)
-                        PickerFrame:SetAttribute("ActivatorPos", Vector2.new(absPos.X, absPos.Y))
-                    end
-                end)
-
-                local draggingHue = false
-                HueBar.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        draggingHue = true
-                        local percent = math.clamp((input.Position.X - HueBar.AbsolutePosition.X) / HueBar.AbsoluteSize.X, 0, 1)
-                        h = 1 - percent
-                        updateColor()
-                    end
-                end)
-
-                UserInputService.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        draggingHue = false
-                    end
-                end)
-
-                UserInputService.InputChanged:Connect(function(input)
-                    if draggingHue and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                        local percent = math.clamp((input.Position.X - HueBar.AbsolutePosition.X) / HueBar.AbsoluteSize.X, 0, 1)
-                        h = 1 - percent
-                        updateColor()
-                    end
-                end)
-
-                return ColorPickerObj
-            end
-
-            -- KEY PICKER ON SECTION
-            function SectionObj:AddKeyPicker(arg1, arg2)
-                local idx, kbConfig = normalizeArgs(arg1, arg2)
-                local name = kbConfig.Name or kbConfig.Text or idx or "Keybind"
-                local defaultKey = kbConfig.Default or Enum.KeyCode.Unknown
-                if type(defaultKey) == "string" then
-                    defaultKey = Enum.KeyCode[defaultKey] or Enum.KeyCode.Unknown
-                end
-                local callback = kbConfig.Callback or kbConfig.Func or function() end
-                local flag = kbConfig.Flag or kbConfig.Pointer or idx
-                local currentKey = defaultKey
-                local binding = false
-
-                local KBFrame = Instance.new("Frame")
-                KBFrame.Name = name .. "_Keybind"
-                KBFrame.Size = UDim2.new(1, 0, 0, 24)
-                KBFrame.BackgroundTransparency = 1
-                KBFrame.ZIndex = 10
-                KBFrame.Parent = CardContainer
-
-                local Label = Instance.new("TextLabel")
-                Label.Size = UDim2.new(1, -60, 1, 0)
-                Label.BackgroundTransparency = 1
-                Label.Text = name
-                Label.TextColor3 = Library.Theme.Text
-                Label.Font = Library.Fonts.Medium
-                Label.TextSize = 12
-                Label.TextXAlignment = Enum.TextXAlignment.Left
-                Label.ZIndex = 10
-                Label.Parent = KBFrame
-                Library:RegisterThemeObject(Label, "TextColor3", "Text")
-
-                local RightElements = Instance.new("Frame")
-                RightElements.Name = "RightElements"
-                RightElements.Size = UDim2.new(0, 130, 1, 0)
-                RightElements.Position = UDim2.new(1, -130, 0, 0)
-                RightElements.BackgroundTransparency = 1
-                RightElements.ZIndex = 10
-                RightElements.Parent = KBFrame
-
-                local RightLayout = Instance.new("UIListLayout")
-                RightLayout.FillDirection = Enum.FillDirection.Horizontal
-                RightLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
-                RightLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-                RightLayout.SortOrder = Enum.SortOrder.LayoutOrder
-                RightLayout.Padding = UDim.new(0, 6)
-                RightLayout.Parent = RightElements
-
-                local KeyBtn = Instance.new("TextButton")
-                KeyBtn.Name = "KeybindBtn"
-                KeyBtn.Size = UDim2.new(0, 28, 0, 16)
-                KeyBtn.BackgroundColor3 = Library.Theme.ItemBg
-                KeyBtn.BorderSizePixel = 0
-                KeyBtn.Text = (currentKey == Enum.KeyCode.Unknown and "..." or currentKey.Name)
-                KeyBtn.TextColor3 = Library.Theme.TextDark
-                KeyBtn.Font = Library.Fonts.Bold
-                KeyBtn.TextSize = 10
-                KeyBtn.AutoButtonColor = false
-                KeyBtn.LayoutOrder = 5
-                KeyBtn.ZIndex = 11
-                KeyBtn.Parent = RightElements
-
-                local KeyCorner = Instance.new("UICorner")
-                KeyCorner.CornerRadius = UDim.new(0, 6)
-                KeyCorner.Parent = KeyBtn
-
-                local KeyStroke = Instance.new("UIStroke")
-                KeyStroke.Color = Library.Theme.CardBorder
-                KeyStroke.Thickness = 1.2
-                KeyStroke.Parent = KeyBtn
-
-                local KeybindObj = {
-                    Type = "Keybind",
-                    Name = name,
-                    Value = currentKey,
-                    Flag = flag,
-                    Callback = callback
-                }
-
-                local function setKey(k, ignoreCallback)
-                    if type(k) == "string" then
-                        k = Enum.KeyCode[k] or Enum.KeyCode.Unknown
-                    end
-                    currentKey = k
-                    KeybindObj.Value = currentKey
-                    KeyBtn.Text = (currentKey == Enum.KeyCode.Unknown and "..." or currentKey.Name)
-                    if flag then Library.Flags[flag] = currentKey end
-                    if not ignoreCallback then
-                        task.spawn(callback, currentKey)
-                    end
-                end
-
-                KeybindObj.Set = setKey
-                KeybindObj.SetValue = setKey
-                KeybindObj.RawSet = function(k) setKey(k, true) end
-                KeybindObj.OnChanged = function(selfOrFn, fn)
-                    local targetFn = fn or selfOrFn
-                    local oldCallback = callback
-                    callback = function(k)
-                        oldCallback(k)
-                        targetFn(k)
-                    end
-                end
-
-                if flag then
-                    Library.Registry[flag] = KeybindObj
-                    Library.Options[flag] = KeybindObj
-                end
-
-                KeyBtn.MouseButton1Click:Connect(function()
-                    binding = true
-                    KeyBtn.Text = "..."
-                    KeyBtn.TextColor3 = Library.Theme.Accent
-                end)
-
-                UserInputService.InputBegan:Connect(function(input, gpe)
-                    if binding and input.UserInputType == Enum.UserInputType.Keyboard then
-                        if input.KeyCode == Enum.KeyCode.Escape then
-                            currentKey = Enum.KeyCode.Unknown
-                        else
-                            currentKey = input.KeyCode
-                        end
-                        KeyBtn.Text = (currentKey == Enum.KeyCode.Unknown and "..." or currentKey.Name)
-                        binding = false
-                        KeybindObj.Value = currentKey
-                        if flag then Library.Flags[flag] = currentKey end
-                        KeyBtn.TextColor3 = Library.Theme.TextDark
-                        task.spawn(callback, currentKey)
-                    elseif not gpe and not binding and currentKey ~= Enum.KeyCode.Unknown and input.KeyCode == currentKey then
-                        if Library.ToggleKeybind == KeybindObj or Library.ToggleKeybind == currentKey then
-                            if WindowObj and WindowObj.Toggle then
-                                WindowObj:Toggle()
-                            end
-                        end
-                        task.spawn(callback, currentKey)
-                    end
-                end)
-
-                return KeybindObj
-            end
-            SectionObj.AddKeybind = SectionObj.AddKeyPicker
 
             -- DIVIDER
             function SectionObj:AddDivider()
@@ -3317,12 +2513,11 @@ function Library:CreateWindow(config)
         TabObj.AddSection = TabObj.CreateSection
         TabObj.AddLeftGroupbox = function(self, title) return self:CreateSection(title, "Left") end
         TabObj.AddRightGroupbox = function(self, title) return self:CreateSection(title, "Right") end
-        TabObj.AddLeftTabbox = TabObj.AddLeftGroupbox
-        TabObj.AddRightTabbox = TabObj.AddRightGroupbox
 
         return TabObj
     end
 
+    WindowObj.AddTab = WindowObj.CreateTab
 
     -- NOTIFICATION
     function Library:Notify(notifConfig, durationOverride)
@@ -3412,8 +2607,8 @@ function Library:CreateWindow(config)
             "PureObsidian"
         }
 
-        targetSection:AddDropdown("ThemeDropdown", {
-            Text = "Select Theme",
+        targetSection:AddDropdown({
+            Name = "Select Theme",
             Options = themeList,
             Default = Library.CurrentTheme,
             Callback = function(theme)
@@ -3421,12 +2616,12 @@ function Library:CreateWindow(config)
             end
         })
 
-        local AccentToggle = targetSection:AddToggle("CustomAccentToggle", {
-            Text = "Custom Accent Color",
+        local AccentToggle = targetSection:AddToggle({
+            Name = "Custom Accent Color",
             Default = false,
             Callback = function() end
         })
-        AccentToggle:AddColorPicker("CustomAccent", {
+        AccentToggle:AddColorPicker({
             Default = Library.Theme.Accent,
             Callback = function(col)
                 Library:SetAccent(col)
@@ -3438,50 +2633,33 @@ function Library:CreateWindow(config)
     local SaveManager = {
         Folder = "NamelessConfigs",
         IgnoreIndexes = {},
-        Library = Library,
-        SelectedConfig = ""
+        Library = Library
     }
 
     function SaveManager:SetLibrary(lib)
         self.Library = lib or Library
-        if self.Library then
-            self.Library.SaveManager = self
-        end
     end
 
     function SaveManager:SetFolder(folder)
         self.Folder = folder or "NamelessConfigs"
-        if self.Library then
-            self.Library.Folder = self.Folder
-        end
+        self.Library.Folder = self.Folder
     end
 
     function SaveManager:SetIgnoreIndexes(indexes)
-        if type(indexes) == "table" then
-            for k, v in pairs(indexes) do
-                if type(k) == "number" and type(v) == "string" then
-                    self.IgnoreIndexes[v] = true
-                elseif type(k) == "string" and v == true then
-                    self.IgnoreIndexes[k] = true
-                end
-            end
+        for _, idx in ipairs(indexes) do
+            self.IgnoreIndexes[idx] = true
         end
     end
 
     function SaveManager:IgnoreThemeSettings()
         self.IgnoreIndexes["Theme"] = true
-        self.IgnoreIndexes["ThemeDropdown"] = true
         self.IgnoreIndexes["CustomAccent"] = true
-        self.IgnoreIndexes["CustomAccentToggle"] = true
-        self.IgnoreIndexes["SaveManager_ConfigList"] = true
-        self.IgnoreIndexes["SaveManager_CustomConfigName"] = true
     end
 
     function SaveManager:EnsureFolder()
-        local folder = self.Folder or "NamelessConfigs"
+        local folder = self.Folder
         if makefolder and isfolder then
-            local normalized = folder:gsub("\\", "/")
-            local parts = normalized:split("/")
+            local parts = string.split(folder, "/")
             local current = ""
             for _, part in ipairs(parts) do
                 if #part > 0 then
@@ -3494,97 +2672,24 @@ function Library:CreateWindow(config)
         end
     end
 
-    SaveManager.CheckFolderTree = SaveManager.EnsureFolder
-
     function SaveManager:GetConfigs()
         self:EnsureFolder()
         local list = {}
-        if listfiles and isfolder and isfolder(self.Folder) then
-            local success, files = pcall(listfiles, self.Folder)
-            if success and type(files) == "table" then
+        if listfiles then
+            local success, files = pcall(function() return listfiles(self.Folder) end)
+            if success and files then
                 for _, file in ipairs(files) do
-                    local normalized = file:gsub("\\", "/")
-                    local name = normalized:match("([^/]+)%.[jJ][sS][oO][nN]$")
-                    if name and name:lower() ~= "autoload" then
+                    local name = file:match("([^/\\]+)%.json$")
+                    if name then
                         table.insert(list, name)
                     end
                 end
             end
         end
-        table.sort(list, function(a, b) return a:lower() < b:lower() end)
+        if #list == 0 then
+            table.insert(list, "default")
+        end
         return list
-    end
-
-    SaveManager.RefreshConfigList = function(self)
-        return self:GetConfigs()
-    end
-
-    function SaveManager:GetAutoloadName()
-        self:EnsureFolder()
-        local path = self.Folder .. "/autoload.txt"
-        if readfile and isfile and isfile(path) then
-            local success, name = pcall(readfile, path)
-            if success and name then
-                name = name:gsub("%s+", "")
-                if #name > 0 then
-                    return name
-                end
-            end
-        end
-        return nil
-    end
-
-    function SaveManager:SetAutoload(name)
-        if not name or name == "" then
-            self.Library:Notify({
-                Title = "Save Manager",
-                Content = "Please select or type a config name first.",
-                Duration = 3
-            })
-            return false
-        end
-        self:EnsureFolder()
-        if writefile then
-            local success, err = pcall(writefile, self.Folder .. "/autoload.txt", name)
-            if success then
-                self.Library:Notify({
-                    Title = "Save Manager",
-                    Content = "Set '" .. tostring(name) .. "' as autoload config",
-                    Duration = 3
-                })
-                return true
-            else
-                self.Library:Notify({
-                    Title = "Save Manager",
-                    Content = "Failed to set autoload: " .. tostring(err),
-                    Duration = 3
-                })
-            end
-        end
-        return false
-    end
-
-    function SaveManager:ClearAutoload()
-        self:EnsureFolder()
-        local path = self.Folder .. "/autoload.txt"
-        if isfile and isfile(path) and delfile then
-            pcall(delfile, path)
-            self.Library:Notify({
-                Title = "Save Manager",
-                Content = "Cleared autoload config",
-                Duration = 3
-            })
-            return true
-        end
-        return false
-    end
-
-    function SaveManager:LoadAutoloadConfig()
-        local autoName = self:GetAutoloadName()
-        if autoName then
-            return self:Load(autoName)
-        end
-        return false
     end
 
     function SaveManager:Save(name)
@@ -3601,45 +2706,17 @@ function Library:CreateWindow(config)
         end
         
         local data = {}
-        local lib = self.Library or Library
+        local lib = self.Library
         
         for flag, elem in pairs(lib.Registry or {}) do
             if elem and elem.Value ~= nil and not self.IgnoreIndexes[flag] then
-                data[flag] = {
-                    type = elem.Type or "Unknown",
-                    idx = flag,
-                    value = serializeValue(elem.Value)
-                }
+                data[flag] = serializeValue(elem.Value)
             end
         end
         
-        for flag, toggle in pairs(lib.Toggles or {}) do
-            if data[flag] == nil and toggle and toggle.Value ~= nil and not self.IgnoreIndexes[flag] then
-                data[flag] = {
-                    type = "Toggle",
-                    idx = flag,
-                    value = serializeValue(toggle.Value)
-                }
-            end
-        end
-
-        for flag, opt in pairs(lib.Options or {}) do
-            if data[flag] == nil and opt and opt.Value ~= nil and not self.IgnoreIndexes[flag] then
-                data[flag] = {
-                    type = opt.Type or "Option",
-                    idx = flag,
-                    value = serializeValue(opt.Value)
-                }
-            end
-        end
-
         for flag, val in pairs(lib.Flags or {}) do
             if data[flag] == nil and not self.IgnoreIndexes[flag] then
-                data[flag] = {
-                    type = "Flag",
-                    idx = flag,
-                    value = serializeValue(val)
-                }
+                data[flag] = serializeValue(val)
             end
         end
         
@@ -3650,7 +2727,7 @@ function Library:CreateWindow(config)
         if not success then
             self.Library:Notify({
                 Title = "Save Manager",
-                Content = "Failed to encode config: " .. tostring(encoded),
+                Content = "Failed to encode config data: " .. tostring(encoded),
                 Duration = 4
             })
             return false
@@ -3686,7 +2763,7 @@ function Library:CreateWindow(config)
         if not (readfile and isfile and isfile(path)) then
             self.Library:Notify({
                 Title = "Save Manager",
-                Content = "Config not found: " .. name,
+                Content = "Config file does not exist: " .. name,
                 Duration = 3
             })
             return false
@@ -3699,7 +2776,7 @@ function Library:CreateWindow(config)
         if not readSuccess or not content then
             self.Library:Notify({
                 Title = "Save Manager",
-                Content = "Failed to read file: " .. tostring(readErr),
+                Content = "Failed to read config: " .. tostring(readErr),
                 Duration = 4
             })
             return false
@@ -3711,26 +2788,15 @@ function Library:CreateWindow(config)
         if not decodeSuccess or type(data) ~= "table" then
             self.Library:Notify({
                 Title = "Save Manager",
-                Content = "Config file is corrupted.",
+                Content = "Config file is corrupted or invalid JSON.",
                 Duration = 4
             })
             return false
         end
         
-        local lib = self.Library or Library
-        for flag, itemData in pairs(data) do
+        local lib = self.Library
+        for flag, rawVal in pairs(data) do
             if not self.IgnoreIndexes[flag] then
-                local rawVal
-                if type(itemData) == "table" and itemData.value ~= nil then
-                    rawVal = itemData.value
-                elseif type(itemData) == "table" and itemData.key ~= nil then
-                    rawVal = itemData.key
-                elseif type(itemData) == "table" and itemData.text ~= nil then
-                    rawVal = itemData.text
-                else
-                    rawVal = itemData
-                end
-
                 local val = deserializeValue(rawVal)
                 lib.Flags[flag] = val
                 
@@ -3744,8 +2810,6 @@ function Library:CreateWindow(config)
                             elem:Set(val)
                         elseif elem.SetValue then
                             elem:SetValue(val)
-                        elseif elem.SetValueRGB and typeof(val) == "Color3" then
-                            elem:SetValueRGB(val)
                         end
                     end)
                     if not setSuccess then
@@ -3768,270 +2832,126 @@ function Library:CreateWindow(config)
         self:EnsureFolder()
         local path = self.Folder .. "/" .. name .. ".json"
         if isfile and isfile(path) and delfile then
-            local success = pcall(delfile, path)
-            if success then
-                self.Library:Notify({
-                    Title = "Save Manager",
-                    Content = "Deleted config: " .. name,
-                    Duration = 3
-                })
-                return true
+            delfile(path)
+            self.Library:Notify({
+                Title = "Save Manager",
+                Content = "Deleted config: " .. name,
+                Duration = 3
+            })
+            return true
+        end
+        return false
+    end
+
+    function SaveManager:SetAutoload(name)
+        self:EnsureFolder()
+        if writefile then
+            writefile(self.Folder .. "/autoload.txt", name or "default")
+            self.Library:Notify({
+                Title = "Save Manager",
+                Content = "Set '" .. tostring(name) .. "' as autoload config",
+                Duration = 3
+            })
+        end
+    end
+
+    function SaveManager:LoadAutoloadConfig()
+        self:EnsureFolder()
+        local path = self.Folder .. "/autoload.txt"
+        if readfile and isfile and isfile(path) then
+            local name = readfile(path)
+            if name and #name > 0 then
+                name = name:gsub("%s+", "")
+                return self:Load(name)
             end
         end
         return false
     end
 
-    function SaveManager:BuildConfigSection(target)
-        local section
-        if target.CreateSection then
-            section = target:CreateSection("Configuration", "Left")
-        elseif target.AddLeftGroupbox then
-            section = target:AddLeftGroupbox("Configuration")
-        elseif target.AddRightGroupbox then
-            section = target:AddRightGroupbox("Configuration")
-        elseif target.AddSection then
-            section = target:AddSection("Configuration")
-        else
-            section = target
-        end
+    function SaveManager:BuildConfigSection(targetSection)
+        local configName = "default"
+        local configDropdown
 
-        local configs = self:GetConfigs()
-        local selectedConfig = configs[1] or ""
-        self.SelectedConfig = selectedConfig
-
-        local ConfigNameInput = section:AddInput("SaveManager_CustomConfigName", {
-            Text = "Config Name",
+        targetSection:AddInput({
+            Name = "Config Name",
             Placeholder = "Enter config name...",
-            Default = selectedConfig,
             Callback = function(text)
-                self.SelectedConfig = text
+                if text and #text > 0 then
+                    configName = text
+                end
             end
         })
 
-        local ConfigList = section:AddListbox("SaveManager_ConfigList", {
-            Text = "Config List",
-            Items = configs,
-            Default = selectedConfig,
-            Height = 120,
+        configDropdown = targetSection:AddDropdown({
+            Name = "Saved Configs",
+            Options = self:GetConfigs(),
+            Default = "default",
             Callback = function(selected)
-                self.SelectedConfig = selected
-                if ConfigNameInput and ConfigNameInput.Set then
-                    ConfigNameInput:Set(selected, true)
-                end
+                configName = selected
             end
         })
 
-        local autoName = self:GetAutoloadName()
-        local AutoloadLabel = section:AddLabel("AutoloadLabel", "Autoload: " .. (autoName or "None"))
-
-        local function refreshAutoload()
-            local cur = self:GetAutoloadName()
-            if AutoloadLabel and AutoloadLabel.Set then
-                AutoloadLabel:Set("Autoload: " .. (cur or "None"))
-            end
-        end
-
-        section:AddButton({
-            Text = "Create / Save Config",
-            Func = function()
-                local name = (ConfigNameInput and ConfigNameInput.Value and #ConfigNameInput.Value > 0) and ConfigNameInput.Value or self.SelectedConfig
-                if not name or name == "" then name = "default" end
-                local saved = self:Save(name)
+        targetSection:AddButton({
+            Name = "Save Config",
+            Callback = function()
+                local saved = self:Save(configName)
                 if saved then
-                    local updatedList = self:GetConfigs()
-                    self.SelectedConfig = name
-                    if ConfigList and ConfigList.Refresh then
-                        ConfigList:Refresh(updatedList)
-                        ConfigList:Set(name, true)
-                    end
-                    if ConfigNameInput and ConfigNameInput.Set then
-                        ConfigNameInput:Set(name, true)
-                    end
+                    configDropdown.Refresh(self:GetConfigs())
                 end
             end
         })
 
-        section:AddButton({
-            Text = "Load Selected Config",
-            Func = function()
-                local name = (ConfigList and ConfigList.Value and #ConfigList.Value > 0) and ConfigList.Value or self.SelectedConfig or (ConfigNameInput and ConfigNameInput.Value)
-                if not name or name == "" then
-                    self.Library:Notify({
-                        Title = "Save Manager",
-                        Content = "Please select or enter a config name to load.",
-                        Duration = 3
-                    })
-                    return
-                end
-                self:Load(name)
+        targetSection:AddButton({
+            Name = "Load Config",
+            Callback = function()
+                self:Load(configName)
             end
         })
 
-        section:AddButton({
-            Text = "Overwrite Config",
-            Func = function()
-                local name = (ConfigList and ConfigList.Value and #ConfigList.Value > 0) and ConfigList.Value or self.SelectedConfig or (ConfigNameInput and ConfigNameInput.Value)
-                if not name or name == "" then
-                    self.Library:Notify({
-                        Title = "Save Manager",
-                        Content = "Please select a config to overwrite.",
-                        Duration = 3
-                    })
-                    return
-                end
-                self:Save(name)
-            end
-        })
-
-        section:AddButton({
-            Text = "Delete Config",
-            Func = function()
-                local name = (ConfigList and ConfigList.Value and #ConfigList.Value > 0) and ConfigList.Value or self.SelectedConfig or (ConfigNameInput and ConfigNameInput.Value)
-                if not name or name == "" then
-                    self.Library:Notify({
-                        Title = "Save Manager",
-                        Content = "Please select a config to delete.",
-                        Duration = 3
-                    })
-                    return
-                end
-                local deleted = self:Delete(name)
+        targetSection:AddButton({
+            Name = "Delete Config",
+            Callback = function()
+                local deleted = self:Delete(configName)
                 if deleted then
-                    local updatedList = self:GetConfigs()
-                    self.SelectedConfig = updatedList[1] or ""
-                    if ConfigList and ConfigList.Refresh then
-                        ConfigList:Refresh(updatedList)
-                        if #updatedList > 0 then
-                            ConfigList:Set(updatedList[1], true)
-                        end
-                    end
-                    if ConfigNameInput and ConfigNameInput.Set then
-                        ConfigNameInput:Set(self.SelectedConfig, true)
-                    end
-                    refreshAutoload()
+                    configDropdown.Refresh(self:GetConfigs())
                 end
             end
         })
 
-        section:AddButton({
-            Text = "Set as Autoload",
-            Func = function()
-                local name = (ConfigList and ConfigList.Value and #ConfigList.Value > 0) and ConfigList.Value or self.SelectedConfig or (ConfigNameInput and ConfigNameInput.Value)
-                if name and #name > 0 then
-                    self:SetAutoload(name)
-                    refreshAutoload()
-                else
-                    self.Library:Notify({
-                        Title = "Save Manager",
-                        Content = "Please select or enter a config name first.",
-                        Duration = 3
-                    })
-                end
+        targetSection:AddButton({
+            Name = "Set as Autoload",
+            Callback = function()
+                self:SetAutoload(configName)
             end
         })
 
-        section:AddButton({
-            Text = "Clear Autoload",
-            Func = function()
-                self:ClearAutoload()
-                refreshAutoload()
+        targetSection:AddButton({
+            Name = "Refresh List",
+            Callback = function()
+                configDropdown.Refresh(self:GetConfigs())
             end
         })
-
-        section:AddButton({
-            Text = "Refresh List",
-            Func = function()
-                local updatedList = self:GetConfigs()
-                if ConfigList and ConfigList.Refresh then
-                    ConfigList:Refresh(updatedList)
-                end
-                refreshAutoload()
-                self.Library:Notify({
-                    Title = "Save Manager",
-                    Content = "Refreshed: " .. #updatedList .. " config(s) found.",
-                    Duration = 2
-                })
-            end
-        })
-
-        return section
     end
 
     function WindowObj:CreateConfigManager(targetSection, folderName)
         if folderName then
             SaveManager:SetFolder(folderName)
         end
-        return SaveManager:BuildConfigSection(targetSection)
+        SaveManager:BuildConfigSection(targetSection)
     end
 
     Library.SaveManager = SaveManager
     Library.ThemeManager = {
-        Library = Library,
-        Folder = "NamelessWare",
-        SetLibrary = function(self, lib) self.Library = lib or Library end,
-        SetFolder = function(self, folder) self.Folder = folder or "NamelessWare" end,
+        SetLibrary = function(self, lib) end,
+        SetFolder = function(self, folder) end,
         ApplyToGroupbox = function(self, section)
             if WindowObj and WindowObj.CreateThemeManager then
                 WindowObj:CreateThemeManager(section)
             end
-        end,
-        ApplyToTab = function(self, tab)
-            local sec = (tab.AddLeftGroupbox and tab:AddLeftGroupbox("Theme")) or (tab.CreateSection and tab:CreateSection("Theme", "Left")) or tab
-            if WindowObj and WindowObj.CreateThemeManager then
-                WindowObj:CreateThemeManager(sec)
-            end
         end
     }
 
-    function Library:Unload()
-        if ScreenGui then
-            ScreenGui:Destroy()
-        end
-        for _, conn in ipairs(Library.Signals or {}) do
-            pcall(function() conn:Disconnect() end)
-        end
-        table.clear(Library.Registry or {})
-        table.clear(Library.Toggles or {})
-        table.clear(Library.Options or {})
-        table.clear(Library.Flags or {})
-        table.clear(Library.Buttons or {})
-    end
-
-    -- Toggle Menu Keybind Listener
-    UserInputService.InputBegan:Connect(function(input, gpe)
-        if gpe then return end
-        if input.UserInputType == Enum.UserInputType.Keyboard then
-            local targetKey = Library.ToggleKeybind
-            if type(targetKey) == "table" and targetKey.Value then
-                targetKey = targetKey.Value
-            end
-            if typeof(targetKey) == "EnumItem" and input.KeyCode == targetKey and targetKey ~= Enum.KeyCode.Unknown then
-                if WindowObj and WindowObj.Toggle then
-                    WindowObj:Toggle()
-                end
-            end
-        end
-    end)
-
-    local genv = (getgenv and getgenv()) or shared or _G
-    if genv then
-        genv.Library = Library
-        genv.Toggles = Library.Toggles
-        genv.Options = Library.Options
-        genv.SaveManager = Library.SaveManager
-        genv.ThemeManager = Library.ThemeManager
-    end
-
     return WindowObj
-end
-
-local genv = (getgenv and getgenv()) or shared or _G
-if genv then
-    genv.Library = Library
-    genv.Toggles = Library.Toggles
-    genv.Options = Library.Options
-    genv.SaveManager = Library.SaveManager
-    genv.ThemeManager = Library.ThemeManager
 end
 
 return Library
