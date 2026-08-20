@@ -535,12 +535,6 @@ function Library:CreateWindow(config)
     MainCorner.CornerRadius = UDim.new(0, 18)
     MainCorner.Parent = MainFrame
 
-    local MainStroke = Instance.new("UIStroke")
-    MainStroke.Color = Library.Theme.Accent
-    MainStroke.Thickness = 1.8
-    MainStroke.Parent = MainFrame
-    Library:RegisterThemeObject(MainStroke, "Color", "Accent")
-
     -- ==================== LEFT SIDEBAR ====================
     local Sidebar = Instance.new("Frame")
     Sidebar.Name = "Sidebar"
@@ -564,15 +558,6 @@ function Library:CreateWindow(config)
     SidebarSeam.ZIndex = 5
     SidebarSeam.Parent = Sidebar
     Library:RegisterThemeObject(SidebarSeam, "BackgroundColor3", "Sidebar")
-
-    local SidebarRightBorder = Instance.new("Frame")
-    SidebarRightBorder.Size = UDim2.new(0, 1, 1, 0)
-    SidebarRightBorder.Position = UDim2.new(1, -1, 0, 0)
-    SidebarRightBorder.BackgroundColor3 = Library.Theme.CardBorder
-    SidebarRightBorder.BorderSizePixel = 0
-    SidebarRightBorder.ZIndex = 6
-    SidebarRightBorder.Parent = Sidebar
-    Library:RegisterThemeObject(SidebarRightBorder, "BackgroundColor3", "CardBorder")
 
     -- Sidebar Top Branding
     local BrandHeader = Instance.new("Frame")
