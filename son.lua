@@ -580,9 +580,26 @@ function Library:CreateWindow(config)
     BgOverlayCorner.CornerRadius = UDim.new(0, 18)
     BgOverlayCorner.Parent = BackgroundOverlay
 
+    local function formatAssetId(raw)
+        if not raw or type(raw) ~= "string" or #raw == 0 or raw == "none" then return nil end
+        local str = raw:gsub("%s+", "")
+        if str == "" or str == "none" or str == "nil" then return nil end
+        if str:match("^%d+$") then
+            return "rbxassetid://" .. str
+        end
+        local num = str:match("roblox%.com/.-id=(%d+)") or str:match("roblox%.com/library/(%d+)") or str:match("roblox%.com/asset/?id=(%d+)") or str:match("assetid://(%d+)") or str:match("(%d+)")
+        if str:find("rbxassetid://") or str:find("rbxasset://") or str:find("http") then
+            return str
+        elseif num then
+            return "rbxassetid://" .. num
+        end
+        return str
+    end
+
     local function setBackgroundImg(assetId, transparency)
-        if assetId and #assetId > 0 and assetId ~= "none" then
-            BackgroundImage.Image = assetId
+        local formatted = formatAssetId(assetId)
+        if formatted and #formatted > 0 then
+            BackgroundImage.Image = formatted
             BackgroundImage.ImageTransparency = transparency or 0.1
             BackgroundImage.Visible = true
             BackgroundOverlay.Visible = true
