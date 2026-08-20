@@ -541,85 +541,11 @@ function Library:CreateWindow(config)
     MainStroke.Parent = MainFrame
     Library:RegisterThemeObject(MainStroke, "Color", "Accent")
 
-    -- ==================== BACKGROUND IMAGE SUPPORT ====================
-    local BackgroundContainer = Instance.new("Frame")
-    BackgroundContainer.Name = "BackgroundContainer"
-    BackgroundContainer.Size = UDim2.new(1, 0, 1, 0)
-    BackgroundContainer.BackgroundTransparency = 1
-    BackgroundContainer.ZIndex = 1
-    BackgroundContainer.Parent = MainFrame
-
-    local BackgroundCorner = Instance.new("UICorner")
-    BackgroundCorner.CornerRadius = UDim.new(0, 18)
-    BackgroundCorner.Parent = BackgroundContainer
-
-    local BackgroundImage = Instance.new("ImageLabel")
-    BackgroundImage.Name = "BackgroundImage"
-    BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
-    BackgroundImage.BackgroundTransparency = 1
-    BackgroundImage.ImageTransparency = 0.1
-    BackgroundImage.ScaleType = Enum.ScaleType.Crop
-    BackgroundImage.ZIndex = 1
-    BackgroundImage.Visible = false
-    BackgroundImage.Parent = BackgroundContainer
-
-    local BgImgCorner = Instance.new("UICorner")
-    BgImgCorner.CornerRadius = UDim.new(0, 18)
-    BgImgCorner.Parent = BackgroundImage
-
-    local BackgroundOverlay = Instance.new("Frame")
-    BackgroundOverlay.Name = "DarkOverlay"
-    BackgroundOverlay.Size = UDim2.new(1, 0, 1, 0)
-    BackgroundOverlay.BackgroundColor3 = Color3.fromRGB(10, 8, 16)
-    BackgroundOverlay.BackgroundTransparency = 0.45
-    BackgroundOverlay.ZIndex = 2
-    BackgroundOverlay.Visible = false
-    BackgroundOverlay.Parent = BackgroundContainer
-
-    local BgOverlayCorner = Instance.new("UICorner")
-    BgOverlayCorner.CornerRadius = UDim.new(0, 18)
-    BgOverlayCorner.Parent = BackgroundOverlay
-
-    local function formatAssetId(raw)
-        if not raw or type(raw) ~= "string" or #raw == 0 or raw == "none" then return nil end
-        local str = raw:gsub("%s+", "")
-        if str == "" or str == "none" or str == "nil" then return nil end
-        if str:match("^%d+$") then
-            return "rbxassetid://" .. str
-        end
-        local num = str:match("roblox%.com/.-id=(%d+)") or str:match("roblox%.com/library/(%d+)") or str:match("roblox%.com/asset/?id=(%d+)") or str:match("assetid://(%d+)") or str:match("(%d+)")
-        if str:find("rbxassetid://") or str:find("rbxasset://") or str:find("http") then
-            return str
-        elseif num then
-            return "rbxassetid://" .. num
-        end
-        return str
-    end
-
-    local function setBackgroundImg(assetId, transparency)
-        local formatted = formatAssetId(assetId)
-        if formatted and #formatted > 0 then
-            BackgroundImage.Image = formatted
-            BackgroundImage.ImageTransparency = transparency or 0.1
-            BackgroundImage.Visible = true
-            BackgroundOverlay.Visible = true
-        else
-            BackgroundImage.Image = ""
-            BackgroundImage.Visible = false
-            BackgroundOverlay.Visible = false
-        end
-    end
-
-    if config.BackgroundImage then
-        setBackgroundImg(config.BackgroundImage, config.BackgroundTransparency or 0.1)
-    end
-
     -- ==================== LEFT SIDEBAR ====================
     local Sidebar = Instance.new("Frame")
     Sidebar.Name = "Sidebar"
     Sidebar.Size = UDim2.new(0, 160, 1, 0)
     Sidebar.BackgroundColor3 = Library.Theme.Sidebar
-    Sidebar.BackgroundTransparency = 0.5
     Sidebar.BorderSizePixel = 0
     Sidebar.ZIndex = 5
     Sidebar.Parent = MainFrame
@@ -634,7 +560,6 @@ function Library:CreateWindow(config)
     SidebarSeam.Size = UDim2.new(0, 20, 1, 0)
     SidebarSeam.Position = UDim2.new(1, -20, 0, 0)
     SidebarSeam.BackgroundColor3 = Library.Theme.Sidebar
-    SidebarSeam.BackgroundTransparency = 0.5
     SidebarSeam.BorderSizePixel = 0
     SidebarSeam.ZIndex = 5
     SidebarSeam.Parent = Sidebar
@@ -1449,7 +1374,6 @@ function Library:CreateWindow(config)
             Card.Size = UDim2.new(1, 0, 0, 0)
             Card.AutomaticSize = Enum.AutomaticSize.Y
             Card.BackgroundColor3 = Library.Theme.CardBackground
-            Card.BackgroundTransparency = 0.65
             Card.BorderSizePixel = 0
             Card.ZIndex = 8
             Card.Parent = parentCol
@@ -4061,23 +3985,6 @@ function Library:CreateWindow(config)
                 Library:SetCustomThemeColor("ToggleOff", col)
                 if ThemeDropdown and ThemeDropdown.Set then
                     ThemeDropdown:Set("Custom", true)
-                end
-            end
-        })
-
-        targetSection:AddDivider()
-        targetSection:AddLabel("Theme Sliders & Adjustments")
-
-        -- Background Image Transparency Slider
-        targetSection:AddSlider("Theme_BgTransparency", {
-            Text = "Background Transparency",
-            Min = 0,
-            Max = 100,
-            Default = 85,
-            Suffix = "%",
-            Callback = function(val)
-                if WindowObj and WindowObj.SetBackgroundTransparency then
-                    WindowObj:SetBackgroundTransparency(val / 100)
                 end
             end
         })
