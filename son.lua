@@ -28,24 +28,24 @@ local Library = {
     },
     Themes = {
         Nameless = {
-            Background = Color3.fromRGB(13, 13, 17),
-            Sidebar = Color3.fromRGB(10, 10, 14),
-            CardBackground = Color3.fromRGB(18, 18, 24),
-            CardBorder = Color3.fromRGB(28, 28, 38),
-            CardBorderHover = Color3.fromRGB(48, 48, 62),
-            Accent = Color3.fromRGB(137, 132, 245),
-            AccentSecondary = Color3.fromRGB(93, 197, 216),
-            AccentDark = Color3.fromRGB(75, 70, 170),
-            Text = Color3.fromRGB(240, 240, 245),
-            TextDim = Color3.fromRGB(145, 145, 160),
-            TextDark = Color3.fromRGB(85, 85, 100),
-            ItemBg = Color3.fromRGB(23, 23, 31),
-            ItemBgHover = Color3.fromRGB(30, 30, 42),
-            ItemBorder = Color3.fromRGB(35, 35, 48),
-            SliderTrack = Color3.fromRGB(24, 24, 33),
-            SliderFill = Color3.fromRGB(137, 132, 245),
-            ToggleOff = Color3.fromRGB(26, 26, 35),
-            ToggleOn = Color3.fromRGB(137, 132, 245)
+            Background = Color3.fromRGB(12, 11, 17),
+            Sidebar = Color3.fromRGB(9, 8, 13),
+            CardBackground = Color3.fromRGB(17, 15, 25),
+            CardBorder = Color3.fromRGB(32, 28, 46),
+            CardBorderHover = Color3.fromRGB(56, 46, 78),
+            Accent = Color3.fromRGB(168, 85, 247),
+            AccentSecondary = Color3.fromRGB(192, 132, 252),
+            AccentDark = Color3.fromRGB(115, 45, 190),
+            Text = Color3.fromRGB(245, 245, 250),
+            TextDim = Color3.fromRGB(155, 150, 175),
+            TextDark = Color3.fromRGB(95, 90, 115),
+            ItemBg = Color3.fromRGB(22, 20, 32),
+            ItemBgHover = Color3.fromRGB(30, 26, 44),
+            ItemBorder = Color3.fromRGB(38, 34, 54),
+            SliderTrack = Color3.fromRGB(20, 18, 28),
+            SliderFill = Color3.fromRGB(168, 85, 247),
+            ToggleOff = Color3.fromRGB(24, 22, 34),
+            ToggleOn = Color3.fromRGB(168, 85, 247)
         },
         Midnight = {
             Background = Color3.fromRGB(8, 10, 15),
@@ -629,7 +629,7 @@ function Library:CreateWindow(config)
     BrandTitle.Position = UDim2.new(0, 46, 0, 0)
     BrandTitle.BackgroundTransparency = 1
     BrandTitle.RichText = true
-    BrandTitle.Text = '<b>' .. windowTitle .. '</b><font color="#8984f5">' .. windowSubtitle .. '</font>'
+    BrandTitle.Text = '<b>' .. windowTitle .. '</b><font color="#a855f7">' .. windowSubtitle .. '</font>'
     BrandTitle.TextColor3 = Library.Theme.Text
     BrandTitle.Font = Library.Fonts.Bold
     BrandTitle.TextSize = 14
