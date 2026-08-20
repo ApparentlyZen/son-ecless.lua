@@ -21,6 +21,11 @@ local Library = {
     Version = "3.4.0",
     Flags = {},
     Signals = {},
+    Toggles = {},
+    Options = {},
+    Registry = {},
+    Folder = "NamelessConfigs",
+    IgnoreIndexes = {},
     Fonts = {
         Bold = Enum.Font.GothamBold,
         Medium = Enum.Font.GothamMedium,
@@ -334,6 +339,58 @@ local Library = {
 }
 
 Library.Theme = Library.Themes.Nameless
+
+-- Serialization Helpers
+local function serializeValue(val)
+    local t = typeof(val)
+    if t == "Color3" then
+        return {
+            __type = "Color3",
+            r = math.floor(val.R * 255 + 0.5),
+            g = math.floor(val.G * 255 + 0.5),
+            b = math.floor(val.B * 255 + 0.5)
+        }
+    elseif t == "EnumItem" then
+        return {
+            __type = "EnumItem",
+            enumType = tostring(val.EnumType),
+            name = val.Name
+        }
+    elseif t == "table" then
+        local res = {}
+        for k, v in pairs(val) do
+            res[tostring(k)] = serializeValue(v)
+        end
+        return res
+    elseif t == "boolean" or t == "number" or t == "string" then
+        return val
+    end
+    return tostring(val)
+end
+
+local function deserializeValue(val)
+    if type(val) == "table" then
+        if val.__type == "Color3" then
+            return Color3.fromRGB(val.r or 255, val.g or 255, val.b or 255)
+        elseif val.__type == "EnumItem" then
+            if val.enumType == "KeyCode" or not val.enumType then
+                return Enum.KeyCode[val.name] or Enum.KeyCode.Unknown
+            end
+            local enumGroup = Enum[val.enumType]
+            if enumGroup and enumGroup[val.name] then
+                return enumGroup[val.name]
+            end
+            return val.name
+        else
+            local res = {}
+            for k, v in pairs(val) do
+                res[k] = deserializeValue(v)
+            end
+            return res
+        end
+    end
+    return val
+end
 
 -- Utility Functions
 local function getGuiParent()
@@ -1362,10 +1419,10 @@ function Library:CreateWindow(config)
             -- TOGGLE
             function SectionObj:AddToggle(toggleConfig)
                 toggleConfig = toggleConfig or {}
-                local name = toggleConfig.Name or "Toggle"
-                local default = toggleConfig.Default or false
-                local callback = toggleConfig.Callback or function() end
-                local flag = toggleConfig.Flag
+                local name = toggleConfig.Name or toggleConfig.Text or "Toggle"
+                local default = (toggleConfig.Default ~= nil) and toggleConfig.Default or false
+                local callback = toggleConfig.Callback or toggleConfig.Func or function() end
+                local flag = toggleConfig.Flag or toggleConfig.Pointer
 
                 local ToggleFrame = Instance.new("Frame")
                 ToggleFrame.Name = name .. "_Toggle"
@@ -1424,8 +1481,18 @@ function Library:CreateWindow(config)
                 local state = default
                 if flag then Library.Flags[flag] = state end
 
+                local ToggleObj = {
+                    Type = "Toggle",
+                    Name = name,
+                    Value = state,
+                    Flag = flag,
+                    Callback = callback,
+                    RightElements = RightElements
+                }
+
                 local function setToggle(val, ignoreCallback)
-                    state = val
+                    state = (val == true)
+                    ToggleObj.Value = state
                     if flag then Library.Flags[flag] = state end
                     
                     if state then
@@ -1443,22 +1510,33 @@ function Library:CreateWindow(config)
                     end
                 end
 
+                ToggleObj.Set = setToggle
+                ToggleObj.SetValue = setToggle
+                ToggleObj.RawSet = function(val) setToggle(val, true) end
+                ToggleObj.OnChanged = function(fn)
+                    local oldCallback = callback
+                    callback = function(s)
+                        oldCallback(s)
+                        fn(s)
+                    end
+                end
+
                 CheckBox.MouseButton1Click:Connect(function()
                     setToggle(not state)
                 end)
 
-                local ToggleObj = {
-                    Value = state,
-                    Set = setToggle,
-                    RightElements = RightElements
-                }
+                if flag then
+                    Library.Registry[flag] = ToggleObj
+                    Library.Toggles[flag] = ToggleObj
+                    Library.Options[flag] = ToggleObj
+                end
 
-                -- Multi ColorPicker
+                -- Multi ColorPicker on Toggle
                 function ToggleObj:AddColorPicker(cpConfig)
                     cpConfig = cpConfig or {}
                     local cpDefault = cpConfig.Default or Library.Theme.Accent
-                    local cpCallback = cpConfig.Callback or function() end
-                    local cpFlag = cpConfig.Flag
+                    local cpCallback = cpConfig.Callback or cpConfig.Func or function() end
+                    local cpFlag = cpConfig.Flag or cpConfig.Pointer
 
                     local ColorBox = Instance.new("TextButton")
                     ColorBox.Name = "ColorBox"
@@ -1545,12 +1623,56 @@ function Library:CreateWindow(config)
 
                     local h, s, v = cpDefault:ToHSV()
 
-                    local function updateColor()
+                    local ColorPickerObj = {
+                        Type = "ColorPicker",
+                        Value = currentColor,
+                        Flag = cpFlag,
+                        Callback = cpCallback
+                    }
+
+                    local function updateColor(ignoreCallback)
                         currentColor = Color3.fromHSV(h, s, v)
+                        ColorPickerObj.Value = currentColor
                         ColorBox.BackgroundColor3 = currentColor
                         SatVal.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
                         if cpFlag then Library.Flags[cpFlag] = currentColor end
-                        task.spawn(cpCallback, currentColor)
+                        if not ignoreCallback then
+                            task.spawn(cpCallback, currentColor)
+                        end
+                    end
+
+                    local function setColor(col, ignoreCallback)
+                        if typeof(col) == "Color3" then
+                            currentColor = col
+                        elseif type(col) == "table" and col.r and col.g and col.b then
+                            currentColor = Color3.fromRGB(col.r, col.g, col.b)
+                        elseif type(col) == "table" and col[1] and col[2] and col[3] then
+                            currentColor = Color3.fromRGB(col[1], col[2], col[3])
+                        end
+                        h, s, v = currentColor:ToHSV()
+                        ColorPickerObj.Value = currentColor
+                        ColorBox.BackgroundColor3 = currentColor
+                        SatVal.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+                        if cpFlag then Library.Flags[cpFlag] = currentColor end
+                        if not ignoreCallback then
+                            task.spawn(cpCallback, currentColor)
+                        end
+                    end
+
+                    ColorPickerObj.Set = setColor
+                    ColorPickerObj.SetValue = setColor
+                    ColorPickerObj.RawSet = function(col) setColor(col, true) end
+                    ColorPickerObj.OnChanged = function(fn)
+                        local oldCallback = cpCallback
+                        cpCallback = function(c)
+                            oldCallback(c)
+                            fn(c)
+                        end
+                    end
+
+                    if cpFlag then
+                        Library.Registry[cpFlag] = ColorPickerObj
+                        Library.Options[cpFlag] = ColorPickerObj
                     end
 
                     ColorBox.MouseButton1Click:Connect(function()
@@ -1590,11 +1712,12 @@ function Library:CreateWindow(config)
                     return ToggleObj
                 end
 
-                -- Keybind
+                -- Keybind on Toggle
                 function ToggleObj:AddKeybind(kbConfig)
                     kbConfig = kbConfig or {}
                     local defaultKey = kbConfig.Default or Enum.KeyCode.Unknown
-                    local kbCallback = kbConfig.Callback or function() end
+                    local kbCallback = kbConfig.Callback or kbConfig.Func or function() end
+                    local kbFlag = kbConfig.Flag or kbConfig.Pointer
                     local currentKey = defaultKey
                     local binding = false
 
@@ -1621,6 +1744,44 @@ function Library:CreateWindow(config)
                     KeyStroke.Thickness = 1.2
                     KeyStroke.Parent = KeyBtn
 
+                    local KeybindObj = {
+                        Type = "Keybind",
+                        Value = currentKey,
+                        Flag = kbFlag,
+                        Callback = kbCallback
+                    }
+
+                    local function setKeybind(key, ignoreCallback)
+                        if typeof(key) == "EnumItem" then
+                            currentKey = key
+                        elseif type(key) == "string" then
+                            local foundEnum = Enum.KeyCode[key]
+                            if foundEnum then currentKey = foundEnum end
+                        end
+                        KeybindObj.Value = currentKey
+                        KeyBtn.Text = (currentKey == Enum.KeyCode.Unknown and "..." or currentKey.Name)
+                        if kbFlag then Library.Flags[kbFlag] = currentKey end
+                        if not ignoreCallback then
+                            task.spawn(kbCallback, currentKey)
+                        end
+                    end
+
+                    KeybindObj.Set = setKeybind
+                    KeybindObj.SetValue = setKeybind
+                    KeybindObj.RawSet = function(key) setKeybind(key, true) end
+                    KeybindObj.OnChanged = function(fn)
+                        local oldCallback = kbCallback
+                        kbCallback = function(k)
+                            oldCallback(k)
+                            fn(k)
+                        end
+                    end
+
+                    if kbFlag then
+                        Library.Registry[kbFlag] = KeybindObj
+                        Library.Options[kbFlag] = KeybindObj
+                    end
+
                     KeyBtn.MouseButton1Click:Connect(function()
                         binding = true
                         KeyBtn.Text = "..."
@@ -1637,6 +1798,8 @@ function Library:CreateWindow(config)
                                 KeyBtn.Text = input.KeyCode.Name
                             end
                             binding = false
+                            KeybindObj.Value = currentKey
+                            if kbFlag then Library.Flags[kbFlag] = currentKey end
                             KeyBtn.TextColor3 = Library.Theme.TextDark
                             task.spawn(kbCallback, currentKey)
                         elseif not gpe and not binding and currentKey ~= Enum.KeyCode.Unknown and input.KeyCode == currentKey then
@@ -1646,6 +1809,7 @@ function Library:CreateWindow(config)
 
                     return ToggleObj
                 end
+                ToggleObj.AddKeyPicker = ToggleObj.AddKeybind
 
                 return ToggleObj
             end
@@ -1653,14 +1817,14 @@ function Library:CreateWindow(config)
             -- SLIDER
             function SectionObj:AddSlider(sliderConfig)
                 sliderConfig = sliderConfig or {}
-                local name = sliderConfig.Name or "Slider"
+                local name = sliderConfig.Name or sliderConfig.Text or "Slider"
                 local min = sliderConfig.Min or 0
                 local max = sliderConfig.Max or 100
-                local default = sliderConfig.Default or min
-                local precise = sliderConfig.Precise or 0
+                local default = sliderConfig.Default or sliderConfig.Value or min
+                local precise = sliderConfig.Precise or sliderConfig.Rounding or 0
                 local suffix = sliderConfig.Suffix or ""
-                local callback = sliderConfig.Callback or function() end
-                local flag = sliderConfig.Flag
+                local callback = sliderConfig.Callback or sliderConfig.Func or function() end
+                local flag = sliderConfig.Flag or sliderConfig.Pointer
 
                 local SliderFrame = Instance.new("Frame")
                 SliderFrame.Name = name .. "_Slider"
@@ -1710,7 +1874,7 @@ function Library:CreateWindow(config)
 
                 local Fill = Instance.new("Frame")
                 Fill.Name = "Fill"
-                local initPercent = math.clamp((default - min) / (max - min), 0, 1)
+                local initPercent = (max > min) and math.clamp((default - min) / (max - min), 0, 1) or 0
                 Fill.Size = UDim2.new(initPercent, 0, 1, 0)
                 Fill.BackgroundColor3 = Library.Theme.SliderFill
                 Fill.BorderSizePixel = 0
@@ -1725,7 +1889,19 @@ function Library:CreateWindow(config)
                 local currentValue = default
                 if flag then Library.Flags[flag] = currentValue end
 
+                local SliderObj = {
+                    Type = "Slider",
+                    Name = name,
+                    Value = currentValue,
+                    Flag = flag,
+                    Min = min,
+                    Max = max,
+                    Precise = precise,
+                    Callback = callback
+                }
+
                 local function setSlider(val, ignoreCallback)
+                    val = tonumber(val) or min
                     val = math.clamp(val, min, max)
                     if precise == 0 then
                         val = math.floor(val + 0.5)
@@ -1733,15 +1909,32 @@ function Library:CreateWindow(config)
                         val = math.floor(val * (10 ^ precise) + 0.5) / (10 ^ precise)
                     end
                     currentValue = val
+                    SliderObj.Value = currentValue
                     if flag then Library.Flags[flag] = currentValue end
 
                     ValueLabel.Text = tostring(currentValue) .. suffix
-                    local percent = math.clamp((currentValue - min) / (max - min), 0, 1)
+                    local percent = (max > min) and math.clamp((currentValue - min) / (max - min), 0, 1) or 0
                     createTween(Fill, { Size = UDim2.new(percent, 0, 1, 0) }, 0.08)
 
                     if not ignoreCallback then
                         task.spawn(callback, currentValue)
                     end
+                end
+
+                SliderObj.Set = setSlider
+                SliderObj.SetValue = setSlider
+                SliderObj.RawSet = function(val) setSlider(val, true) end
+                SliderObj.OnChanged = function(fn)
+                    local oldCallback = callback
+                    callback = function(v)
+                        oldCallback(v)
+                        fn(v)
+                    end
+                end
+
+                if flag then
+                    Library.Registry[flag] = SliderObj
+                    Library.Options[flag] = SliderObj
                 end
 
                 local dragging = false
@@ -1766,20 +1959,17 @@ function Library:CreateWindow(config)
                     end
                 end)
 
-                return {
-                    Value = currentValue,
-                    Set = setSlider
-                }
+                return SliderObj
             end
 
             -- DROPDOWN
             function SectionObj:AddDropdown(dropdownConfig)
                 dropdownConfig = dropdownConfig or {}
-                local name = dropdownConfig.Name or "Dropdown"
-                local options = dropdownConfig.Options or {}
-                local default = dropdownConfig.Default or options[1] or ""
-                local callback = dropdownConfig.Callback or function() end
-                local flag = dropdownConfig.Flag
+                local name = dropdownConfig.Name or dropdownConfig.Text or "Dropdown"
+                local options = dropdownConfig.Options or dropdownConfig.Values or dropdownConfig.Items or {}
+                local default = dropdownConfig.Default or dropdownConfig.Value or options[1] or ""
+                local callback = dropdownConfig.Callback or dropdownConfig.Func or function() end
+                local flag = dropdownConfig.Flag or dropdownConfig.Pointer
 
                 local DropdownFrame = Instance.new("Frame")
                 DropdownFrame.Name = name .. "_Dropdown"
@@ -1879,6 +2069,15 @@ function Library:CreateWindow(config)
                 local currentSelected = default
                 if flag then Library.Flags[flag] = currentSelected end
 
+                local DropdownObj = {
+                    Type = "Dropdown",
+                    Name = name,
+                    Value = currentSelected,
+                    Flag = flag,
+                    Options = options,
+                    Callback = callback
+                }
+
                 local function refreshOptions()
                     for _, child in ipairs(DropList:GetChildren()) do
                         if child:IsA("TextButton") then child:Destroy() end
@@ -1905,16 +2104,50 @@ function Library:CreateWindow(config)
 
                         OptBtn.MouseButton1Click:Connect(function()
                             currentSelected = opt
+                            DropdownObj.Value = currentSelected
                             SelText.Text = tostring(opt)
                             if flag then Library.Flags[flag] = currentSelected end
                             DropList.Visible = false
-                            task.spawn(callback, opt)
                             refreshOptions()
+                            task.spawn(callback, opt)
                         end)
                     end
                 end
 
                 refreshOptions()
+
+                local function setDropdown(val, ignoreCallback)
+                    currentSelected = val
+                    DropdownObj.Value = currentSelected
+                    SelText.Text = tostring(val)
+                    if flag then Library.Flags[flag] = currentSelected end
+                    refreshOptions()
+                    if not ignoreCallback then
+                        task.spawn(callback, val)
+                    end
+                end
+
+                DropdownObj.Set = setDropdown
+                DropdownObj.SetValue = setDropdown
+                DropdownObj.RawSet = function(val) setDropdown(val, true) end
+                DropdownObj.Refresh = function(newOpts)
+                    options = newOpts
+                    DropdownObj.Options = newOpts
+                    refreshOptions()
+                end
+                DropdownObj.SetValues = DropdownObj.Refresh
+                DropdownObj.OnChanged = function(fn)
+                    local oldCallback = callback
+                    callback = function(v)
+                        oldCallback(v)
+                        fn(v)
+                    end
+                end
+
+                if flag then
+                    Library.Registry[flag] = DropdownObj
+                    Library.Options[flag] = DropdownObj
+                end
 
                 Selector.MouseButton1Click:Connect(function()
                     DropList.Visible = not DropList.Visible
@@ -1927,29 +2160,17 @@ function Library:CreateWindow(config)
                     end
                 end)
 
-                return {
-                    Value = currentSelected,
-                    Set = function(val)
-                        currentSelected = val
-                        SelText.Text = tostring(val)
-                        if flag then Library.Flags[flag] = currentSelected end
-                        refreshOptions()
-                    end,
-                    Refresh = function(newOpts)
-                        options = newOpts
-                        refreshOptions()
-                    end
-                }
+                return DropdownObj
             end
 
             -- LISTBOX
             function SectionObj:AddListbox(listConfig)
                 listConfig = listConfig or {}
-                local name = listConfig.Name or "Listbox"
-                local items = listConfig.Items or {}
-                local default = listConfig.Default or items[1]
-                local callback = listConfig.Callback or function() end
-                local flag = listConfig.Flag
+                local name = listConfig.Name or listConfig.Text or "Listbox"
+                local items = listConfig.Items or listConfig.Values or listConfig.Options or {}
+                local default = listConfig.Default or listConfig.Value or items[1]
+                local callback = listConfig.Callback or listConfig.Func or function() end
+                local flag = listConfig.Flag or listConfig.Pointer
                 local height = listConfig.Height or 120
 
                 local ListboxFrame = Instance.new("Frame")
@@ -2008,6 +2229,15 @@ function Library:CreateWindow(config)
                 local currentSelected = default
                 if flag then Library.Flags[flag] = currentSelected end
 
+                local ListboxObj = {
+                    Type = "Listbox",
+                    Name = name,
+                    Value = currentSelected,
+                    Flag = flag,
+                    Items = items,
+                    Callback = callback
+                }
+
                 local function refreshItems()
                     for _, child in ipairs(Container:GetChildren()) do
                         if child:IsA("TextButton") then child:Destroy() end
@@ -2035,6 +2265,7 @@ function Library:CreateWindow(config)
 
                         ItemBtn.MouseButton1Click:Connect(function()
                             currentSelected = item
+                            ListboxObj.Value = currentSelected
                             if flag then Library.Flags[flag] = currentSelected end
                             refreshItems()
                             task.spawn(callback, item)
@@ -2044,25 +2275,45 @@ function Library:CreateWindow(config)
 
                 refreshItems()
 
-                return {
-                    Value = currentSelected,
-                    Set = function(val)
-                        currentSelected = val
-                        if flag then Library.Flags[flag] = currentSelected end
-                        refreshItems()
-                    end,
-                    Refresh = function(newItems)
-                        items = newItems
-                        refreshItems()
+                local function setListbox(val, ignoreCallback)
+                    currentSelected = val
+                    ListboxObj.Value = currentSelected
+                    if flag then Library.Flags[flag] = currentSelected end
+                    refreshItems()
+                    if not ignoreCallback then
+                        task.spawn(callback, val)
                     end
-                }
+                end
+
+                ListboxObj.Set = setListbox
+                ListboxObj.SetValue = setListbox
+                ListboxObj.RawSet = function(val) setListbox(val, true) end
+                ListboxObj.Refresh = function(newItems)
+                    items = newItems
+                    ListboxObj.Items = newItems
+                    refreshItems()
+                end
+                ListboxObj.OnChanged = function(fn)
+                    local oldCallback = callback
+                    callback = function(v)
+                        oldCallback(v)
+                        fn(v)
+                    end
+                end
+
+                if flag then
+                    Library.Registry[flag] = ListboxObj
+                    Library.Options[flag] = ListboxObj
+                end
+
+                return ListboxObj
             end
 
             -- BUTTON
             function SectionObj:AddButton(btnConfig)
                 btnConfig = btnConfig or {}
-                local name = btnConfig.Name or "Button"
-                local callback = btnConfig.Callback or function() end
+                local name = btnConfig.Name or btnConfig.Text or "Button"
+                local callback = btnConfig.Callback or btnConfig.Func or function() end
 
                 local Button = Instance.new("TextButton")
                 Button.Name = name .. "_Button"
@@ -2111,10 +2362,11 @@ function Library:CreateWindow(config)
             -- TEXT INPUT
             function SectionObj:AddInput(inputConfig)
                 inputConfig = inputConfig or {}
-                local name = inputConfig.Name or "Input"
-                local placeholder = inputConfig.Placeholder or "Type here..."
-                local callback = inputConfig.Callback or function() end
-                local flag = inputConfig.Flag
+                local name = inputConfig.Name or inputConfig.Text or "Input"
+                local placeholder = inputConfig.Placeholder or inputConfig.PlaceholderText or "Type here..."
+                local default = inputConfig.Default or inputConfig.Value or inputConfig.Text or ""
+                local callback = inputConfig.Callback or inputConfig.Func or function() end
+                local flag = inputConfig.Flag or inputConfig.Pointer
 
                 local InputFrame = Instance.new("Frame")
                 InputFrame.Name = name .. "_InputFrame"
@@ -2156,7 +2408,7 @@ function Library:CreateWindow(config)
                 TextBox.Size = UDim2.new(1, -16, 1, 0)
                 TextBox.Position = UDim2.new(0, 10, 0, 0)
                 TextBox.BackgroundTransparency = 1
-                TextBox.Text = ""
+                TextBox.Text = default
                 TextBox.PlaceholderText = placeholder
                 TextBox.PlaceholderColor3 = Library.Theme.TextDark
                 TextBox.TextColor3 = Library.Theme.Text
@@ -2167,37 +2419,121 @@ function Library:CreateWindow(config)
                 TextBox.ZIndex = 12
                 TextBox.Parent = BoxContainer
 
+                local currentText = default
+                if flag then Library.Flags[flag] = currentText end
+
+                local InputObj = {
+                    Type = "Input",
+                    Name = name,
+                    Value = currentText,
+                    Flag = flag,
+                    Callback = callback
+                }
+
+                local function setInput(text, ignoreCallback)
+                    currentText = tostring(text)
+                    TextBox.Text = currentText
+                    InputObj.Value = currentText
+                    if flag then Library.Flags[flag] = currentText end
+                    if not ignoreCallback then
+                        task.spawn(callback, currentText, true)
+                    end
+                end
+
+                InputObj.Set = setInput
+                InputObj.SetValue = setInput
+                InputObj.RawSet = function(text) setInput(text, true) end
+                InputObj.OnChanged = function(fn)
+                    local oldCallback = callback
+                    callback = function(t, e)
+                        oldCallback(t, e)
+                        fn(t, e)
+                    end
+                end
+
+                if flag then
+                    Library.Registry[flag] = InputObj
+                    Library.Options[flag] = InputObj
+                end
+
                 TextBox.Focused:Connect(function()
                     createTween(BoxStroke, { Color = Library.Theme.Accent }, 0.15)
                 end)
 
                 TextBox.FocusLost:Connect(function(enterPressed)
                     createTween(BoxStroke, { Color = Library.Theme.ItemBorder }, 0.15)
-                    if flag then Library.Flags[flag] = TextBox.Text end
-                    task.spawn(callback, TextBox.Text, enterPressed)
+                    currentText = TextBox.Text
+                    InputObj.Value = currentText
+                    if flag then Library.Flags[flag] = currentText end
+                    task.spawn(callback, currentText, enterPressed)
                 end)
 
+                return InputObj
+            end
+
+            -- LABEL
+            function SectionObj:AddLabel(text)
+                local Label = Instance.new("TextLabel")
+                Label.Size = UDim2.new(1, 0, 0, 20)
+                Label.BackgroundTransparency = 1
+                Label.Text = tostring(text)
+                Label.TextColor3 = Library.Theme.Text
+                Label.Font = Library.Fonts.Medium
+                Label.TextSize = 12
+                Label.TextXAlignment = Enum.TextXAlignment.Left
+                Label.ZIndex = 10
+                Label.Parent = CardContainer
+                Library:RegisterThemeObject(Label, "TextColor3", "Text")
+
                 return {
-                    Value = TextBox.Text,
-                    Set = function(text)
-                        TextBox.Text = text
-                        if flag then Library.Flags[flag] = text end
+                    Set = function(newText)
+                        Label.Text = tostring(newText)
+                    end,
+                    SetText = function(newText)
+                        Label.Text = tostring(newText)
                     end
                 }
+            end
+
+            -- DIVIDER
+            function SectionObj:AddDivider()
+                local Divider = Instance.new("Frame")
+                Divider.Size = UDim2.new(1, 0, 0, 1)
+                Divider.BackgroundColor3 = Library.Theme.CardBorder
+                Divider.BorderSizePixel = 0
+                Divider.ZIndex = 10
+                Divider.Parent = CardContainer
+                Library:RegisterThemeObject(Divider, "BackgroundColor3", "CardBorder")
+                return Divider
             end
 
             return SectionObj
         end
 
+        TabObj.AddSection = TabObj.CreateSection
+        TabObj.AddLeftGroupbox = function(self, title) return self:CreateSection(title, "Left") end
+        TabObj.AddRightGroupbox = function(self, title) return self:CreateSection(title, "Right") end
+
         return TabObj
     end
 
+    WindowObj.AddTab = WindowObj.CreateTab
+
     -- NOTIFICATION
-    function Library:Notify(notifConfig)
+    function Library:Notify(notifConfig, durationOverride)
+        if type(notifConfig) == "string" then
+            notifConfig = {
+                Title = "Nameless",
+                Content = notifConfig,
+                Duration = (type(durationOverride) == "number" and durationOverride or 3)
+            }
+        end
         notifConfig = notifConfig or {}
         local title = notifConfig.Title or "Nameless"
         local content = notifConfig.Content or ""
         local duration = notifConfig.Duration or 3
+
+        local targetGui = (Library.CurrentWindow and Library.CurrentWindow.ScreenGui) or getGuiParent():FindFirstChildOfClass("ScreenGui") or getGuiParent()
 
         local NotifFrame = Instance.new("Frame")
         NotifFrame.Name = "Notification"
@@ -2206,7 +2542,7 @@ function Library:CreateWindow(config)
         NotifFrame.BackgroundColor3 = Library.Theme.Background
         NotifFrame.BorderSizePixel = 0
         NotifFrame.ZIndex = 100
-        NotifFrame.Parent = ScreenGui
+        NotifFrame.Parent = targetGui
 
         local NotifCorner = Instance.new("UICorner")
         NotifCorner.CornerRadius = UDim.new(0, 14)
@@ -2293,29 +2629,246 @@ function Library:CreateWindow(config)
         })
     end
 
-    -- ==================== UI / CONFIG MANAGER HELPER ====================
-    function WindowObj:CreateConfigManager(targetSection, folderName)
-        folderName = folderName or "NamelessConfigs"
-        
-        local function ensureFolder()
-            if makefolder and isfolder and not isfolder(folderName) then
-                makefolder(folderName)
-            end
-        end
+    -- ==================== SAVE / CONFIG MANAGER ====================
+    local SaveManager = {
+        Folder = "NamelessConfigs",
+        IgnoreIndexes = {},
+        Library = Library
+    }
 
-        local function getConfigs()
-            ensureFolder()
-            local list = {}
-            if listfiles then
-                for _, file in ipairs(listfiles(folderName)) do
-                    local name = file:match("([^/\\]+)%.json$")
-                    if name then table.insert(list, name) end
+    function SaveManager:SetLibrary(lib)
+        self.Library = lib or Library
+    end
+
+    function SaveManager:SetFolder(folder)
+        self.Folder = folder or "NamelessConfigs"
+        self.Library.Folder = self.Folder
+    end
+
+    function SaveManager:SetIgnoreIndexes(indexes)
+        for _, idx in ipairs(indexes) do
+            self.IgnoreIndexes[idx] = true
+        end
+    end
+
+    function SaveManager:IgnoreThemeSettings()
+        self.IgnoreIndexes["Theme"] = true
+        self.IgnoreIndexes["CustomAccent"] = true
+    end
+
+    function SaveManager:EnsureFolder()
+        local folder = self.Folder
+        if makefolder and isfolder then
+            local parts = string.split(folder, "/")
+            local current = ""
+            for _, part in ipairs(parts) do
+                if #part > 0 then
+                    current = (current == "") and part or (current .. "/" .. part)
+                    if not isfolder(current) then
+                        pcall(makefolder, current)
+                    end
                 end
             end
-            if #list == 0 then table.insert(list, "default") end
-            return list
         end
+    end
 
+    function SaveManager:GetConfigs()
+        self:EnsureFolder()
+        local list = {}
+        if listfiles then
+            local success, files = pcall(function() return listfiles(self.Folder) end)
+            if success and files then
+                for _, file in ipairs(files) do
+                    local name = file:match("([^/\\]+)%.json$")
+                    if name then
+                        table.insert(list, name)
+                    end
+                end
+            end
+        end
+        if #list == 0 then
+            table.insert(list, "default")
+        end
+        return list
+    end
+
+    function SaveManager:Save(name)
+        if not name or name == "" then name = "default" end
+        self:EnsureFolder()
+        
+        if not writefile then
+            self.Library:Notify({
+                Title = "Save Manager",
+                Content = "writefile is not supported on this executor.",
+                Duration = 3
+            })
+            return false
+        end
+        
+        local data = {}
+        local lib = self.Library
+        
+        for flag, elem in pairs(lib.Registry or {}) do
+            if elem and elem.Value ~= nil and not self.IgnoreIndexes[flag] then
+                data[flag] = serializeValue(elem.Value)
+            end
+        end
+        
+        for flag, val in pairs(lib.Flags or {}) do
+            if data[flag] == nil and not self.IgnoreIndexes[flag] then
+                data[flag] = serializeValue(val)
+            end
+        end
+        
+        local success, encoded = pcall(function()
+            return HttpService:JSONEncode(data)
+        end)
+        
+        if not success then
+            self.Library:Notify({
+                Title = "Save Manager",
+                Content = "Failed to encode config data: " .. tostring(encoded),
+                Duration = 4
+            })
+            return false
+        end
+        
+        local path = self.Folder .. "/" .. name .. ".json"
+        local writeSuccess, writeErr = pcall(function()
+            writefile(path, encoded)
+        end)
+        
+        if writeSuccess then
+            self.Library:Notify({
+                Title = "Save Manager",
+                Content = "Successfully saved config: " .. name,
+                Duration = 3
+            })
+            return true
+        else
+            self.Library:Notify({
+                Title = "Save Manager",
+                Content = "Failed to save file: " .. tostring(writeErr),
+                Duration = 4
+            })
+            return false
+        end
+    end
+
+    function SaveManager:Load(name)
+        if not name or name == "" then name = "default" end
+        self:EnsureFolder()
+        
+        local path = self.Folder .. "/" .. name .. ".json"
+        if not (readfile and isfile and isfile(path)) then
+            self.Library:Notify({
+                Title = "Save Manager",
+                Content = "Config file does not exist: " .. name,
+                Duration = 3
+            })
+            return false
+        end
+        
+        local content
+        local readSuccess, readErr = pcall(function()
+            content = readfile(path)
+        end)
+        if not readSuccess or not content then
+            self.Library:Notify({
+                Title = "Save Manager",
+                Content = "Failed to read config: " .. tostring(readErr),
+                Duration = 4
+            })
+            return false
+        end
+        
+        local decodeSuccess, data = pcall(function()
+            return HttpService:JSONDecode(content)
+        end)
+        if not decodeSuccess or type(data) ~= "table" then
+            self.Library:Notify({
+                Title = "Save Manager",
+                Content = "Config file is corrupted or invalid JSON.",
+                Duration = 4
+            })
+            return false
+        end
+        
+        local lib = self.Library
+        for flag, rawVal in pairs(data) do
+            if not self.IgnoreIndexes[flag] then
+                local val = deserializeValue(rawVal)
+                lib.Flags[flag] = val
+                
+                local elem = (lib.Registry and lib.Registry[flag]) 
+                          or (lib.Toggles and lib.Toggles[flag]) 
+                          or (lib.Options and lib.Options[flag])
+                
+                if elem then
+                    local setSuccess, setErr = pcall(function()
+                        if elem.Set then
+                            elem:Set(val)
+                        elseif elem.SetValue then
+                            elem:SetValue(val)
+                        end
+                    end)
+                    if not setSuccess then
+                        warn("[SaveManager] Error restoring flag '" .. tostring(flag) .. "': " .. tostring(setErr))
+                    end
+                end
+            end
+        end
+        
+        self.Library:Notify({
+            Title = "Save Manager",
+            Content = "Successfully loaded config: " .. name,
+            Duration = 3
+        })
+        return true
+    end
+
+    function SaveManager:Delete(name)
+        if not name or name == "" then return false end
+        self:EnsureFolder()
+        local path = self.Folder .. "/" .. name .. ".json"
+        if isfile and isfile(path) and delfile then
+            delfile(path)
+            self.Library:Notify({
+                Title = "Save Manager",
+                Content = "Deleted config: " .. name,
+                Duration = 3
+            })
+            return true
+        end
+        return false
+    end
+
+    function SaveManager:SetAutoload(name)
+        self:EnsureFolder()
+        if writefile then
+            writefile(self.Folder .. "/autoload.txt", name or "default")
+            self.Library:Notify({
+                Title = "Save Manager",
+                Content = "Set '" .. tostring(name) .. "' as autoload config",
+                Duration = 3
+            })
+        end
+    end
+
+    function SaveManager:LoadAutoloadConfig()
+        self:EnsureFolder()
+        local path = self.Folder .. "/autoload.txt"
+        if readfile and isfile and isfile(path) then
+            local name = readfile(path)
+            if name and #name > 0 then
+                name = name:gsub("%s+", "")
+                return self:Load(name)
+            end
+        end
+        return false
+    end
+
+    function SaveManager:BuildConfigSection(targetSection)
         local configName = "default"
         local configDropdown
 
@@ -2331,7 +2884,7 @@ function Library:CreateWindow(config)
 
         configDropdown = targetSection:AddDropdown({
             Name = "Saved Configs",
-            Options = getConfigs(),
+            Options = self:GetConfigs(),
             Default = "default",
             Callback = function(selected)
                 configName = selected
@@ -2341,16 +2894,9 @@ function Library:CreateWindow(config)
         targetSection:AddButton({
             Name = "Save Config",
             Callback = function()
-                ensureFolder()
-                if writefile then
-                    local data = HttpService:JSONEncode(Library.Flags)
-                    writefile(folderName .. "/" .. configName .. ".json", data)
-                    configDropdown.Refresh(getConfigs())
-                    Library:Notify({
-                        Title = "Config Manager",
-                        Content = "Saved config: " .. configName,
-                        Duration = 3
-                    })
+                local saved = self:Save(configName)
+                if saved then
+                    configDropdown.Refresh(self:GetConfigs())
                 end
             end
         })
@@ -2358,29 +2904,52 @@ function Library:CreateWindow(config)
         targetSection:AddButton({
             Name = "Load Config",
             Callback = function()
-                ensureFolder()
-                local path = folderName .. "/" .. configName .. ".json"
-                if readfile and isfile and isfile(path) then
-                    local data = HttpService:JSONDecode(readfile(path))
-                    for flag, val in pairs(data) do
-                        Library.Flags[flag] = val
-                    end
-                    Library:Notify({
-                        Title = "Config Manager",
-                        Content = "Loaded config: " .. configName,
-                        Duration = 3
-                    })
+                self:Load(configName)
+            end
+        })
+
+        targetSection:AddButton({
+            Name = "Delete Config",
+            Callback = function()
+                local deleted = self:Delete(configName)
+                if deleted then
+                    configDropdown.Refresh(self:GetConfigs())
                 end
+            end
+        })
+
+        targetSection:AddButton({
+            Name = "Set as Autoload",
+            Callback = function()
+                self:SetAutoload(configName)
             end
         })
 
         targetSection:AddButton({
             Name = "Refresh List",
             Callback = function()
-                configDropdown.Refresh(getConfigs())
+                configDropdown.Refresh(self:GetConfigs())
             end
         })
     end
+
+    function WindowObj:CreateConfigManager(targetSection, folderName)
+        if folderName then
+            SaveManager:SetFolder(folderName)
+        end
+        SaveManager:BuildConfigSection(targetSection)
+    end
+
+    Library.SaveManager = SaveManager
+    Library.ThemeManager = {
+        SetLibrary = function(self, lib) end,
+        SetFolder = function(self, folder) end,
+        ApplyToGroupbox = function(self, section)
+            if WindowObj and WindowObj.CreateThemeManager then
+                WindowObj:CreateThemeManager(section)
+            end
+        end
+    }
 
     return WindowObj
 end
