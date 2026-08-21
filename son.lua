@@ -28,6 +28,120 @@ local Library = {
     Buttons = {},
     Folder = "NamelessConfigs",
     IgnoreIndexes = {},
+    Icons = {
+        -- Main / Dashboard
+        ["home"] = "rbxassetid://10723407389",
+        ["main"] = "rbxassetid://10723407389",
+        ["menu"] = "rbxassetid://10709791437",
+        ["dashboard"] = "rbxassetid://10723407389",
+        
+        -- Combat / Aimbot / Weapons
+        ["combat"] = "rbxassetid://10734975692",
+        ["sword"] = "rbxassetid://10734975692",
+        ["swords"] = "rbxassetid://10734975692",
+        ["aimbot"] = "rbxassetid://10734898124",
+        ["aim"] = "rbxassetid://10734898124",
+        ["crosshair"] = "rbxassetid://10734898124",
+        ["target"] = "rbxassetid://10734898124",
+        ["gun"] = "rbxassetid://10734898124",
+        ["silent"] = "rbxassetid://10734898124",
+        ["trigger"] = "rbxassetid://10734898124",
+
+        -- Visuals / ESP / Render
+        ["visuals"] = "rbxassetid://10723346959",
+        ["visual"] = "rbxassetid://10723346959",
+        ["eye"] = "rbxassetid://10723346959",
+        ["esp"] = "rbxassetid://10723346959",
+        ["chams"] = "rbxassetid://10723346959",
+        ["render"] = "rbxassetid://10723346959",
+        ["world"] = "rbxassetid://10723395215",
+        ["globe"] = "rbxassetid://10723395215",
+
+        -- Player / Character / Movement
+        ["player"] = "rbxassetid://10747373176",
+        ["players"] = "rbxassetid://10747373176",
+        ["user"] = "rbxassetid://10747373176",
+        ["character"] = "rbxassetid://10747373176",
+        ["movement"] = "rbxassetid://10734984926",
+        ["speed"] = "rbxassetid://10734984926",
+        ["fly"] = "rbxassetid://10734984926",
+        ["zap"] = "rbxassetid://10734984926",
+        ["bolt"] = "rbxassetid://10734984926",
+
+        -- Defense / Safety
+        ["shield"] = "rbxassetid://10734966600",
+        ["protection"] = "rbxassetid://10734966600",
+        ["defense"] = "rbxassetid://10734966600",
+        ["lock"] = "rbxassetid://10723434711",
+        ["key"] = "rbxassetid://10723434711",
+
+        -- Misc / Utility
+        ["misc"] = "rbxassetid://10723387563",
+        ["miscellaneous"] = "rbxassetid://10723387563",
+        ["folder"] = "rbxassetid://10723387563",
+        ["more"] = "rbxassetid://10723387563",
+        ["tools"] = "rbxassetid://10723387563",
+        ["box"] = "rbxassetid://10709789304",
+        ["package"] = "rbxassetid://10709789304",
+
+        -- Settings / Config / Themes
+        ["settings"] = "rbxassetid://10734950309",
+        ["setting"] = "rbxassetid://10734950309",
+        ["config"] = "rbxassetid://10734950309",
+        ["configs"] = "rbxassetid://10734950309",
+        ["gear"] = "rbxassetid://10734950309",
+        ["cog"] = "rbxassetid://10734950309",
+        ["sliders"] = "rbxassetid://10734974911",
+        ["controls"] = "rbxassetid://10734974911",
+        ["theme"] = "rbxassetid://10734940232",
+        ["themes"] = "rbxassetid://10734940232",
+        ["palette"] = "rbxassetid://10734940232",
+        ["color"] = "rbxassetid://10734940232",
+
+        -- Scripts / Dev / Extra
+        ["code"] = "rbxassetid://10709790644",
+        ["script"] = "rbxassetid://10709790644",
+        ["scripts"] = "rbxassetid://10709790644",
+        ["terminal"] = "rbxassetid://10734981858",
+        ["console"] = "rbxassetid://10734981858",
+        ["flame"] = "rbxassetid://10723385202",
+        ["fire"] = "rbxassetid://10723385202",
+        ["skull"] = "rbxassetid://10734973356",
+        ["star"] = "rbxassetid://10734977012",
+        ["info"] = "rbxassetid://10723415903",
+        ["help"] = "rbxassetid://10723415903"
+    },
+    GetIcon = function(self, icon, fallbackName)
+        if not icon and fallbackName then
+            local lowerName = tostring(fallbackName):lower():gsub("%s+", "")
+            if self.Icons[lowerName] then
+                return self.Icons[lowerName]
+            end
+            for key, val in pairs(self.Icons) do
+                if lowerName:find(key) then
+                    return val
+                end
+            end
+        end
+        if type(icon) == "number" or (type(icon) == "string" and tonumber(icon)) then
+            return "rbxassetid://" .. tostring(icon)
+        end
+        if type(icon) == "string" then
+            if icon:find("rbxassetid://") or icon:find("http://") or icon:find("https://") then
+                return icon
+            end
+            local lowerKey = icon:lower():gsub("%s+", "")
+            if self.Icons[lowerKey] then
+                return self.Icons[lowerKey]
+            end
+            for key, val in pairs(self.Icons) do
+                if lowerKey:find(key) then
+                    return val
+                end
+            end
+        end
+        return nil
+    end,
     Fonts = {
         Bold = Enum.Font.GothamBold,
         Medium = Enum.Font.GothamMedium,
@@ -952,6 +1066,18 @@ function Library:CreateWindow(config)
 
     makeDraggable(TopDrag, MainFrame)
 
+    local CurrentTabIcon = Instance.new("ImageLabel")
+    CurrentTabIcon.Name = "CurrentTabIcon"
+    CurrentTabIcon.Size = UDim2.new(0, 16, 0, 16)
+    CurrentTabIcon.Position = UDim2.new(0, 18, 0.5, -8)
+    CurrentTabIcon.BackgroundTransparency = 1
+    CurrentTabIcon.Image = ""
+    CurrentTabIcon.ImageColor3 = Library.Theme.Accent
+    CurrentTabIcon.Visible = false
+    CurrentTabIcon.ZIndex = 7
+    CurrentTabIcon.Parent = TopDrag
+    Library:RegisterThemeObject(CurrentTabIcon, "ImageColor3", "Accent")
+
     local CurrentTabTitle = Instance.new("TextLabel")
     CurrentTabTitle.Name = "CurrentTabTitle"
     CurrentTabTitle.Size = UDim2.new(1, -60, 1, 0)
@@ -1299,13 +1425,21 @@ function Library:CreateWindow(config)
     end)
 
     -- ==================== CREATE TAB (SIDEBAR) ====================
-    function WindowObj:CreateTab(tabConfig)
-        local name
-        if type(tabConfig) == "table" then
-            name = tabConfig.Name or tabConfig.Text or "Tab"
+    function WindowObj:CreateTab(arg1, arg2)
+        local name, icon
+        if type(arg1) == "table" then
+            name = arg1.Name or arg1.Text or arg1.Title or arg1[1] or "Tab"
+            icon = arg1.Icon or arg1.Image or arg1[2]
         else
-            name = tostring(tabConfig)
+            name = tostring(arg1 or "Tab")
+            if type(arg2) == "string" or type(arg2) == "number" then
+                icon = arg2
+            elseif type(arg2) == "table" then
+                icon = arg2.Icon or arg2.Image or arg2[1]
+            end
         end
+
+        local resolvedIcon = Library:GetIcon(icon, name)
 
         local TabBtn = Instance.new("TextButton")
         TabBtn.Name = name .. "_Tab"
@@ -1324,7 +1458,7 @@ function Library:CreateWindow(config)
 
         local TabIndicator = Instance.new("Frame")
         TabIndicator.Name = "Indicator"
-        TabIndicator.Size = UDim2.new(0, 4, 0, 20)
+        TabIndicator.Size = UDim2.new(0, 4, 0, 0)
         TabIndicator.Position = UDim2.new(0, 5, 0.5, -10)
         TabIndicator.BackgroundColor3 = Library.Theme.Accent
         TabIndicator.BackgroundTransparency = 1
@@ -1337,10 +1471,27 @@ function Library:CreateWindow(config)
         TabIndicatorCorner.CornerRadius = UDim.new(1, 0)
         TabIndicatorCorner.Parent = TabIndicator
 
+        local TabIcon
+        if resolvedIcon and resolvedIcon ~= "" then
+            TabIcon = Instance.new("ImageLabel")
+            TabIcon.Name = "TabIcon"
+            TabIcon.Size = UDim2.new(0, 16, 0, 16)
+            TabIcon.Position = UDim2.new(0, 15, 0.5, -8)
+            TabIcon.BackgroundTransparency = 1
+            TabIcon.Image = resolvedIcon
+            TabIcon.ImageColor3 = Library.Theme.TextDark
+            TabIcon.ZIndex = 8
+            TabIcon.Parent = TabBtn
+        end
+
+        local textBaseX = TabIcon and 38 or 16
+        local textActiveX = TabIcon and 42 or 20
+        local textHoverX = TabIcon and 40 or 18
+
         local TabText = Instance.new("TextLabel")
         TabText.Name = "TabText"
-        TabText.Size = UDim2.new(1, -24, 1, 0)
-        TabText.Position = UDim2.new(0, 16, 0, 0)
+        TabText.Size = UDim2.new(1, -(textBaseX + 8), 1, 0)
+        TabText.Position = UDim2.new(0, textBaseX, 0, 0)
         TabText.BackgroundTransparency = 1
         TabText.Text = name
         TabText.TextColor3 = Library.Theme.TextDark
@@ -1403,6 +1554,8 @@ function Library:CreateWindow(config)
 
         local TabObj = {
             Name = name,
+            Icon = TabIcon,
+            IconAsset = resolvedIcon,
             Button = TabBtn,
             Page = TabPage,
             LeftColumn = LeftCol,
@@ -1415,9 +1568,13 @@ function Library:CreateWindow(config)
             for _, tab in pairs(WindowObj.Tabs) do
                 if tab ~= TabObj then
                     tab.Page.Visible = false
+                    local baseInactiveX = tab.Icon and 38 or 16
                     createTween(tab.Button, { BackgroundTransparency = 1, BackgroundColor3 = Library.Theme.Sidebar }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                    createTween(tab.Button.TabText, { TextColor3 = Library.Theme.TextDark, Position = UDim2.new(0, 16, 0, 0) }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    createTween(tab.Button.TabText, { TextColor3 = Library.Theme.TextDark, Position = UDim2.new(0, baseInactiveX, 0, 0) }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                     createTween(tab.Button.Indicator, { BackgroundTransparency = 1, Size = UDim2.new(0, 4, 0, 0) }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    if tab.Icon then
+                        createTween(tab.Icon, { ImageColor3 = Library.Theme.TextDark, Position = UDim2.new(0, 15, 0.5, -8) }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    end
                 end
             end
 
@@ -1428,16 +1585,39 @@ function Library:CreateWindow(config)
             createTween(LeftCol, { Position = UDim2.new(0, 0, 0, 0) }, 0.32, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
             createTween(RightCol, { Position = UDim2.new(0.5, 6, 0, 0) }, 0.38, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
-            -- Smooth Header Title Slide & Fade
-            CurrentTabTitle.TextTransparency = 0.5
-            CurrentTabTitle.Position = UDim2.new(0, 10, 0, 0)
-            CurrentTabTitle.Text = name
-            createTween(CurrentTabTitle, { TextTransparency = 0, Position = UDim2.new(0, 18, 0, 0) }, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            -- Smooth Header Title & Icon Slide & Fade
+            if CurrentTabIcon then
+                if resolvedIcon and resolvedIcon ~= "" then
+                    CurrentTabIcon.Image = resolvedIcon
+                    CurrentTabIcon.Visible = true
+                    CurrentTabIcon.ImageTransparency = 0.5
+                    CurrentTabIcon.Position = UDim2.new(0, 10, 0.5, -8)
+                    createTween(CurrentTabIcon, { ImageTransparency = 0, Position = UDim2.new(0, 18, 0.5, -8) }, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                    CurrentTabTitle.Position = UDim2.new(0, 32, 0, 0)
+                    CurrentTabTitle.TextTransparency = 0.5
+                    CurrentTabTitle.Text = name
+                    createTween(CurrentTabTitle, { TextTransparency = 0, Position = UDim2.new(0, 40, 0, 0) }, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                else
+                    CurrentTabIcon.Visible = false
+                    CurrentTabTitle.TextTransparency = 0.5
+                    CurrentTabTitle.Position = UDim2.new(0, 10, 0, 0)
+                    CurrentTabTitle.Text = name
+                    createTween(CurrentTabTitle, { TextTransparency = 0, Position = UDim2.new(0, 18, 0, 0) }, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                end
+            else
+                CurrentTabTitle.TextTransparency = 0.5
+                CurrentTabTitle.Position = UDim2.new(0, 10, 0, 0)
+                CurrentTabTitle.Text = name
+                createTween(CurrentTabTitle, { TextTransparency = 0, Position = UDim2.new(0, 18, 0, 0) }, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            end
 
             -- Active Tab Button Spring & Text Slide
             createTween(TabBtn, { BackgroundTransparency = 0.35, BackgroundColor3 = Library.Theme.ItemBgHover }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-            createTween(TabText, { TextColor3 = Library.Theme.Text, Position = UDim2.new(0, 20, 0, 0) }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            createTween(TabText, { TextColor3 = Library.Theme.Text, Position = UDim2.new(0, textActiveX, 0, 0) }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
             createTween(TabIndicator, { BackgroundTransparency = 0, Size = UDim2.new(0, 4, 0, 22) }, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            if TabIcon then
+                createTween(TabIcon, { ImageColor3 = Library.Theme.Accent, Position = UDim2.new(0, 17, 0.5, -8) }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            end
 
             WindowObj.CurrentTab = TabObj
         end
@@ -1447,14 +1627,20 @@ function Library:CreateWindow(config)
         TabBtn.MouseEnter:Connect(function()
             if WindowObj.CurrentTab ~= TabObj then
                 createTween(TabBtn, { BackgroundTransparency = 0.70, BackgroundColor3 = Library.Theme.ItemBgHover }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                createTween(TabText, { TextColor3 = Library.Theme.TextDim, Position = UDim2.new(0, 18, 0, 0) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                createTween(TabText, { TextColor3 = Library.Theme.TextDim, Position = UDim2.new(0, textHoverX, 0, 0) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                if TabIcon then
+                    createTween(TabIcon, { ImageColor3 = Library.Theme.TextDim, Position = UDim2.new(0, 16, 0.5, -8) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                end
             end
         end)
 
         TabBtn.MouseLeave:Connect(function()
             if WindowObj.CurrentTab ~= TabObj then
                 createTween(TabBtn, { BackgroundTransparency = 1 }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                createTween(TabText, { TextColor3 = Library.Theme.TextDark, Position = UDim2.new(0, 16, 0, 0) }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                createTween(TabText, { TextColor3 = Library.Theme.TextDark, Position = UDim2.new(0, textBaseX, 0, 0) }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                if TabIcon then
+                    createTween(TabIcon, { ImageColor3 = Library.Theme.TextDark, Position = UDim2.new(0, 15, 0.5, -8) }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                end
             end
         end)
 
