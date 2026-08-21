@@ -1027,6 +1027,24 @@ function Library:CreateWindow(config)
 
     makeDraggable(MobileButton, MobileButton)
 
+    MobileButton.MouseEnter:Connect(function()
+        createTween(MobileButton, { Size = UDim2.new(0, 54, 0, 54) }, 0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        createTween(MobileStroke, { Thickness = 2.8, Color = Library.Theme.AccentSecondary }, 0.2)
+    end)
+
+    MobileButton.MouseLeave:Connect(function()
+        createTween(MobileButton, { Size = UDim2.new(0, 50, 0, 50) }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        createTween(MobileStroke, { Thickness = 2, Color = Library.Theme.Accent }, 0.2)
+    end)
+
+    MobileButton.MouseButton1Down:Connect(function()
+        createTween(MobileButton, { Size = UDim2.new(0, 46, 0, 46) }, 0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    end)
+
+    MobileButton.MouseButton1Up:Connect(function()
+        createTween(MobileButton, { Size = UDim2.new(0, 50, 0, 50) }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+    end)
+
     local WindowObj = {
         ScreenGui = ScreenGui,
         MainFrame = MainFrame,
@@ -1397,27 +1415,29 @@ function Library:CreateWindow(config)
             for _, tab in pairs(WindowObj.Tabs) do
                 if tab ~= TabObj then
                     tab.Page.Visible = false
-                    createTween(tab.Button, { BackgroundTransparency = 1, BackgroundColor3 = Library.Theme.Sidebar }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                    createTween(tab.Button.TabText, { TextColor3 = Library.Theme.TextDark }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    createTween(tab.Button, { BackgroundTransparency = 1, BackgroundColor3 = Library.Theme.Sidebar }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    createTween(tab.Button.TabText, { TextColor3 = Library.Theme.TextDark, Position = UDim2.new(0, 16, 0, 0) }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                     createTween(tab.Button.Indicator, { BackgroundTransparency = 1, Size = UDim2.new(0, 4, 0, 0) }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                 end
             end
 
-            -- Smooth Page Content Slide-In
-            TabPage.Position = UDim2.new(0, 0, 0, 8)
+            -- Staggered, buttery smooth entrance for Left & Right columns
+            LeftCol.Position = UDim2.new(0, 0, 0, 14)
+            RightCol.Position = UDim2.new(0.5, 6, 0, 20)
             TabPage.Visible = true
-            createTween(TabPage, { Position = UDim2.new(0, 0, 0, 0) }, 0.24, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            createTween(LeftCol, { Position = UDim2.new(0, 0, 0, 0) }, 0.32, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            createTween(RightCol, { Position = UDim2.new(0.5, 6, 0, 0) }, 0.38, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
             -- Smooth Header Title Slide & Fade
-            CurrentTabTitle.TextTransparency = 0.4
-            CurrentTabTitle.Position = UDim2.new(0, 18, 0, -4)
+            CurrentTabTitle.TextTransparency = 0.5
+            CurrentTabTitle.Position = UDim2.new(0, 10, 0, 0)
             CurrentTabTitle.Text = name
-            createTween(CurrentTabTitle, { TextTransparency = 0, Position = UDim2.new(0, 18, 0, 0) }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            createTween(CurrentTabTitle, { TextTransparency = 0, Position = UDim2.new(0, 18, 0, 0) }, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 
-            -- Smooth Active Tab Button & Indicator Expansion
-            createTween(TabBtn, { BackgroundTransparency = 0.45, BackgroundColor3 = Library.Theme.ItemBgHover }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-            createTween(TabText, { TextColor3 = Library.Theme.Text }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-            createTween(TabIndicator, { BackgroundTransparency = 0, Size = UDim2.new(0, 4, 0, 20) }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            -- Active Tab Button Spring & Text Slide
+            createTween(TabBtn, { BackgroundTransparency = 0.35, BackgroundColor3 = Library.Theme.ItemBgHover }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            createTween(TabText, { TextColor3 = Library.Theme.Text, Position = UDim2.new(0, 20, 0, 0) }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            createTween(TabIndicator, { BackgroundTransparency = 0, Size = UDim2.new(0, 4, 0, 22) }, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 
             WindowObj.CurrentTab = TabObj
         end
@@ -1426,15 +1446,15 @@ function Library:CreateWindow(config)
 
         TabBtn.MouseEnter:Connect(function()
             if WindowObj.CurrentTab ~= TabObj then
-                createTween(TabBtn, { BackgroundTransparency = 0.75, BackgroundColor3 = Library.Theme.ItemBgHover }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                createTween(TabText, { TextColor3 = Library.Theme.TextDim }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                createTween(TabBtn, { BackgroundTransparency = 0.70, BackgroundColor3 = Library.Theme.ItemBgHover }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                createTween(TabText, { TextColor3 = Library.Theme.TextDim, Position = UDim2.new(0, 18, 0, 0) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
             end
         end)
 
         TabBtn.MouseLeave:Connect(function()
             if WindowObj.CurrentTab ~= TabObj then
-                createTween(TabBtn, { BackgroundTransparency = 1 }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                createTween(TabText, { TextColor3 = Library.Theme.TextDark }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                createTween(TabBtn, { BackgroundTransparency = 1 }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                createTween(TabText, { TextColor3 = Library.Theme.TextDark, Position = UDim2.new(0, 16, 0, 0) }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
             end
         end)
 
@@ -1468,6 +1488,14 @@ function Library:CreateWindow(config)
             CardStroke.Thickness = 1.2
             CardStroke.Parent = Card
             Library:RegisterThemeObject(CardStroke, "Color", "CardBorder")
+
+            Card.MouseEnter:Connect(function()
+                createTween(CardStroke, { Color = Library.Theme.CardBorderHover }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            end)
+
+            Card.MouseLeave:Connect(function()
+                createTween(CardStroke, { Color = Library.Theme.CardBorder }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            end)
 
             local CardHeader = Instance.new("Frame")
             CardHeader.Name = "Header"
@@ -1629,14 +1657,29 @@ function Library:CreateWindow(config)
                     if flag then Library.Flags[flag] = state end
                     
                     if state then
-                        createTween(CheckBox, { BackgroundColor3 = Library.Theme.Accent }, 0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        createTween(CheckStroke, { Color = Library.Theme.AccentSecondary }, 0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        createTween(SwitchKnob, { Position = UDim2.new(1, -17, 0.5, 0), Size = UDim2.new(0, 14, 0, 14), BackgroundColor3 = Color3.fromRGB(255, 255, 255) }, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                        createTween(CheckBox, { BackgroundColor3 = Library.Theme.Accent, Size = UDim2.new(0, 40, 0, 21) }, 0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        task.delay(0.15, function()
+                            createTween(CheckBox, { Size = UDim2.new(0, 38, 0, 20) }, 0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                        end)
+                        createTween(CheckStroke, { Color = Library.Theme.AccentSecondary, Thickness = 1.6 }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        task.delay(0.2, function()
+                            createTween(CheckStroke, { Thickness = 1.2 }, 0.15)
+                        end)
+                        local tw = createTween(SwitchKnob, { Position = UDim2.new(1, -17, 0.5, 0), Size = UDim2.new(0, 18, 0, 13), BackgroundColor3 = Color3.fromRGB(255, 255, 255) }, 0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        tw.Completed:Connect(function()
+                            createTween(SwitchKnob, { Size = UDim2.new(0, 14, 0, 14) }, 0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                        end)
                         createTween(Label, { TextColor3 = Library.Theme.Text }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                     else
-                        createTween(CheckBox, { BackgroundColor3 = Library.Theme.ToggleOff }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        createTween(CheckStroke, { Color = Library.Theme.CardBorder }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        createTween(SwitchKnob, { Position = UDim2.new(0, 3, 0.5, 0), Size = UDim2.new(0, 14, 0, 14), BackgroundColor3 = Color3.fromRGB(220, 220, 230) }, 0.24, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(CheckBox, { BackgroundColor3 = Library.Theme.ToggleOff, Size = UDim2.new(0, 36, 0, 19) }, 0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        task.delay(0.15, function()
+                            createTween(CheckBox, { Size = UDim2.new(0, 38, 0, 20) }, 0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                        end)
+                        createTween(CheckStroke, { Color = Library.Theme.CardBorder, Thickness = 1.2 }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        local tw = createTween(SwitchKnob, { Position = UDim2.new(0, 3, 0.5, 0), Size = UDim2.new(0, 18, 0, 13), BackgroundColor3 = Color3.fromRGB(220, 220, 230) }, 0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        tw.Completed:Connect(function()
+                            createTween(SwitchKnob, { Size = UDim2.new(0, 14, 0, 14) }, 0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                        end)
                         createTween(Label, { TextColor3 = Library.Theme.TextDim }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                     end
                     
@@ -1663,16 +1706,30 @@ function Library:CreateWindow(config)
                     end
                 end
 
-                CheckBox.MouseButton1Down:Connect(function()
-                    createTween(SwitchKnob, { Size = UDim2.new(0, 18, 0, 14) }, 0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-                end)
-
-                CheckBox.MouseButton1Up:Connect(function()
-                    createTween(SwitchKnob, { Size = UDim2.new(0, 14, 0, 14) }, 0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-                end)
-
                 CheckBox.MouseButton1Click:Connect(function()
                     setToggle(not state)
+                end)
+
+                ToggleFrame.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        local targetPos = input.Position
+                        local rPos = RightElements.AbsolutePosition
+                        local rSize = RightElements.AbsoluteSize
+                        local inRight = (targetPos.X >= rPos.X and targetPos.X <= rPos.X + rSize.X and targetPos.Y >= rPos.Y and targetPos.Y <= rPos.Y + rSize.Y)
+                        if not inRight then
+                            setToggle(not state)
+                        end
+                    end
+                end)
+
+                ToggleFrame.MouseEnter:Connect(function()
+                    createTween(Label, { TextColor3 = Library.Theme.Text }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    createTween(CheckStroke, { Color = state and Library.Theme.AccentSecondary or Library.Theme.CardBorderHover }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                end)
+
+                ToggleFrame.MouseLeave:Connect(function()
+                    createTween(Label, { TextColor3 = state and Library.Theme.Text or Library.Theme.TextDim }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    createTween(CheckStroke, { Color = state and Library.Theme.Accent or Library.Theme.CardBorder }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                 end)
 
                 if flag then
@@ -1881,6 +1938,16 @@ function Library:CreateWindow(config)
                         Library.Options[cpFlag] = ColorPickerObj
                     end
 
+                    ColorBox.MouseEnter:Connect(function()
+                        createTween(ColorBox, { Size = UDim2.new(0, 20, 0, 16) }, 0.16, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                        createTween(BoxStroke, { Color = Library.Theme.Accent, Thickness = 1.6 }, 0.16)
+                    end)
+
+                    ColorBox.MouseLeave:Connect(function()
+                        createTween(ColorBox, { Size = UDim2.new(0, 18, 0, 14) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(BoxStroke, { Color = Library.Theme.CardBorder, Thickness = 1.2 }, 0.18)
+                    end)
+
                     ColorBox.MouseButton1Click:Connect(function()
                         if PickerFrame.Visible then
                             PickerFrame.Visible = false
@@ -1899,8 +1966,9 @@ function Library:CreateWindow(config)
                             local targetX = math.clamp(relX - 140, 10, math.max(10, maxX))
                             local targetY = math.clamp(relY + 20, 10, math.max(10, maxY))
 
-                            PickerFrame.Position = UDim2.new(0, targetX, 0, targetY)
+                            PickerFrame.Position = UDim2.new(0, targetX, 0, targetY + 6)
                             PickerFrame.Visible = true
+                            createTween(PickerFrame, { Position = UDim2.new(0, targetX, 0, targetY) }, 0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
                             CurrentPopup = {
                                 Menu = PickerFrame,
                                 Holder = ColorBox,
@@ -2054,6 +2122,20 @@ function Library:CreateWindow(config)
                         Library.Options[kbFlag] = KeybindObj
                     end
 
+                    KeyBtn.MouseEnter:Connect(function()
+                        if not binding then
+                            createTween(KeyBtn, { BackgroundColor3 = Library.Theme.ItemBgHover }, 0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                            createTween(KeyStroke, { Color = Library.Theme.Accent, Thickness = 1.4 }, 0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        end
+                    end)
+
+                    KeyBtn.MouseLeave:Connect(function()
+                        if not binding then
+                            createTween(KeyBtn, { BackgroundColor3 = Library.Theme.ItemBg }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                            createTween(KeyStroke, { Color = Library.Theme.CardBorder, Thickness = 1.2 }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        end
+                    end)
+
                     KeyBtn.MouseButton1Click:Connect(function()
                         binding = true
                         KeyBtn.Text = "..."
@@ -2157,6 +2239,26 @@ function Library:CreateWindow(config)
                 FillCorner.CornerRadius = UDim.new(1, 0)
                 FillCorner.Parent = SliderFill
 
+                local SliderKnob = Instance.new("Frame")
+                SliderKnob.Name = "Knob"
+                SliderKnob.Size = UDim2.new(0, 10, 0, 10)
+                SliderKnob.AnchorPoint = Vector2.new(0.5, 0.5)
+                SliderKnob.Position = UDim2.new(1, 0, 0.5, 0)
+                SliderKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                SliderKnob.BorderSizePixel = 0
+                SliderKnob.ZIndex = 13
+                SliderKnob.Parent = SliderFill
+
+                local SliderKnobCorner = Instance.new("UICorner")
+                SliderKnobCorner.CornerRadius = UDim.new(1, 0)
+                SliderKnobCorner.Parent = SliderKnob
+
+                local SliderKnobStroke = Instance.new("UIStroke")
+                SliderKnobStroke.Color = Library.Theme.Accent
+                SliderKnobStroke.Thickness = 1.5
+                SliderKnobStroke.Parent = SliderKnob
+                Library:RegisterThemeObject(SliderKnobStroke, "Color", "Accent")
+
                 local currentVal = default
                 if flag then Library.Flags[flag] = currentVal end
 
@@ -2187,7 +2289,7 @@ function Library:CreateWindow(config)
                     end
                     SliderObj.Value = currentVal
                     ValueLabel.Text = tostring(currentVal) .. suffix
-                    createTween(SliderFill, { Size = UDim2.new((currentVal - min) / (max - min), 0, 1, 0) }, 0.08)
+                    createTween(SliderFill, { Size = UDim2.new((currentVal - min) / (max - min), 0, 1, 0) }, 0.06, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
                     if flag then Library.Flags[flag] = currentVal end
                     if not ignoreCallback then
                         task.spawn(callback, currentVal)
@@ -2224,9 +2326,29 @@ function Library:CreateWindow(config)
                     setSlider(val)
                 end
 
+                SliderTrack.MouseEnter:Connect(function()
+                    createTween(SliderTrack, { Size = UDim2.new(1, 0, 0, 8), Position = UDim2.new(0, 0, 0, 23) }, 0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    createTween(SliderKnob, { Size = UDim2.new(0, 14, 0, 14) }, 0.16, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                    createTween(ValueLabel, { TextColor3 = Library.Theme.Accent }, 0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    createTween(Label, { TextColor3 = Library.Theme.Text }, 0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                end)
+
+                SliderTrack.MouseLeave:Connect(function()
+                    if not dragging then
+                        createTween(SliderTrack, { Size = UDim2.new(1, 0, 0, 6), Position = UDim2.new(0, 0, 0, 24) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(SliderKnob, { Size = UDim2.new(0, 10, 0, 10) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(ValueLabel, { TextColor3 = Library.Theme.Text }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(Label, { TextColor3 = Library.Theme.TextDim }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    end
+                end)
+
                 SliderTrack.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         dragging = true
+                        createTween(SliderTrack, { Size = UDim2.new(1, 0, 0, 8), Position = UDim2.new(0, 0, 0, 23) }, 0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(SliderKnob, { Size = UDim2.new(0, 14, 0, 14) }, 0.16, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                        createTween(ValueLabel, { TextColor3 = Library.Theme.Accent }, 0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(Label, { TextColor3 = Library.Theme.Text }, 0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                         updateDrag(input)
                     end
                 end)
@@ -2234,6 +2356,10 @@ function Library:CreateWindow(config)
                 UserInputService.InputEnded:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         dragging = false
+                        createTween(SliderTrack, { Size = UDim2.new(1, 0, 0, 6), Position = UDim2.new(0, 0, 0, 24) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(SliderKnob, { Size = UDim2.new(0, 10, 0, 10) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(ValueLabel, { TextColor3 = Library.Theme.Text }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(Label, { TextColor3 = Library.Theme.TextDim }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                     end
                 end)
 
@@ -2780,20 +2906,24 @@ function Library:CreateWindow(config)
                 BtnStroke.Parent = Button
 
                 Button.MouseEnter:Connect(function()
-                    createTween(Button, { BackgroundColor3 = Library.Theme.ItemBgHover }, 0.15)
-                    createTween(BtnStroke, { Color = Library.Theme.Accent }, 0.15)
+                    createTween(Button, { BackgroundColor3 = Library.Theme.ItemBgHover }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    createTween(BtnStroke, { Color = Library.Theme.Accent, Thickness = 1.5 }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                 end)
 
                 Button.MouseLeave:Connect(function()
-                    createTween(Button, { BackgroundColor3 = Library.Theme.ItemBg }, 0.15)
-                    createTween(BtnStroke, { Color = Library.Theme.ItemBorder }, 0.15)
+                    createTween(Button, { BackgroundColor3 = Library.Theme.ItemBg, Size = UDim2.new(1, 0, 0, 30) }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    createTween(BtnStroke, { Color = Library.Theme.ItemBorder, Thickness = 1.2 }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                end)
+
+                Button.MouseButton1Down:Connect(function()
+                    createTween(Button, { BackgroundColor3 = Library.Theme.AccentDark, Size = UDim2.new(1, -4, 0, 28) }, 0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+                end)
+
+                Button.MouseButton1Up:Connect(function()
+                    createTween(Button, { BackgroundColor3 = Library.Theme.ItemBgHover, Size = UDim2.new(1, 0, 0, 30) }, 0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
                 end)
 
                 Button.MouseButton1Click:Connect(function()
-                    createTween(Button, { BackgroundColor3 = Library.Theme.AccentDark }, 0.08)
-                    task.delay(0.1, function()
-                        createTween(Button, { BackgroundColor3 = Library.Theme.ItemBgHover }, 0.1)
-                    end)
                     task.spawn(callback)
                 end)
 
@@ -3653,6 +3783,16 @@ function Library:CreateWindow(config)
                     Library.Options[flag] = ColorPickerObj
                 end
 
+                ColorBox.MouseEnter:Connect(function()
+                    createTween(ColorBox, { Size = UDim2.new(0, 20, 0, 16) }, 0.16, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                    createTween(BoxStroke, { Color = Library.Theme.Accent, Thickness = 1.6 }, 0.16)
+                end)
+
+                ColorBox.MouseLeave:Connect(function()
+                    createTween(ColorBox, { Size = UDim2.new(0, 18, 0, 14) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    createTween(BoxStroke, { Color = Library.Theme.CardBorder, Thickness = 1.2 }, 0.18)
+                end)
+
                 ColorBox.MouseButton1Click:Connect(function()
                     if PickerFrame.Visible then
                         PickerFrame.Visible = false
@@ -3671,8 +3811,9 @@ function Library:CreateWindow(config)
                         local targetX = math.clamp(relX - 140, 10, math.max(10, maxX))
                         local targetY = math.clamp(relY + 20, 10, math.max(10, maxY))
 
-                        PickerFrame.Position = UDim2.new(0, targetX, 0, targetY)
+                        PickerFrame.Position = UDim2.new(0, targetX, 0, targetY + 6)
                         PickerFrame.Visible = true
+                        createTween(PickerFrame, { Position = UDim2.new(0, targetX, 0, targetY) }, 0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
                         CurrentPopup = {
                             Menu = PickerFrame,
                             Holder = ColorBox,
