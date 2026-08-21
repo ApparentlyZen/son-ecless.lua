@@ -256,6 +256,10 @@ local NamelessWare = {
     Flags = {},
     ThemeSubscribers = {},
     KeybindRegistry = {},
+    KeybindElements = {},
+    ShowKeybinds = true,
+    ShowKeybindsHud = false,
+    KeybindHUD = nil,
     CurrentTheme = "Nameless Violet",
     ToggleKey = Enum.KeyCode.RightShift,
     ActiveWindow = nil,
@@ -268,10 +272,170 @@ function NamelessWare:RegisterKeybind(info)
     for i, item in ipairs(self.KeybindRegistry) do
         if item.Name == info.Name and item.Tab == info.Tab then
             self.KeybindRegistry[i] = info
+            self:UpdateKeybindsHud()
             return
         end
     end
     table.insert(self.KeybindRegistry, info)
+    self:UpdateKeybindsHud()
+end
+
+function NamelessWare:SetKeybindsVisibility(visible)
+    self.ShowKeybinds = visible
+    for _, el in ipairs(self.KeybindElements) do
+        pcall(function()
+            if typeof(el) == "function" then
+                el(visible)
+            elseif el and el.IsA and el:IsA("GuiObject") then
+                el.Visible = visible
+            end
+        end)
+    end
+end
+
+function NamelessWare:UpdateKeybindsHud()
+    if not self.KeybindHUD or not self.KeybindHUD.Parent then return end
+    local container = self.KeybindHUD:FindFirstChild("ListContainer")
+    if not container then return end
+
+    for _, child in ipairs(container:GetChildren()) do
+        if child:IsA("Frame") or child:IsA("TextLabel") then
+            child:Destroy()
+        end
+    end
+
+    local count = 0
+    for _, kb in ipairs(self.KeybindRegistry) do
+        if kb.Key and kb.Key ~= "-" and kb.Key ~= "None" then
+            count = count + 1
+            local isActive = (kb.GetState and kb.GetState() == true)
+            local Row = Instance.new("Frame")
+            Row.Size = UDim2.new(1, 0, 0, 18)
+            Row.BackgroundTransparency = 1
+            Row.Parent = container
+
+            local FeatLabel = Instance.new("TextLabel")
+            FeatLabel.Size = UDim2.new(1, -60, 1, 0)
+            FeatLabel.Position = UDim2.new(0, 0, 0, 0)
+            FeatLabel.BackgroundTransparency = 1
+            FeatLabel.Text = "[" .. (kb.Tab or "General") .. "] " .. (kb.Name or "Feature")
+            FeatLabel.Font = THEME.FontMain
+            FeatLabel.TextSize = 9
+            FeatLabel.TextColor3 = isActive and THEME.TextMain or THEME.TextMuted
+            FeatLabel.TextXAlignment = Enum.TextXAlignment.Left
+            FeatLabel.TextTruncate = Enum.TextTruncate.AtEnd
+            FeatLabel.Parent = Row
+
+            local StatusLabel = Instance.new("TextLabel")
+            StatusLabel.Size = UDim2.new(0, 55, 1, 0)
+            StatusLabel.Position = UDim2.new(1, -55, 0, 0)
+            StatusLabel.BackgroundTransparency = 1
+            StatusLabel.Text = "[" .. tostring(kb.Key) .. "] " .. (isActive and "ON" or "OFF")
+            StatusLabel.Font = THEME.FontBold
+            StatusLabel.TextSize = 8
+            StatusLabel.TextColor3 = isActive and THEME.Accent or Color3.fromRGB(110, 110, 130)
+            StatusLabel.TextXAlignment = Enum.TextXAlignment.Right
+            StatusLabel.Parent = Row
+        end
+    end
+
+    if count == 0 then
+        local Empty = Instance.new("TextLabel")
+        Empty.Size = UDim2.new(1, 0, 0, 18)
+        Empty.BackgroundTransparency = 1
+        Empty.Text = "No active keybinds"
+        Empty.Font = THEME.FontMain
+        Empty.TextSize = 9
+        Empty.TextColor3 = THEME.TextMuted
+        Empty.Parent = container
+    end
+end
+
+function NamelessWare:SetKeybindsHud(visible)
+    self.ShowKeybindsHud = visible
+    if not self.ActiveWindow or not self.ActiveWindow.ScreenGui then return end
+    local screenGui = self.ActiveWindow.ScreenGui
+
+    if visible then
+        if not self.KeybindHUD then
+            local HUD = Instance.new("Frame")
+            HUD.Name = "NamelessKeybindsHUD"
+            HUD.Size = UDim2.new(0, 190, 0, 0)
+            HUD.AutomaticSize = Enum.AutomaticSize.Y
+            HUD.Position = UDim2.new(0, 20, 0.45, 0)
+            HUD.BackgroundColor3 = THEME.CardBg
+            HUD.BorderSizePixel = 0
+            HUD.ZIndex = 400
+            HUD.Parent = screenGui
+            self.KeybindHUD = HUD
+
+            local HUDCorner = Instance.new("UICorner")
+            HUDCorner.CornerRadius = UDim.new(0, 8)
+            HUDCorner.Parent = HUD
+
+            local HUDStroke = Instance.new("UIStroke")
+            HUDStroke.Color = THEME.CardBorder
+            HUDStroke.Thickness = 1
+            HUDStroke.Parent = HUD
+
+            local HUDPadding = Instance.new("UIPadding")
+            HUDPadding.PaddingTop = UDim.new(0, 8)
+            HUDPadding.PaddingBottom = UDim.new(0, 10)
+            HUDPadding.PaddingLeft = UDim.new(0, 10)
+            HUDPadding.PaddingRight = UDim.new(0, 10)
+            HUDPadding.Parent = HUD
+
+            local TitleRow = Instance.new("Frame")
+            TitleRow.Size = UDim2.new(1, 0, 0, 18)
+            TitleRow.BackgroundTransparency = 1
+            TitleRow.Parent = HUD
+
+            local Title = Instance.new("TextLabel")
+            Title.Size = UDim2.new(1, 0, 1, 0)
+            Title.BackgroundTransparency = 1
+            Title.Text = "Keybinds"
+            Title.Font = THEME.FontBold
+            Title.TextSize = 11
+            Title.TextColor3 = THEME.Accent
+            Title.TextXAlignment = Enum.TextXAlignment.Left
+            Title.Parent = TitleRow
+
+            local Line = Instance.new("Frame")
+            Line.Size = UDim2.new(1, 0, 0, 1)
+            Line.Position = UDim2.new(0, 0, 0, 22)
+            Line.BackgroundColor3 = THEME.CardBorder
+            Line.BorderSizePixel = 0
+            Line.Parent = HUD
+
+            local ListContainer = Instance.new("Frame")
+            ListContainer.Name = "ListContainer"
+            ListContainer.Size = UDim2.new(1, 0, 0, 0)
+            ListContainer.Position = UDim2.new(0, 0, 0, 26)
+            ListContainer.AutomaticSize = Enum.AutomaticSize.Y
+            ListContainer.BackgroundTransparency = 1
+            ListContainer.Parent = HUD
+
+            local ListLay = Instance.new("UIListLayout")
+            ListLay.Padding = UDim.new(0, 4)
+            ListLay.SortOrder = Enum.SortOrder.LayoutOrder
+            ListLay.Parent = ListContainer
+
+            MakeDraggable(HUD, TitleRow)
+
+            table.insert(self.ThemeSubscribers, function(theme)
+                HUD.BackgroundColor3 = theme.CardBg
+                HUDStroke.Color = theme.CardBorder
+                Title.TextColor3 = theme.Accent
+                Line.BackgroundColor3 = theme.CardBorder
+            end)
+        end
+        self.KeybindHUD.Visible = true
+        self:UpdateKeybindsHud()
+    else
+        if self.KeybindHUD then
+            self.KeybindHUD.Visible = false
+        end
+    end
 end
 
 -- =========================================================
@@ -971,6 +1135,24 @@ function SettingsManager:BuildSettingsSection(Section)
             end
         })
     end
+
+    Section:AddSubHeader("Keybinds & HUD", "rbxassetid://10734975692")
+
+    Section:AddToggle({
+        Name = "Show Keybinds in Menu",
+        Default = NamelessWare.ShowKeybinds,
+        Callback = function(state)
+            NamelessWare:SetKeybindsVisibility(state)
+        end
+    })
+
+    Section:AddToggle({
+        Name = "Floating Keybinds HUD",
+        Default = NamelessWare.ShowKeybindsHud,
+        Callback = function(state)
+            NamelessWare:SetKeybindsHud(state)
+        end
+    })
 
     Section:AddSubHeader("Active Keybinds Tracker", "rbxassetid://10734975692")
 
@@ -2038,27 +2220,71 @@ function NamelessWare:CreateWindow(config)
                 RightLayout.Padding = UDim.new(0, 5)
                 RightLayout.Parent = RightHold
 
-                local KeyLabel
-                if keybindKey then
-                    KeyLabel = Instance.new("TextLabel")
-                    KeyLabel.Size = UDim2.new(0, 16, 0, 14)
-                    KeyLabel.BackgroundColor3 = THEME.BgSidebar
-                    KeyLabel.Text = tostring(keybindKey)
-                    KeyLabel.Font = THEME.FontBold
-                    KeyLabel.TextSize = 8
-                    KeyLabel.TextColor3 = THEME.TextMuted
-                    KeyLabel.Parent = RightHold
+                local isPC = UserInputService.KeyboardEnabled
+                local boundKey = keybindKey and (typeof(keybindKey) == "EnumItem" and keybindKey or (Enum.KeyCode[tostring(keybindKey)] or nil)) or nil
+                local isBinding = false
+
+                local KeyBtn
+                if isPC or boundKey then
+                    KeyBtn = Instance.new("TextButton")
+                    KeyBtn.Size = UDim2.new(0, boundKey and math.max(18, #boundKey.Name * 6 + 8) or 16, 0, 14)
+                    KeyBtn.BackgroundColor3 = THEME.BgSidebar
+                    KeyBtn.Text = boundKey and boundKey.Name or "-"
+                    KeyBtn.Font = THEME.FontBold
+                    KeyBtn.TextSize = 8
+                    KeyBtn.TextColor3 = THEME.TextMuted
+                    KeyBtn.AutoButtonColor = false
+                    KeyBtn.Visible = NamelessWare.ShowKeybinds
+                    KeyBtn.Parent = RightHold
 
                     local KeyCorner = Instance.new("UICorner")
                     KeyCorner.CornerRadius = UDim.new(0, 3)
-                    KeyCorner.Parent = KeyLabel
+                    KeyCorner.Parent = KeyBtn
 
-                    NamelessWare:RegisterKeybind({
-                        Name = name,
-                        Tab = currentTabName,
-                        Key = tostring(keybindKey),
-                        GetState = function() return state end
-                    })
+                    local KeyStroke = Instance.new("UIStroke")
+                    KeyStroke.Color = THEME.CardBorder
+                    KeyStroke.Thickness = 1
+                    KeyStroke.Parent = KeyBtn
+
+                    local function RegisterSelf()
+                        NamelessWare:RegisterKeybind({
+                            Name = name,
+                            Tab = currentTabName,
+                            Key = boundKey and boundKey.Name or "-",
+                            GetState = function() return state end
+                        })
+                    end
+                    RegisterSelf()
+
+                    KeyBtn.MouseButton1Click:Connect(function()
+                        if isBinding then return end
+                        isBinding = true
+                        KeyBtn.Text = "..."
+                        Tween(KeyStroke, {Color = THEME.Accent}, 0.15)
+                        Tween(KeyBtn, {TextColor3 = THEME.Accent}, 0.15)
+
+                        local conn
+                        conn = UserInputService.InputBegan:Connect(function(input, gp)
+                            if input.UserInputType == Enum.UserInputType.Keyboard then
+                                conn:Disconnect()
+                                isBinding = false
+                                if input.KeyCode == Enum.KeyCode.Backspace or input.KeyCode == Enum.KeyCode.Escape then
+                                    boundKey = nil
+                                    KeyBtn.Text = "-"
+                                    KeyBtn.Size = UDim2.new(0, 16, 0, 14)
+                                else
+                                    boundKey = input.KeyCode
+                                    KeyBtn.Text = boundKey.Name
+                                    KeyBtn.Size = UDim2.new(0, math.max(18, #boundKey.Name * 6 + 8), 0, 14)
+                                end
+                                Tween(KeyStroke, {Color = THEME.CardBorder}, 0.15)
+                                Tween(KeyBtn, {TextColor3 = THEME.TextMuted}, 0.15)
+                                RegisterSelf()
+                            end
+                        end)
+                    end)
+
+                    table.insert(NamelessWare.KeybindElements, KeyBtn)
                 end
 
                 local ColorBox
@@ -2100,27 +2326,26 @@ function NamelessWare:CreateWindow(config)
                     Tween(Circle, {BackgroundColor3 = state and THEME.Accent or THEME.CircleOff}, 0.15)
                     Tween(CircleStroke, {Color = state and THEME.Accent or THEME.CircleOffBorder}, 0.15)
                     callback(state)
+                    NamelessWare:UpdateKeybindsHud()
                 end
 
                 Row.MouseButton1Click:Connect(function()
                     UpdateState(not state)
                 end)
 
-                if keybindKey then
-                    UserInputService.InputBegan:Connect(function(input, gp)
-                        if not gp and input.KeyCode.Name == keybindKey then
-                            UpdateState(not state)
-                        end
-                    end)
-                end
+                UserInputService.InputBegan:Connect(function(input, gp)
+                    if not gp and not isBinding and boundKey and input.KeyCode == boundKey and not UserInputService:GetFocusedTextBox() then
+                        UpdateState(not state)
+                    end
+                end)
 
                 table.insert(NamelessWare.ThemeSubscribers, function(theme)
                     Label.TextColor3 = state and theme.TextMain or theme.TextMuted
                     Circle.BackgroundColor3 = state and theme.Accent or theme.CircleOff
                     CircleStroke.Color = state and theme.Accent or theme.CircleOffBorder
-                    if KeyLabel then
-                        KeyLabel.BackgroundColor3 = theme.BgSidebar
-                        KeyLabel.TextColor3 = theme.TextMuted
+                    if KeyBtn then
+                        KeyBtn.BackgroundColor3 = theme.BgSidebar
+                        KeyBtn.TextColor3 = isBinding and theme.Accent or theme.TextMuted
                     end
                 end)
 
