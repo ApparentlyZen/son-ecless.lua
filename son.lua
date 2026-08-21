@@ -290,8 +290,11 @@ function NamelessWare:CreateWindow(config)
     HeaderFrame.BackgroundTransparency = 1
     HeaderFrame.Parent = MainWindow
 
+    local RegisteredItems = {}
+    local RegisteredCards = {}
+
     local HeaderTabTitle = Instance.new("TextLabel")
-    HeaderTabTitle.Size = UDim2.new(1, 0, 0, 20)
+    HeaderTabTitle.Size = UDim2.new(1, -185, 0, 20)
     HeaderTabTitle.Position = UDim2.new(0, 6, 0, 6)
     HeaderTabTitle.BackgroundTransparency = 1
     HeaderTabTitle.Text = "Combat"
@@ -302,7 +305,7 @@ function NamelessWare:CreateWindow(config)
     HeaderTabTitle.Parent = HeaderFrame
 
     local HeaderTabSub = Instance.new("TextLabel")
-    HeaderTabSub.Size = UDim2.new(1, 0, 0, 14)
+    HeaderTabSub.Size = UDim2.new(1, -185, 0, 14)
     HeaderTabSub.Position = UDim2.new(0, 6, 0, 26)
     HeaderTabSub.BackgroundTransparency = 1
     HeaderTabSub.Text = SubTitle
@@ -311,6 +314,107 @@ function NamelessWare:CreateWindow(config)
     HeaderTabSub.TextColor3 = THEME.TextMuted
     HeaderTabSub.TextXAlignment = Enum.TextXAlignment.Left
     HeaderTabSub.Parent = HeaderFrame
+
+    local SearchContainer = Instance.new("Frame")
+    SearchContainer.Name = "SearchContainer"
+    SearchContainer.Size = UDim2.new(0, 160, 0, 26)
+    SearchContainer.Position = UDim2.new(1, -168, 0.5, -13)
+    SearchContainer.BackgroundColor3 = THEME.CardBg
+    SearchContainer.BorderSizePixel = 0
+    SearchContainer.Parent = HeaderFrame
+
+    local SearchCorner = Instance.new("UICorner")
+    SearchCorner.CornerRadius = UDim.new(0, 6)
+    SearchCorner.Parent = SearchContainer
+
+    local SearchStroke = Instance.new("UIStroke")
+    SearchStroke.Color = THEME.CardBorder
+    SearchStroke.Thickness = 1
+    SearchStroke.Parent = SearchContainer
+
+    local SearchIcon = Instance.new("ImageLabel")
+    SearchIcon.Size = UDim2.new(0, 12, 0, 12)
+    SearchIcon.Position = UDim2.new(0, 8, 0.5, -6)
+    SearchIcon.BackgroundTransparency = 1
+    SearchIcon.Image = "rbxassetid://10734943777"
+    SearchIcon.ImageColor3 = THEME.TextMuted
+    SearchIcon.ScaleType = Enum.ScaleType.Fit
+    SearchIcon.Parent = SearchContainer
+
+    local SearchInput = Instance.new("TextBox")
+    SearchInput.Size = UDim2.new(1, -46, 1, 0)
+    SearchInput.Position = UDim2.new(0, 24, 0, 0)
+    SearchInput.BackgroundTransparency = 1
+    SearchInput.Text = ""
+    SearchInput.PlaceholderText = "Search..."
+    SearchInput.PlaceholderColor3 = THEME.TextMuted
+    SearchInput.Font = THEME.FontMain
+    SearchInput.TextSize = 10
+    SearchInput.TextColor3 = THEME.TextMain
+    SearchInput.TextXAlignment = Enum.TextXAlignment.Left
+    SearchInput.ClearTextOnFocus = false
+    SearchInput.Parent = SearchContainer
+
+    local ClearSearchBtn = Instance.new("TextButton")
+    ClearSearchBtn.Size = UDim2.new(0, 16, 0, 16)
+    ClearSearchBtn.Position = UDim2.new(1, -20, 0.5, -8)
+    ClearSearchBtn.BackgroundTransparency = 1
+    ClearSearchBtn.Text = "✕"
+    ClearSearchBtn.Font = THEME.FontBold
+    ClearSearchBtn.TextSize = 9
+    ClearSearchBtn.TextColor3 = THEME.TextMuted
+    ClearSearchBtn.Visible = false
+    ClearSearchBtn.Parent = SearchContainer
+
+    local function PerformSearch(query)
+        query = string.lower(query or "")
+        if query == "" then
+            ClearSearchBtn.Visible = false
+            for _, item in ipairs(RegisteredItems) do
+                item.Element.Visible = true
+            end
+            for _, card in ipairs(RegisteredCards) do
+                card.Visible = true
+            end
+        else
+            ClearSearchBtn.Visible = true
+            local cardCounts = {}
+            for _, card in ipairs(RegisteredCards) do
+                cardCounts[card] = 0
+            end
+
+            for _, item in ipairs(RegisteredItems) do
+                local matches = string.find(string.lower(item.Name), query, 1, true) ~= nil
+                item.Element.Visible = matches
+                if matches and cardCounts[item.Card] then
+                    cardCounts[item.Card] = cardCounts[item.Card] + 1
+                end
+            end
+
+            for card, count in pairs(cardCounts) do
+                card.Visible = (count > 0)
+            end
+        end
+    end
+
+    SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
+        PerformSearch(SearchInput.Text)
+    end)
+
+    ClearSearchBtn.MouseButton1Click:Connect(function()
+        SearchInput.Text = ""
+        PerformSearch("")
+    end)
+
+    SearchInput.Focused:Connect(function()
+        Tween(SearchStroke, {Color = AccentColor}, 0.2)
+        Tween(SearchIcon, {ImageColor3 = AccentColor}, 0.2)
+    end)
+
+    SearchInput.FocusLost:Connect(function()
+        Tween(SearchStroke, {Color = THEME.CardBorder}, 0.2)
+        Tween(SearchIcon, {ImageColor3 = THEME.TextMuted}, 0.2)
+    end)
 
     MakeDraggable(MainWindow, HeaderFrame)
 
@@ -500,6 +604,7 @@ function NamelessWare:CreateWindow(config)
             Card.BackgroundColor3 = THEME.CardBg
             Card.BorderSizePixel = 0
             Card.Parent = ColumnsHolder
+            table.insert(RegisteredCards, Card)
 
             local CardCorner = Instance.new("UICorner")
             CardCorner.CornerRadius = UDim.new(0, 10)
@@ -596,6 +701,7 @@ function NamelessWare:CreateWindow(config)
                 RowBtn.Text = ""
                 RowBtn.AutoButtonColor = false
                 RowBtn.Parent = Card
+                table.insert(RegisteredItems, {Name = name, Element = RowBtn, Card = Card})
 
                 local rightOffset = -26
                 if keybind then rightOffset = rightOffset - 24 end
@@ -642,11 +748,24 @@ function NamelessWare:CreateWindow(config)
                     KeyBadge.Parent = RowBtn
                 end
 
+                local BoxGlow = Instance.new("ImageLabel")
+                BoxGlow.Size = UDim2.new(0, 30, 0, 30)
+                BoxGlow.Position = UDim2.new(1, -24, 0.5, -15)
+                BoxGlow.BackgroundTransparency = 1
+                BoxGlow.Image = "rbxassetid://5028857472"
+                BoxGlow.ImageColor3 = AccentColor
+                BoxGlow.ImageTransparency = state and 0.45 or 1
+                BoxGlow.ScaleType = Enum.ScaleType.Slice
+                BoxGlow.SliceCenter = Rect.new(24, 24, 276, 276)
+                BoxGlow.ZIndex = 1
+                BoxGlow.Parent = RowBtn
+
                 local BoxFrame = Instance.new("Frame")
                 BoxFrame.Size = UDim2.new(0, 18, 0, 18)
                 BoxFrame.Position = UDim2.new(1, -18, 0.5, -9)
                 BoxFrame.BackgroundColor3 = state and AccentColor or THEME.CircleOff
                 BoxFrame.BorderSizePixel = 0
+                BoxFrame.ZIndex = 2
                 BoxFrame.Parent = RowBtn
 
                 local BoxCorner = Instance.new("UICorner")
@@ -666,6 +785,7 @@ function NamelessWare:CreateWindow(config)
                 CheckIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
                 CheckIcon.ImageTransparency = state and 0 or 1
                 CheckIcon.ScaleType = Enum.ScaleType.Fit
+                CheckIcon.ZIndex = 3
                 CheckIcon.Parent = BoxFrame
 
                 local function SetState(newVal)
@@ -673,11 +793,13 @@ function NamelessWare:CreateWindow(config)
                     if state then
                         Tween(BoxFrame, {BackgroundColor3 = AccentColor}, 0.18)
                         Tween(BoxStroke, {Color = THEME.AccentGradient}, 0.18)
+                        Tween(BoxGlow, {ImageTransparency = 0.45}, 0.18)
                         Tween(CheckIcon, {ImageTransparency = 0}, 0.18)
                         Tween(Label, {TextColor3 = THEME.TextMain}, 0.18)
                     else
                         Tween(BoxFrame, {BackgroundColor3 = THEME.CircleOff}, 0.18)
                         Tween(BoxStroke, {Color = THEME.CircleOffBorder}, 0.18)
+                        Tween(BoxGlow, {ImageTransparency = 1}, 0.18)
                         Tween(CheckIcon, {ImageTransparency = 1}, 0.18)
                         Tween(Label, {TextColor3 = THEME.TextMuted}, 0.18)
                     end
@@ -709,6 +831,7 @@ function NamelessWare:CreateWindow(config)
                 Frame.Size = UDim2.new(1, 0, 0, 36)
                 Frame.BackgroundTransparency = 1
                 Frame.Parent = Card
+                table.insert(RegisteredItems, {Name = name, Element = Frame, Card = Card})
 
                 local Label = Instance.new("TextLabel")
                 Label.Size = UDim2.new(0.65, 0, 0, 14)
@@ -748,7 +871,7 @@ function NamelessWare:CreateWindow(config)
                 Track.Parent = TrackBtn
 
                 local TrackCorner = Instance.new("UICorner")
-                TrackCorner.CornerRadius = UDim.new(1, 0)
+                TrackCorner.CornerRadius = UDim.new(0, 2)
                 TrackCorner.Parent = Track
 
                 local Fill = Instance.new("Frame")
@@ -759,7 +882,7 @@ function NamelessWare:CreateWindow(config)
                 Fill.Parent = Track
 
                 local FillCorner = Instance.new("UICorner")
-                FillCorner.CornerRadius = UDim.new(1, 0)
+                FillCorner.CornerRadius = UDim.new(0, 2)
                 FillCorner.Parent = Fill
 
                 local FillGrad = Instance.new("UIGradient")
@@ -846,6 +969,7 @@ function NamelessWare:CreateWindow(config)
                 DropFrame.Size = UDim2.new(1, 0, 0, 32)
                 DropFrame.BackgroundTransparency = 1
                 DropFrame.Parent = Card
+                table.insert(RegisteredItems, {Name = name, Element = DropFrame, Card = Card})
 
                 local Label = Instance.new("TextLabel")
                 Label.Size = UDim2.new(0.48, 0, 1, 0)
@@ -901,9 +1025,21 @@ function NamelessWare:CreateWindow(config)
                 MenuList.BackgroundColor3 = THEME.BgMain
                 MenuList.BorderSizePixel = 0
                 MenuList.Visible = false
-                MenuList.ClipsDescendants = true
+                MenuList.ClipsDescendants = false
                 MenuList.ZIndex = 30
                 MenuList.Parent = DropBtn
+
+                local MenuShadow = Instance.new("ImageLabel")
+                MenuShadow.Size = UDim2.new(1, 24, 1, 24)
+                MenuShadow.Position = UDim2.new(0, -12, 0, -12)
+                MenuShadow.BackgroundTransparency = 1
+                MenuShadow.Image = "rbxassetid://5028857472"
+                MenuShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+                MenuShadow.ImageTransparency = 0.35
+                MenuShadow.ScaleType = Enum.ScaleType.Slice
+                MenuShadow.SliceCenter = Rect.new(24, 24, 276, 276)
+                MenuShadow.ZIndex = 29
+                MenuShadow.Parent = MenuList
 
                 local MenuCorner = Instance.new("UICorner")
                 MenuCorner.CornerRadius = UDim.new(0, 8)
@@ -914,8 +1050,19 @@ function NamelessWare:CreateWindow(config)
                 MenuStroke.Thickness = 1
                 MenuStroke.Parent = MenuList
 
+                local MenuScroll = Instance.new("Frame")
+                MenuScroll.Size = UDim2.new(1, 0, 1, 0)
+                MenuScroll.BackgroundTransparency = 1
+                MenuScroll.ClipsDescendants = true
+                MenuScroll.ZIndex = 30
+                MenuScroll.Parent = MenuList
+
+                local MenuScrollCorner = Instance.new("UICorner")
+                MenuScrollCorner.CornerRadius = UDim.new(0, 8)
+                MenuScrollCorner.Parent = MenuScroll
+
                 local MenuLayout = Instance.new("UIListLayout")
-                MenuLayout.Parent = MenuList
+                MenuLayout.Parent = MenuScroll
 
                 for _, opt in ipairs(options) do
                     local OptItem = Instance.new("TextButton")
@@ -928,7 +1075,7 @@ function NamelessWare:CreateWindow(config)
                     OptItem.TextXAlignment = Enum.TextXAlignment.Left
                     OptItem.ZIndex = 31
                     OptItem.AutoButtonColor = false
-                    OptItem.Parent = MenuList
+                    OptItem.Parent = MenuScroll
 
                     OptItem.MouseEnter:Connect(function()
                         Tween(OptItem, {BackgroundTransparency = 0.8, TextColor3 = THEME.TextMain}, 0.15)
@@ -944,6 +1091,7 @@ function NamelessWare:CreateWindow(config)
                         MenuList.Visible = false
                         open = false
                         Arrow.Text = "v"
+                        Tween(DropStroke, {Color = THEME.CardBorder}, 0.2)
                         callback(selected)
                     end)
                 end
@@ -953,8 +1101,11 @@ function NamelessWare:CreateWindow(config)
                     MenuList.Visible = open
                     Arrow.Text = open and "^" or "v"
                     if open then
+                        Tween(DropStroke, {Color = AccentColor}, 0.2)
                         MenuList.Size = UDim2.new(1, 0, 0, 0)
                         Tween(MenuList, {Size = UDim2.new(1, 0, 0, #options * 26)}, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+                    else
+                        Tween(DropStroke, {Color = THEME.CardBorder}, 0.2)
                     end
                 end)
             end
@@ -973,6 +1124,7 @@ function NamelessWare:CreateWindow(config)
                 Btn.TextColor3 = THEME.TextMain
                 Btn.AutoButtonColor = false
                 Btn.Parent = Card
+                table.insert(RegisteredItems, {Name = text, Element = Btn, Card = Card})
 
                 local BtnCorner = Instance.new("UICorner")
                 BtnCorner.CornerRadius = UDim.new(0, 7)
