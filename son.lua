@@ -95,9 +95,21 @@ local function MakeDraggable(frame, handle)
     end)
 end
 
--- =========================================================
--- THEME DEFINITIONS & PRESETS
--- =========================================================
+local function EnsureFolder(folderPath)
+    if makefolder and isfolder then
+        local parts = string.split(folderPath, "/")
+        local current = ""
+        for i, part in ipairs(parts) do
+            if part ~= "" then
+                current = (current == "") and part or (current .. "/" .. part)
+                if not isfolder(current) then
+                    pcall(function() makefolder(current) end)
+                end
+            end
+        end
+    end
+end
+
 local THEME_PRESETS = {
     ["Nameless Violet"] = {
         Accent = Color3.fromRGB(165, 95, 255),
@@ -230,9 +242,6 @@ THEME.FontBold = Enum.Font.GothamBold
 
 local RAW_LOGO_URL = "https://raw.githubusercontent.com/ApparentlyZen/image-namelessWare/main/165abdd521328d77324b02ce8a77e090_1780162334922.webp"
 
--- =========================================================
--- MAIN LIBRARY OBJECT
--- =========================================================
 local NamelessWare = {
     Flags = {},
     ThemeSubscribers = {},
@@ -247,27 +256,19 @@ NamelessWare.__index = NamelessWare
 -- THEME MANAGER
 -- =========================================================
 local ThemeManager = {
+    Library = NamelessWare,
     Folder = "NamelessWare/Themes",
-    CurrentCustom = {
-        R = 165,
-        G = 95,
-        B = 255
-    }
+    CurrentCustom = { R = 165, G = 95, B = 255 },
+    Presets = THEME_PRESETS
 }
 
-local function EnsureFolder(folderPath)
-    if makefolder and isfolder then
-        local parts = string.split(folderPath, "/")
-        local current = ""
-        for i, part in ipairs(parts) do
-            if part ~= "" then
-                current = (current == "") and part or (current .. "/" .. part)
-                if not isfolder(current) then
-                    pcall(function() makefolder(current) end)
-                end
-            end
-        end
-    end
+function ThemeManager:SetLibrary(library)
+    self.Library = library or NamelessWare
+end
+
+function ThemeManager:SetFolder(folderPath)
+    self.Folder = folderPath
+    EnsureFolder(folderPath)
 end
 
 function ThemeManager:GetPresets()
@@ -289,7 +290,6 @@ function ThemeManager:ApplyTheme(themeNameOrData, silent)
             themeTitle = themeNameOrData
             NamelessWare.CurrentTheme = themeNameOrData
         else
-            -- Try load custom theme from disk
             themeData = self:LoadCustomThemeData(themeNameOrData)
             if themeData then
                 themeTitle = themeNameOrData
@@ -298,89 +298,114 @@ function ThemeManager:ApplyTheme(themeNameOrData, silent)
         end
     elseif type(themeNameOrData) == "table" then
         themeData = themeNameOrData
-        NamelessWare.CurrentTheme = "Custom"
+        if themeData.Name then
+            themeTitle = themeData.Name
+            NamelessWare.CurrentTheme = themeData.Name
+        end
     end
 
     if not themeData then return false end
 
-    -- Update active THEME table
     for k, v in pairs(themeData) do
         THEME[k] = v
     end
 
-    -- Trigger reactive updates on all registered elements
-    for _, subscriber in ipairs(NamelessWare.ThemeSubscribers) do
-        pcall(function()
-            subscriber(THEME)
-        end)
+    for _, sub in ipairs(NamelessWare.ThemeSubscribers) do
+        pcall(function() sub(themeData) end)
     end
 
-    if not silent and NamelessWare.Notify then
+    if not silent and NamelessWare.ActiveWindow then
         NamelessWare:Notify({
             Title = "Theme Applied",
-            Content = "Activated theme: " .. themeTitle,
-            Duration = 2.5,
+            Content = "Switched to theme: " .. themeTitle,
+            Duration = 2,
             Type = "Success"
         })
     end
-
     return true
 end
 
-function ThemeManager:SetCustomAccent(r, g, b, silent)
-    r = math.clamp(r or 165, 0, 255)
-    g = math.clamp(g or 95, 0, 255)
-    b = math.clamp(b or 255, 0, 255)
+function ThemeManager:SetCustomAccent(r, g, b, livePreview)
+    r = math.clamp(math.floor(r or 165), 0, 255)
+    g = math.clamp(math.floor(g or 95), 0, 255)
+    b = math.clamp(math.floor(b or 255), 0, 255)
 
-    self.CurrentCustom.R = r
-    self.CurrentCustom.G = g
-    self.CurrentCustom.B = b
+    self.CurrentCustom = { R = r, G = g, B = b }
 
     local accent = Color3.fromRGB(r, g, b)
-    local h, s, v = accent:ToHSV()
-    local accentGrad = Color3.fromHSV(h, math.clamp(s * 0.75, 0, 1), math.clamp(v * 1.1, 0, 1))
-    local accentDark = Color3.fromHSV(h, math.clamp(s * 1.15, 0, 1), math.clamp(v * 0.75, 0, 1))
+    local accentGrad = Color3.fromRGB(
+        math.clamp(r + 30, 0, 255),
+        math.clamp(g + 30, 0, 255),
+        math.clamp(b + 30, 0, 255)
+    )
+    local accentDark = Color3.fromRGB(
+        math.clamp(r - 40, 0, 255),
+        math.clamp(g - 40, 0, 255),
+        math.clamp(b - 40, 0, 255)
+    )
 
     local customData = {
+        Name = "Custom (" .. r .. "," .. g .. "," .. b .. ")",
         Accent = accent,
         AccentGradient = accentGrad,
         AccentDark = accentDark,
-        BgMain = THEME.BgMain,
-        BgMainGradient = THEME.BgMainGradient,
-        BgSidebar = THEME.BgSidebar,
-        CardBg = THEME.CardBg,
-        CardBgGradient = THEME.CardBgGradient,
-        CardBorder = THEME.CardBorder,
-        TextMain = THEME.TextMain,
-        TextMuted = THEME.TextMuted,
-        CircleOff = THEME.CircleOff,
-        CircleOffBorder = THEME.CircleOffBorder
+        BgMain = Color3.fromRGB(15, 15, 22),
+        BgMainGradient = Color3.fromRGB(19, 19, 28),
+        BgSidebar = Color3.fromRGB(12, 12, 17),
+        CardBg = Color3.fromRGB(20, 20, 29),
+        CardBgGradient = Color3.fromRGB(24, 24, 35),
+        CardBorder = Color3.fromRGB(36, 36, 52),
+        TextMain = Color3.fromRGB(245, 245, 252),
+        TextMuted = Color3.fromRGB(130, 130, 155),
+        CircleOff = Color3.fromRGB(26, 26, 36),
+        CircleOffBorder = Color3.fromRGB(45, 45, 62)
     }
 
-    self:ApplyTheme(customData, silent or true)
+    if livePreview then
+        self:ApplyTheme(customData, true)
+    end
+    return customData
+end
+
+function ThemeManager:GetCustomThemes()
+    local list = {}
+    EnsureFolder(self.Folder)
+
+    if listfiles and isfolder and isfolder(self.Folder) then
+        local success, files = pcall(function() return listfiles(self.Folder) end)
+        if success and type(files) == "table" then
+            for _, f in ipairs(files) do
+                local name = f:match("([^/\\]+)%.json$")
+                if name then
+                    table.insert(list, name)
+                end
+            end
+        end
+    end
+    table.sort(list)
+    return list
 end
 
 function ThemeManager:SaveCustomTheme(name)
     if not name or name == "" then return false end
     EnsureFolder(self.Folder)
 
-    local saveData = {
+    local payload = {
+        Name = name,
         R = self.CurrentCustom.R,
         G = self.CurrentCustom.G,
-        B = self.CurrentCustom.B,
+        B = self.CurrentCustom.B
     }
 
-    local jsonStr = HttpService:JSONEncode(saveData)
     local path = self.Folder .. "/" .. name .. ".json"
+    local jsonStr = HttpService:JSONEncode(payload)
 
     if writefile then
-        local success, err = pcall(function()
-            writefile(path, jsonStr)
-        end)
+        local success = pcall(function() writefile(path, jsonStr) end)
         if success then
             NamelessWare:Notify({
                 Title = "Theme Saved",
-                Content = "Custom theme '" .. name .. "' saved successfully!",
+                Content = "Custom theme '" .. name .. "' was saved.",
                 Duration = 2.5,
                 Type = "Success"
             })
@@ -395,50 +420,13 @@ function ThemeManager:LoadCustomThemeData(name)
     if isfile and isfile(path) and readfile then
         local success, content = pcall(function() return readfile(path) end)
         if success and content then
-            local decSuccess, parsed = pcall(function() return HttpService:JSONDecode(content) end)
-            if decSuccess and parsed and parsed.R then
-                local r, g, b = parsed.R, parsed.G, parsed.B
-                local accent = Color3.fromRGB(r, g, b)
-                local h, s, v = accent:ToHSV()
-                return {
-                    Accent = accent,
-                    AccentGradient = Color3.fromHSV(h, math.clamp(s * 0.75, 0, 1), math.clamp(v * 1.1, 0, 1)),
-                    AccentDark = Color3.fromHSV(h, math.clamp(s * 1.15, 0, 1), math.clamp(v * 0.75, 0, 1)),
-                    BgMain = THEME.BgMain,
-                    BgMainGradient = THEME.BgMainGradient,
-                    BgSidebar = THEME.BgSidebar,
-                    CardBg = THEME.CardBg,
-                    CardBgGradient = THEME.CardBgGradient,
-                    CardBorder = THEME.CardBorder,
-                    TextMain = THEME.TextMain,
-                    TextMuted = THEME.TextMuted,
-                    CircleOff = THEME.CircleOff,
-                    CircleOffBorder = THEME.CircleOffBorder
-                }
+            local decodeSuccess, data = pcall(function() return HttpService:JSONDecode(content) end)
+            if decodeSuccess and type(data) == "table" and data.R and data.G and data.B then
+                return self:SetCustomAccent(data.R, data.G, data.B, false)
             end
         end
     end
     return nil
-end
-
-function ThemeManager:GetCustomThemes()
-    local list = {}
-    EnsureFolder(self.Folder)
-    if listfiles and isfolder and isfolder(self.Folder) then
-        local success, files = pcall(function() return listfiles(self.Folder) end)
-        if success and type(files) == "table" then
-            for _, f in ipairs(files) do
-                local fileName = f:match("([^/\\]+)%.json$")
-                if fileName then
-                    table.insert(list, fileName)
-                end
-            end
-        end
-    end
-    if #list == 0 then
-        table.insert(list, "None")
-    end
-    return list
 end
 
 function ThemeManager:DeleteCustomTheme(name)
@@ -533,11 +521,11 @@ function ThemeManager:BuildThemeSection(Section)
         end
     })
 
-    local selectedCustom = "None"
+    local selectedCustom = self:GetCustomThemes()[1] or "None"
     CustomThemeDropdown = Section:AddDropdown({
         Name = "Saved Themes",
-        Options = self:GetCustomThemes(),
-        Default = self:GetCustomThemes()[1] or "None",
+        Options = (#self:GetCustomThemes() > 0) and self:GetCustomThemes() or {"None"},
+        Default = selectedCustom,
         Callback = function(v)
             selectedCustom = v
         end
@@ -558,7 +546,8 @@ function ThemeManager:BuildThemeSection(Section)
             if selectedCustom and selectedCustom ~= "None" then
                 self:DeleteCustomTheme(selectedCustom)
                 if CustomThemeDropdown and CustomThemeDropdown.Refresh then
-                    CustomThemeDropdown.Refresh(self:GetCustomThemes())
+                    local updated = self:GetCustomThemes()
+                    CustomThemeDropdown.Refresh((#updated > 0) and updated or {"None"})
                 end
             end
         end
@@ -569,10 +558,15 @@ end
 -- SAVE / CONFIG MANAGER
 -- =========================================================
 local SaveManager = {
+    Library = NamelessWare,
     Folder = "NamelessWare/Configs",
     AutoLoadPath = "NamelessWare/Configs/autoload.txt",
     InMemoryConfigs = {}
 }
+
+function SaveManager:SetLibrary(library)
+    self.Library = library or NamelessWare
+end
 
 function SaveManager:SetFolder(folderPath)
     self.Folder = folderPath
@@ -595,39 +589,29 @@ function SaveManager:GetConfigs()
             end
         end
     else
-        -- Fallback in-memory
         for name, _ in pairs(self.InMemoryConfigs) do
             table.insert(list, name)
         end
-    end
-
-    if #list == 0 then
-        table.insert(list, "None")
     end
     table.sort(list)
     return list
 end
 
 function SaveManager:Save(name)
-    if not name or name == "" or name == "None" then
-        NamelessWare:Notify({
-            Title = "Save Error",
-            Content = "Please enter a valid configuration name.",
-            Duration = 2.5,
-            Type = "Warning"
-        })
-        return false
-    end
-
+    if not name or name == "" then return false end
     EnsureFolder(self.Folder)
 
     local data = {}
-    for flagName, flagObj in pairs(NamelessWare.Flags) do
-        if flagObj.Get then
-            data[flagName] = {
-                Type = flagObj.Type,
-                Value = flagObj.Get()
-            }
+    for flag, ctrl in pairs(NamelessWare.Flags) do
+        if ctrl and ctrl.Get then
+            local val = ctrl.Get()
+            if typeof(val) == "Color3" then
+                data[flag] = { __type = "Color3", R = val.R, G = val.G, B = val.B }
+            elseif typeof(val) == "EnumItem" then
+                data[flag] = { __type = "EnumItem", EnumType = tostring(val.EnumType), Name = val.Name }
+            else
+                data[flag] = val
+            end
         end
     end
 
@@ -641,83 +625,75 @@ function SaveManager:Save(name)
         if success then
             NamelessWare:Notify({
                 Title = "Config Saved",
-                Content = "Configuration '" .. name .. "' successfully saved!",
+                Content = "Profile '" .. name .. "' saved successfully.",
                 Duration = 2.5,
                 Type = "Success"
             })
             return true
-        else
-            NamelessWare:Notify({
-                Title = "Save Failed",
-                Content = "Could not write config file.",
-                Duration = 2.5,
-                Type = "Error"
-            })
         end
-    else
-        self.InMemoryConfigs[name] = data
-        NamelessWare:Notify({
-            Title = "Config Saved (Memory)",
-            Content = "Configuration '" .. name .. "' saved in memory.",
-            Duration = 2.5,
-            Type = "Success"
-        })
-        return true
     end
 
-    return false
+    self.InMemoryConfigs[name] = jsonStr
+    NamelessWare:Notify({
+        Title = "Config Saved (Memory)",
+        Content = "Profile '" .. name .. "' saved in memory.",
+        Duration = 2.5,
+        Type = "Success"
+    })
+    return true
 end
 
 function SaveManager:Load(name)
-    if not name or name == "" or name == "None" then
-        NamelessWare:Notify({
-            Title = "Load Error",
-            Content = "Please select a valid configuration to load.",
-            Duration = 2.5,
-            Type = "Warning"
-        })
-        return false
-    end
+    if not name or name == "" then return false end
+    EnsureFolder(self.Folder)
 
-    local parsedData = nil
     local path = self.Folder .. "/" .. name .. ".json"
+    local rawJson = nil
 
     if isfile and isfile(path) and readfile then
         local success, content = pcall(function() return readfile(path) end)
         if success and content then
-            local decSuccess, decoded = pcall(function() return HttpService:JSONDecode(content) end)
-            if decSuccess and type(decoded) == "table" then
-                parsedData = decoded
-            end
+            rawJson = content
         end
     elseif self.InMemoryConfigs[name] then
-        parsedData = self.InMemoryConfigs[name]
+        rawJson = self.InMemoryConfigs[name]
     end
 
-    if not parsedData then
+    if not rawJson then
         NamelessWare:Notify({
-            Title = "Load Failed",
-            Content = "Config file '" .. name .. "' not found or corrupted.",
+            Title = "Config Not Found",
+            Content = "Could not find profile '" .. name .. "'.",
             Duration = 2.5,
             Type = "Error"
         })
         return false
     end
 
-    -- Apply values to registered flags
-    for flagName, item in pairs(parsedData) do
-        local flagObj = NamelessWare.Flags[flagName]
-        if flagObj and flagObj.Set then
-            pcall(function()
-                local val = (type(item) == "table" and item.Value ~= nil) and item.Value or item
-                flagObj.Set(val)
-            end)
+    local decodeSuccess, data = pcall(function() return HttpService:JSONDecode(rawJson) end)
+    if not decodeSuccess or type(data) ~= "table" then
+        return false
+    end
+
+    for flag, value in pairs(data) do
+        local ctrl = NamelessWare.Flags[flag]
+        if ctrl and ctrl.Set then
+            if type(value) == "table" and value.__type then
+                if value.__type == "Color3" then
+                    ctrl.Set(Color3.new(value.R, value.G, value.B))
+                elseif value.__type == "EnumItem" and value.EnumType == "KeyCode" then
+                    if Enum.KeyCode[value.Name] then
+                        ctrl.Set(Enum.KeyCode[value.Name])
+                    end
+                end
+            else
+                ctrl.Set(value)
+            end
         end
     end
 
     NamelessWare:Notify({
         Title = "Config Loaded",
-        Content = "Loaded configuration '" .. name .. "' successfully!",
+        Content = "Profile '" .. name .. "' loaded successfully.",
         Duration = 2.5,
         Type = "Success"
     })
@@ -725,72 +701,69 @@ function SaveManager:Load(name)
 end
 
 function SaveManager:Delete(name)
-    if not name or name == "" or name == "None" then return false end
+    if not name or name == "" then return false end
+    EnsureFolder(self.Folder)
+
     local path = self.Folder .. "/" .. name .. ".json"
+    local removed = false
 
     if isfile and isfile(path) and delfile then
         local success = pcall(function() delfile(path) end)
-        if success then
-            NamelessWare:Notify({
-                Title = "Config Deleted",
-                Content = "Configuration '" .. name .. "' was deleted.",
-                Duration = 2.5,
-                Type = "Info"
-            })
-            return true
-        end
-    elseif self.InMemoryConfigs[name] then
+        if success then removed = true end
+    end
+
+    if self.InMemoryConfigs[name] then
         self.InMemoryConfigs[name] = nil
+        removed = true
+    end
+
+    if removed then
         NamelessWare:Notify({
             Title = "Config Deleted",
-            Content = "Configuration '" .. name .. "' deleted from memory.",
+            Content = "Profile '" .. name .. "' was removed.",
             Duration = 2.5,
             Type = "Info"
         })
         return true
     end
-
     return false
 end
 
 function SaveManager:SetAutoLoad(name)
     EnsureFolder(self.Folder)
-    if name and name ~= "" and name ~= "None" then
+    if name and name ~= "" then
         if writefile then
             pcall(function() writefile(self.AutoLoadPath, name) end)
         end
+        self.InMemoryConfigs["__autoload"] = name
         NamelessWare:Notify({
             Title = "Auto-Load Set",
-            Content = "Config '" .. name .. "' will auto-load on start.",
-            Duration = 2.5,
-            Type = "Success"
+            Content = "Default profile set to: " .. name,
+            Duration = 2,
+            Type = "Info"
         })
     else
         if isfile and isfile(self.AutoLoadPath) and delfile then
             pcall(function() delfile(self.AutoLoadPath) end)
         end
-        NamelessWare:Notify({
-            Title = "Auto-Load Disabled",
-            Content = "Auto-load has been cleared.",
-            Duration = 2.5,
-            Type = "Info"
-        })
+        self.InMemoryConfigs["__autoload"] = nil
     end
 end
 
 function SaveManager:GetAutoLoad()
+    EnsureFolder(self.Folder)
     if isfile and isfile(self.AutoLoadPath) and readfile then
-        local success, content = pcall(function() return readfile(self.AutoLoadPath) end)
-        if success and content and content ~= "" then
-            return content
+        local success, res = pcall(function() return readfile(self.AutoLoadPath) end)
+        if success and res and res ~= "" then
+            return res
         end
     end
-    return nil
+    return self.InMemoryConfigs["__autoload"] or nil
 end
 
 function SaveManager:AutoLoad()
     local autoName = self:GetAutoLoad()
-    if autoName and autoName ~= "" and autoName ~= "None" then
+    if autoName and autoName ~= "" then
         task.spawn(function()
             task.wait(0.5)
             self:Load(autoName)
@@ -819,7 +792,8 @@ function SaveManager:BuildConfigSection(Section)
             if configNameInput and configNameInput ~= "" then
                 self:Save(configNameInput)
                 if ConfigDropdown and ConfigDropdown.Refresh then
-                    ConfigDropdown.Refresh(self:GetConfigs())
+                    local updated = self:GetConfigs()
+                    ConfigDropdown.Refresh((#updated > 0) and updated or {"None"})
                 end
             end
         end
@@ -829,7 +803,7 @@ function SaveManager:BuildConfigSection(Section)
 
     ConfigDropdown = Section:AddDropdown({
         Name = "Select Config",
-        Options = self:GetConfigs(),
+        Options = (#self:GetConfigs() > 0) and self:GetConfigs() or {"None"},
         Default = selectedConfig,
         Callback = function(v)
             selectedConfig = v
@@ -851,7 +825,8 @@ function SaveManager:BuildConfigSection(Section)
             if selectedConfig and selectedConfig ~= "None" then
                 self:Delete(selectedConfig)
                 if ConfigDropdown and ConfigDropdown.Refresh then
-                    ConfigDropdown.Refresh(self:GetConfigs())
+                    local updated = self:GetConfigs()
+                    ConfigDropdown.Refresh((#updated > 0) and updated or {"None"})
                 end
             end
         end
@@ -861,7 +836,8 @@ function SaveManager:BuildConfigSection(Section)
         Name = "Refresh Config List",
         Callback = function()
             if ConfigDropdown and ConfigDropdown.Refresh then
-                ConfigDropdown.Refresh(self:GetConfigs())
+                local updated = self:GetConfigs()
+                ConfigDropdown.Refresh((#updated > 0) and updated or {"None"})
                 NamelessWare:Notify({
                     Title = "Refreshed",
                     Content = "Configuration list updated.",
@@ -890,9 +866,14 @@ end
 -- SETTINGS MANAGER
 -- =========================================================
 local SettingsManager = {
+    Library = NamelessWare,
     ToggleKey = Enum.KeyCode.RightShift,
     MobileVisible = true
 }
+
+function SettingsManager:SetLibrary(library)
+    self.Library = library or NamelessWare
+end
 
 function SettingsManager:BuildSettingsSection(Section)
     Section:AddSubHeader("Menu Navigation", "rbxassetid://10734950309")
@@ -954,10 +935,6 @@ NamelessWare.ThemeManager = ThemeManager
 NamelessWare.SaveManager = SaveManager
 NamelessWare.SettingsManager = SettingsManager
 
-ThemeManager:SetLibrary(NamelessWare)
-SaveManager:SetLibrary(NamelessWare)
-SettingsManager:SetLibrary(NamelessWare)
-
 if getgenv then
     getgenv().NamelessWare = NamelessWare
 end
@@ -970,7 +947,7 @@ function NamelessWare:Notify(cfg)
     local title = cfg.Title or "Notification"
     local content = cfg.Content or ""
     local duration = cfg.Duration or 3
-    local toastType = cfg.Type or "Info" -- Success, Info, Warning, Error
+    local toastType = cfg.Type or "Info"
 
     if not self.ActiveWindow or not self.ActiveWindow.ScreenGui then return end
     local screenGui = self.ActiveWindow.ScreenGui
@@ -1074,7 +1051,6 @@ function NamelessWare:Notify(cfg)
     Progress.ZIndex = 502
     Progress.Parent = Toast
 
-    -- Entrance animation
     Toast.Position = UDim2.new(1, 50, 0, 0)
     Tween(Toast, {Position = UDim2.new(0, 0, 0, 0)}, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
     Tween(Progress, {Size = UDim2.new(0, 0, 0, 2)}, duration, Enum.EasingStyle.Linear, Enum.EasingDirection.In)
@@ -1407,32 +1383,33 @@ function NamelessWare:CreateWindow(config)
         isUIOpen = not isUIOpen
         if isUIOpen then
             MainWindow.Visible = true
-            MainWindow.Position = UDim2.new(0.5, -300, 0.5, -190)
-            Tween(MainWindow, {Position = UDim2.new(0.5, -300, 0.5, -222)}, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            MainWindow.Position = UDim2.new(0.5, -300, 0.5, -200)
+            Tween(MainWindow, {Position = UDim2.new(0.5, -300, 0.5, -222)}, 0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
         else
             if ActiveDropdown then
                 ActiveDropdown()
             end
-            Tween(MainWindow, {Position = UDim2.new(0.5, -300, 0.5, -190)}, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
-            task.wait(0.2)
-            if not isUIOpen then
-                MainWindow.Visible = false
-            end
+            local tw = Tween(MainWindow, {Position = UDim2.new(0.5, -300, 0.5, -200)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+            tw.Completed:Connect(function()
+                if not isUIOpen then MainWindow.Visible = false end
+            end)
         end
     end
 
-    -- Menu toggle keybind listener
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if not gameProcessed and input.KeyCode == NamelessWare.ToggleKey then
+    MobileBtn.MouseButton1Click:Connect(ToggleUI)
+
+    UserInputService.InputBegan:Connect(function(input, gp)
+        if not gp and input.KeyCode == NamelessWare.ToggleKey then
             ToggleUI()
         end
     end)
 
-    MobileBtn.MouseButton1Click:Connect(function()
-        Tween(MobileBtn, {Size = UDim2.new(0, 44, 0, 44)}, 0.08)
-        task.wait(0.08)
-        Tween(MobileBtn, {Size = UDim2.new(0, 50, 0, 50)}, 0.12)
-        ToggleUI()
+    UserInputService.InputBegan:Connect(function(input, gp)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if ActiveDropdown and not gp then
+                ActiveDropdown()
+            end
+        end
     end)
 
     local Window = {
@@ -1443,13 +1420,9 @@ function NamelessWare:CreateWindow(config)
         ContentArea = ContentArea,
         Tabs = {}
     }
-
     NamelessWare.ActiveWindow = Window
 
-    -- Register Theme Subscriber for Window elements
     table.insert(NamelessWare.ThemeSubscribers, function(theme)
-        MobileBtn.BackgroundColor3 = theme.BgSidebar
-        MobileBtnStroke.Color = theme.Accent
         MainWindow.BackgroundColor3 = theme.BgMain
         MainGrad.Color = ColorSequence.new({
             ColorSequenceKeypoint.new(0, theme.BgMainGradient),
@@ -1458,6 +1431,8 @@ function NamelessWare:CreateWindow(config)
         MainStroke.Color = theme.CardBorder
         Sidebar.BackgroundColor3 = theme.BgSidebar
         SidebarStroke.Color = theme.CardBorder
+        MobileBtn.BackgroundColor3 = theme.BgSidebar
+        MobileBtnStroke.Color = theme.Accent
         LogoBox.BackgroundColor3 = theme.CardBg
         LogoGlow.Color = theme.Accent
         BrandTitle.TextColor3 = theme.TextMain
@@ -1468,10 +1443,7 @@ function NamelessWare:CreateWindow(config)
         SearchIcon.ImageColor3 = theme.TextMuted
         SearchInput.TextColor3 = theme.TextMain
         SearchInput.PlaceholderColor3 = theme.TextMuted
-        ClearSearchBtn.TextColor3 = theme.TextMuted
     end)
-
-    local FirstTab = true
 
     function Window:AddCategory(catName)
         local Cat = Instance.new("TextLabel")
@@ -1485,11 +1457,13 @@ function NamelessWare:CreateWindow(config)
         Cat.Parent = NavScroll
     end
 
+    local FirstTab = true
+
     function Window:CreateTab(tabConfig)
         tabConfig = tabConfig or {}
         local name = tabConfig.Name or "Tab"
-        local iconId = tabConfig.Icon or "rbxassetid://10734975692"
-        local subText = tabConfig.Subtitle or (name .. " - default hotkeys")
+        local icon = tabConfig.Icon or "rbxassetid://10734975692"
+        local subText = tabConfig.Subtitle or SubTitle
 
         local TabBtn = Instance.new("TextButton")
         TabBtn.Size = UDim2.new(1, 0, 0, 32)
@@ -1500,28 +1474,29 @@ function NamelessWare:CreateWindow(config)
         TabBtn.Parent = NavScroll
 
         local TabBtnCorner = Instance.new("UICorner")
-        TabBtnCorner.CornerRadius = UDim.new(0, 7)
+        TabBtnCorner.CornerRadius = UDim.new(0, 8)
         TabBtnCorner.Parent = TabBtn
 
         local TabGrad = Instance.new("UIGradient")
         TabGrad.Color = ColorSequence.new({
             ColorSequenceKeypoint.new(0, THEME.AccentGradient),
-            ColorSequenceKeypoint.new(1, THEME.AccentDark)
+            ColorSequenceKeypoint.new(1, THEME.Accent)
         })
         TabGrad.Rotation = 90
         TabGrad.Parent = TabBtn
 
         local TabIcon = Instance.new("ImageLabel")
         TabIcon.Size = UDim2.new(0, 16, 0, 16)
-        TabIcon.Position = UDim2.new(0, 9, 0.5, -8)
+        TabIcon.Position = UDim2.new(0, 10, 0.5, -8)
         TabIcon.BackgroundTransparency = 1
-        TabIcon.Image = iconId
+        TabIcon.Image = icon
         TabIcon.ImageColor3 = THEME.TextMuted
+        TabIcon.ScaleType = Enum.ScaleType.Fit
         TabIcon.Parent = TabBtn
 
         local TabLabel = Instance.new("TextLabel")
-        TabLabel.Size = UDim2.new(1, -32, 1, 0)
-        TabLabel.Position = UDim2.new(0, 30, 0, 0)
+        TabLabel.Size = UDim2.new(1, -36, 1, 0)
+        TabLabel.Position = UDim2.new(0, 34, 0, 0)
         TabLabel.BackgroundTransparency = 1
         TabLabel.Text = name
         TabLabel.Font = THEME.FontMain
@@ -1540,6 +1515,13 @@ function NamelessWare:CreateWindow(config)
         TabPage.AutomaticCanvasSize = Enum.AutomaticSize.Y
         TabPage.Visible = false
         TabPage.Parent = ContentArea
+
+        local TabPadding = Instance.new("UIPadding")
+        TabPadding.PaddingTop = UDim.new(0, 6)
+        TabPadding.PaddingBottom = UDim.new(0, 14)
+        TabPadding.PaddingLeft = UDim.new(0, 6)
+        TabPadding.PaddingRight = UDim.new(0, 10)
+        TabPadding.Parent = TabPage
 
         local ColumnsHolder = Instance.new("Frame")
         ColumnsHolder.Size = UDim2.new(1, -6, 0, 0)
@@ -1580,11 +1562,12 @@ function NamelessWare:CreateWindow(config)
             Tween(TabIcon, {ImageColor3 = Color3.fromRGB(255, 255, 255)}, 0.2)
         end
 
+        TabBtn.MouseButton1Click:Connect(ActivateTab)
+
         TabBtn.MouseEnter:Connect(function()
             if not isCurrentTab then
-                Tween(TabBtn, {BackgroundTransparency = 0.8}, 0.15)
+                Tween(TabBtn, {BackgroundTransparency = 0.85}, 0.15)
                 Tween(TabLabel, {TextColor3 = THEME.TextMain}, 0.15)
-                Tween(TabIcon, {ImageColor3 = THEME.TextMain}, 0.15)
             end
         end)
 
@@ -1592,11 +1575,8 @@ function NamelessWare:CreateWindow(config)
             if not isCurrentTab then
                 Tween(TabBtn, {BackgroundTransparency = 1}, 0.15)
                 Tween(TabLabel, {TextColor3 = THEME.TextMuted}, 0.15)
-                Tween(TabIcon, {ImageColor3 = THEME.TextMuted}, 0.15)
             end
         end)
-
-        TabBtn.MouseButton1Click:Connect(ActivateTab)
 
         local TabObject = {
             Button = TabBtn,
@@ -1607,18 +1587,19 @@ function NamelessWare:CreateWindow(config)
         }
         table.insert(Window.Tabs, TabObject)
 
-        -- Theme subscriber for Tab
         table.insert(NamelessWare.ThemeSubscribers, function(theme)
             TabBtn.BackgroundColor3 = theme.Accent
             TabGrad.Color = ColorSequence.new({
                 ColorSequenceKeypoint.new(0, theme.AccentGradient),
-                ColorSequenceKeypoint.new(1, theme.AccentDark)
+                ColorSequenceKeypoint.new(1, theme.Accent)
             })
             TabPage.ScrollBarImageColor3 = theme.Accent
-            if TabObject.IsActive then
+            if isCurrentTab then
+                TabBtn.BackgroundTransparency = 0
                 TabLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
                 TabIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
             else
+                TabBtn.BackgroundTransparency = 1
                 TabLabel.TextColor3 = theme.TextMuted
                 TabIcon.ImageColor3 = theme.TextMuted
             end
@@ -1661,41 +1642,44 @@ function NamelessWare:CreateWindow(config)
 
             local CardPadding = Instance.new("UIPadding")
             CardPadding.PaddingTop = UDim.new(0, 10)
-            CardPadding.PaddingBottom = UDim.new(0, 14)
-            CardPadding.PaddingLeft = UDim.new(0, 11)
-            CardPadding.PaddingRight = UDim.new(0, 11)
+            CardPadding.PaddingBottom = UDim.new(0, 12)
+            CardPadding.PaddingLeft = UDim.new(0, 10)
+            CardPadding.PaddingRight = UDim.new(0, 10)
             CardPadding.Parent = Card
 
             local CardLayout = Instance.new("UIListLayout")
-            CardLayout.Padding = UDim.new(0, 7)
+            CardLayout.Padding = UDim.new(0, 8)
             CardLayout.SortOrder = Enum.SortOrder.LayoutOrder
             CardLayout.Parent = Card
 
-            local Header = Instance.new("Frame")
-            Header.Size = UDim2.new(1, 0, 0, 22)
-            Header.BackgroundTransparency = 1
-            Header.Parent = Card
+            local SecHeader = Instance.new("Frame")
+            SecHeader.Size = UDim2.new(1, 0, 0, 20)
+            SecHeader.BackgroundTransparency = 1
+            SecHeader.Parent = Card
 
-            local HeaderIcon = Instance.new("ImageLabel")
-            HeaderIcon.Size = UDim2.new(0, 14, 0, 14)
-            HeaderIcon.Position = UDim2.new(0, 0, 0.5, -7)
-            HeaderIcon.BackgroundTransparency = 1
-            HeaderIcon.Image = secIcon or "rbxassetid://10734975692"
-            HeaderIcon.ImageColor3 = THEME.Accent
-            HeaderIcon.Parent = Header
+            local SecIconImg
+            if secIcon then
+                SecIconImg = Instance.new("ImageLabel")
+                SecIconImg.Size = UDim2.new(0, 14, 0, 14)
+                SecIconImg.Position = UDim2.new(0, 0, 0.5, -7)
+                SecIconImg.BackgroundTransparency = 1
+                SecIconImg.Image = secIcon
+                SecIconImg.ImageColor3 = THEME.Accent
+                SecIconImg.ScaleType = Enum.ScaleType.Fit
+                SecIconImg.Parent = SecHeader
+            end
 
-            local HeaderLabel = Instance.new("TextLabel")
-            HeaderLabel.Size = UDim2.new(1, -20, 1, 0)
-            HeaderLabel.Position = UDim2.new(0, 20, 0, 0)
-            HeaderLabel.BackgroundTransparency = 1
-            HeaderLabel.Text = secTitle
-            HeaderLabel.Font = THEME.FontBold
-            HeaderLabel.TextSize = 12
-            HeaderLabel.TextColor3 = THEME.TextMain
-            HeaderLabel.TextXAlignment = Enum.TextXAlignment.Left
-            HeaderLabel.Parent = Header
+            local SecLabel = Instance.new("TextLabel")
+            SecLabel.Size = UDim2.new(1, secIcon and -20 or 0, 1, 0)
+            SecLabel.Position = UDim2.new(0, secIcon and 20 or 0, 0, 0)
+            SecLabel.BackgroundTransparency = 1
+            SecLabel.Text = secTitle
+            SecLabel.Font = THEME.FontBold
+            SecLabel.TextSize = 11
+            SecLabel.TextColor3 = THEME.TextMain
+            SecLabel.TextXAlignment = Enum.TextXAlignment.Left
+            SecLabel.Parent = SecHeader
 
-            -- Theme subscriber for Card
             table.insert(NamelessWare.ThemeSubscribers, function(theme)
                 Card.BackgroundColor3 = theme.CardBg
                 CardGrad.Color = ColorSequence.new({
@@ -1703,40 +1687,33 @@ function NamelessWare:CreateWindow(config)
                     ColorSequenceKeypoint.new(1, theme.CardBg)
                 })
                 CardStroke.Color = theme.CardBorder
-                HeaderIcon.ImageColor3 = theme.Accent
-                HeaderLabel.TextColor3 = theme.TextMain
+                SecLabel.TextColor3 = theme.TextMain
+                if SecIconImg then
+                    SecIconImg.ImageColor3 = theme.Accent
+                end
             end)
 
             local Controls = {}
 
             function Controls:AddSubHeader(title, icon)
-                local SubHeader = Instance.new("Frame")
-                SubHeader.Size = UDim2.new(1, 0, 0, 24)
-                SubHeader.BackgroundTransparency = 1
-                SubHeader.Parent = Card
+                local SubFrame = Instance.new("Frame")
+                SubFrame.Size = UDim2.new(1, 0, 0, 18)
+                SubFrame.BackgroundTransparency = 1
+                SubFrame.Parent = Card
 
-                local SubIcon = Instance.new("ImageLabel")
-                SubIcon.Size = UDim2.new(0, 12, 0, 12)
-                SubIcon.Position = UDim2.new(0, 0, 0.5, -6)
-                SubIcon.BackgroundTransparency = 1
-                SubIcon.Image = icon or "rbxassetid://10734975692"
-                SubIcon.ImageColor3 = THEME.Accent
-                SubIcon.Parent = SubHeader
-
-                local SubText = Instance.new("TextLabel")
-                SubText.Size = UDim2.new(1, -18, 1, 0)
-                SubText.Position = UDim2.new(0, 18, 0, 0)
-                SubText.BackgroundTransparency = 1
-                SubText.Text = title
-                SubText.Font = THEME.FontBold
-                SubText.TextSize = 11
-                SubText.TextColor3 = THEME.TextMain
-                SubText.TextXAlignment = Enum.TextXAlignment.Left
-                SubText.Parent = SubHeader
+                local SubLabel = Instance.new("TextLabel")
+                SubLabel.Size = UDim2.new(1, icon and -20 or 0, 1, 0)
+                SubLabel.Position = UDim2.new(0, icon and 20 or 0, 0, 0)
+                SubLabel.BackgroundTransparency = 1
+                SubLabel.Text = title
+                SubLabel.Font = THEME.FontBold
+                SubLabel.TextSize = 10
+                SubLabel.TextColor3 = THEME.Accent
+                SubLabel.TextXAlignment = Enum.TextXAlignment.Left
+                SubLabel.Parent = SubFrame
 
                 table.insert(NamelessWare.ThemeSubscribers, function(theme)
-                    SubIcon.ImageColor3 = theme.Accent
-                    SubText.TextColor3 = theme.TextMain
+                    SubLabel.TextColor3 = theme.Accent
                 end)
             end
 
@@ -1745,127 +1722,118 @@ function NamelessWare:CreateWindow(config)
                 local name = cfg.Name or "Toggle"
                 local state = cfg.Default or false
                 local flag = cfg.Flag or name
-                local keybind = cfg.Keybind
                 local callback = cfg.Callback or function() end
-                local colorBox = cfg.Color
+                local keybindKey = cfg.Keybind
+                local colorPicker = cfg.Color
 
-                local RowBtn = Instance.new("TextButton")
-                RowBtn.Size = UDim2.new(1, 0, 0, 28)
-                RowBtn.BackgroundTransparency = 1
-                RowBtn.Text = ""
-                RowBtn.AutoButtonColor = false
-                RowBtn.Parent = Card
-                table.insert(RegisteredItems, {Name = name, Element = RowBtn, Card = Card})
-
-                local rightOffset = -26
-                if keybind then rightOffset = rightOffset - 24 end
-                if colorBox then rightOffset = rightOffset - 22 end
+                local Row = Instance.new("TextButton")
+                Row.Size = UDim2.new(1, 0, 0, 24)
+                Row.BackgroundTransparency = 1
+                Row.Text = ""
+                Row.AutoButtonColor = false
+                Row.Parent = Card
+                table.insert(RegisteredItems, {Name = name, Element = Row, Card = Card})
 
                 local Label = Instance.new("TextLabel")
-                Label.Size = UDim2.new(1, rightOffset, 1, 0)
+                Label.Size = UDim2.new(1, -70, 1, 0)
+                Label.Position = UDim2.new(0, 0, 0, 0)
                 Label.BackgroundTransparency = 1
                 Label.Text = name
                 Label.Font = THEME.FontMain
-                Label.TextSize = 11
+                Label.TextSize = 10
                 Label.TextColor3 = state and THEME.TextMain or THEME.TextMuted
                 Label.TextXAlignment = Enum.TextXAlignment.Left
-                Label.Parent = RowBtn
+                Label.Parent = Row
 
-                if colorBox then
-                    local ColorPreview = Instance.new("Frame")
-                    ColorPreview.Size = UDim2.new(0, 14, 0, 14)
-                    ColorPreview.Position = UDim2.new(1, (keybind and -42 or -38) - 18, 0.5, -7)
-                    ColorPreview.BackgroundColor3 = typeof(colorBox) == "Color3" and colorBox or Color3.fromRGB(255, 255, 255)
-                    ColorPreview.BorderSizePixel = 0
-                    ColorPreview.Parent = RowBtn
+                local RightHold = Instance.new("Frame")
+                RightHold.Size = UDim2.new(0, 65, 1, 0)
+                RightHold.Position = UDim2.new(1, -65, 0, 0)
+                RightHold.BackgroundTransparency = 1
+                RightHold.Parent = Row
 
-                    local CPCorner = Instance.new("UICorner")
-                    CPCorner.CornerRadius = UDim.new(0, 3)
-                    CPCorner.Parent = ColorPreview
+                local RightLayout = Instance.new("UIListLayout")
+                RightLayout.FillDirection = Enum.FillDirection.Horizontal
+                RightLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+                RightLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+                RightLayout.Padding = UDim.new(0, 5)
+                RightLayout.Parent = RightHold
 
-                    local CPStroke = Instance.new("UIStroke")
-                    CPStroke.Color = THEME.CardBorder
-                    CPStroke.Thickness = 1
-                    CPStroke.Parent = ColorPreview
+                local KeyLabel
+                if keybindKey then
+                    KeyLabel = Instance.new("TextLabel")
+                    KeyLabel.Size = UDim2.new(0, 16, 0, 14)
+                    KeyLabel.BackgroundColor3 = THEME.BgSidebar
+                    KeyLabel.Text = tostring(keybindKey)
+                    KeyLabel.Font = THEME.FontBold
+                    KeyLabel.TextSize = 8
+                    KeyLabel.TextColor3 = THEME.TextMuted
+                    KeyLabel.Parent = RightHold
+
+                    local KeyCorner = Instance.new("UICorner")
+                    KeyCorner.CornerRadius = UDim.new(0, 3)
+                    KeyCorner.Parent = KeyLabel
                 end
 
-                if keybind then
-                    local KeyBadge = Instance.new("TextLabel")
-                    KeyBadge.Size = UDim2.new(0, 20, 0, 16)
-                    KeyBadge.Position = UDim2.new(1, -44, 0.5, -8)
-                    KeyBadge.BackgroundTransparency = 1
-                    KeyBadge.Text = keybind
-                    KeyBadge.Font = THEME.FontBold
-                    KeyBadge.TextSize = 10
-                    KeyBadge.TextColor3 = THEME.TextMuted
-                    KeyBadge.TextXAlignment = Enum.TextXAlignment.Right
-                    KeyBadge.Parent = RowBtn
+                local ColorBox
+                if colorPicker then
+                    ColorBox = Instance.new("Frame")
+                    ColorBox.Size = UDim2.new(0, 12, 0, 12)
+                    ColorBox.BackgroundColor3 = colorPicker
+                    ColorBox.BorderSizePixel = 0
+                    ColorBox.Parent = RightHold
+
+                    local ColorCorner = Instance.new("UICorner")
+                    ColorCorner.CornerRadius = UDim.new(0, 3)
+                    ColorCorner.Parent = ColorBox
                 end
 
-                local BoxFrame = Instance.new("Frame")
-                BoxFrame.Size = UDim2.new(0, 18, 0, 18)
-                BoxFrame.Position = UDim2.new(1, -18, 0.5, -9)
-                BoxFrame.BackgroundColor3 = state and THEME.Accent or THEME.CircleOff
-                BoxFrame.BorderSizePixel = 0
-                BoxFrame.Parent = RowBtn
+                local Circle = Instance.new("Frame")
+                Circle.Size = UDim2.new(0, 12, 0, 12)
+                Circle.BackgroundColor3 = state and THEME.Accent or THEME.CircleOff
+                Circle.BorderSizePixel = 0
+                Circle.Parent = RightHold
 
-                local BoxCorner = Instance.new("UICorner")
-                BoxCorner.CornerRadius = UDim.new(0, 4)
-                BoxCorner.Parent = BoxFrame
+                local CircleCorner = Instance.new("UICorner")
+                CircleCorner.CornerRadius = UDim.new(1, 0)
+                CircleCorner.Parent = Circle
 
-                local BoxStroke = Instance.new("UIStroke")
-                BoxStroke.Color = state and THEME.AccentGradient or THEME.CircleOffBorder
-                BoxStroke.Thickness = 1.2
-                BoxStroke.Parent = BoxFrame
+                local CircleStroke = Instance.new("UIStroke")
+                CircleStroke.Color = state and THEME.Accent or THEME.CircleOffBorder
+                CircleStroke.Thickness = 1.2
+                CircleStroke.Parent = Circle
 
-                local CheckIcon = Instance.new("ImageLabel")
-                CheckIcon.Size = UDim2.new(0, 12, 0, 12)
-                CheckIcon.Position = UDim2.new(0.5, -6, 0.5, -6)
-                CheckIcon.BackgroundTransparency = 1
-                CheckIcon.Image = "rbxassetid://10709790948"
-                CheckIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
-                CheckIcon.ImageTransparency = state and 0 or 1
-                CheckIcon.ScaleType = Enum.ScaleType.Fit
-                CheckIcon.Parent = BoxFrame
-
-                local function SetState(newVal)
-                    state = newVal
-                    if state then
-                        Tween(BoxFrame, {BackgroundColor3 = THEME.Accent}, 0.18)
-                        Tween(BoxStroke, {Color = THEME.AccentGradient}, 0.18)
-                        Tween(CheckIcon, {ImageTransparency = 0}, 0.18)
-                        Tween(Label, {TextColor3 = THEME.TextMain}, 0.18)
-                    else
-                        Tween(BoxFrame, {BackgroundColor3 = THEME.CircleOff}, 0.18)
-                        Tween(BoxStroke, {Color = THEME.CircleOffBorder}, 0.18)
-                        Tween(CheckIcon, {ImageTransparency = 1}, 0.18)
-                        Tween(Label, {TextColor3 = THEME.TextMuted}, 0.18)
-                    end
+                local function UpdateState(val)
+                    state = val
+                    Tween(Label, {TextColor3 = state and THEME.TextMain or THEME.TextMuted}, 0.15)
+                    Tween(Circle, {BackgroundColor3 = state and THEME.Accent or THEME.CircleOff}, 0.15)
+                    Tween(CircleStroke, {Color = state and THEME.Accent or THEME.CircleOffBorder}, 0.15)
                     callback(state)
                 end
 
-                RowBtn.MouseButton1Click:Connect(function()
-                    Tween(BoxFrame, {Size = UDim2.new(0, 20, 0, 20), Position = UDim2.new(1, -19, 0.5, -10)}, 0.06)
-                    task.wait(0.06)
-                    Tween(BoxFrame, {Size = UDim2.new(0, 18, 0, 18), Position = UDim2.new(1, -18, 0.5, -9)}, 0.1)
-                    SetState(not state)
+                Row.MouseButton1Click:Connect(function()
+                    UpdateState(not state)
                 end)
 
-                -- Theme subscriber for Toggle
+                if keybindKey then
+                    UserInputService.InputBegan:Connect(function(input, gp)
+                        if not gp and input.KeyCode.Name == keybindKey then
+                            UpdateState(not state)
+                        end
+                    end)
+                end
+
                 table.insert(NamelessWare.ThemeSubscribers, function(theme)
-                    if state then
-                        BoxFrame.BackgroundColor3 = theme.Accent
-                        BoxStroke.Color = theme.AccentGradient
-                        Label.TextColor3 = theme.TextMain
-                    else
-                        BoxFrame.BackgroundColor3 = theme.CircleOff
-                        BoxStroke.Color = theme.CircleOffBorder
-                        Label.TextColor3 = theme.TextMuted
+                    Label.TextColor3 = state and theme.TextMain or theme.TextMuted
+                    Circle.BackgroundColor3 = state and theme.Accent or theme.CircleOff
+                    CircleStroke.Color = state and theme.Accent or theme.CircleOffBorder
+                    if KeyLabel then
+                        KeyLabel.BackgroundColor3 = theme.BgSidebar
+                        KeyLabel.TextColor3 = theme.TextMuted
                     end
                 end)
 
                 local controller = {
-                    Set = SetState,
+                    Set = function(v) UpdateState(v) end,
                     Get = function() return state end,
                     Type = "Toggle"
                 }
@@ -1877,71 +1845,62 @@ function NamelessWare:CreateWindow(config)
             function Controls:AddSlider(cfg)
                 cfg = cfg or {}
                 local name = cfg.Name or "Slider"
-                local flag = cfg.Flag or name
                 local min = cfg.Min or 0
                 local max = cfg.Max or 100
-                local default = cfg.Default or min
-                local maxFormat = cfg.MaxFormat or false
+                local def = cfg.Default or min
                 local suffix = cfg.Suffix or ""
+                local flag = cfg.Flag or name
                 local callback = cfg.Callback or function() end
-                local value = default
+                local value = def
 
                 local Frame = Instance.new("Frame")
-                Frame.Size = UDim2.new(1, 0, 0, 36)
+                Frame.Size = UDim2.new(1, 0, 0, 34)
                 Frame.BackgroundTransparency = 1
                 Frame.Parent = Card
                 table.insert(RegisteredItems, {Name = name, Element = Frame, Card = Card})
 
-                local Label = Instance.new("TextLabel")
-                Label.Size = UDim2.new(0.65, 0, 0, 14)
-                Label.Position = UDim2.new(0, 0, 0, 0)
-                Label.BackgroundTransparency = 1
-                Label.Text = name
-                Label.Font = THEME.FontMain
-                Label.TextSize = 11
-                Label.TextColor3 = THEME.TextMain
-                Label.TextXAlignment = Enum.TextXAlignment.Left
-                Label.Parent = Frame
+                local TopLabel = Instance.new("TextLabel")
+                TopLabel.Size = UDim2.new(1, -50, 0, 14)
+                TopLabel.Position = UDim2.new(0, 0, 0, 0)
+                TopLabel.BackgroundTransparency = 1
+                TopLabel.Text = name
+                TopLabel.Font = THEME.FontMain
+                TopLabel.TextSize = 10
+                TopLabel.TextColor3 = THEME.TextMuted
+                TopLabel.TextXAlignment = Enum.TextXAlignment.Left
+                TopLabel.Parent = Frame
 
                 local ValLabel = Instance.new("TextLabel")
-                ValLabel.Size = UDim2.new(0.35, 0, 0, 14)
-                ValLabel.Position = UDim2.new(0.65, 0, 0, 0)
+                ValLabel.Size = UDim2.new(0, 50, 0, 14)
+                ValLabel.Position = UDim2.new(1, -50, 0, 0)
                 ValLabel.BackgroundTransparency = 1
-                ValLabel.Text = maxFormat and (tostring(value) .. " / " .. tostring(max)) or (tostring(value) .. suffix)
-                ValLabel.Font = THEME.FontMain
+                ValLabel.Text = tostring(value) .. suffix
+                ValLabel.Font = THEME.FontBold
                 ValLabel.TextSize = 10
-                ValLabel.TextColor3 = THEME.TextMuted
+                ValLabel.TextColor3 = THEME.TextMain
                 ValLabel.TextXAlignment = Enum.TextXAlignment.Right
                 ValLabel.Parent = Frame
 
-                local TrackBtn = Instance.new("TextButton")
-                TrackBtn.Size = UDim2.new(1, 0, 0, 16)
-                TrackBtn.Position = UDim2.new(0, 0, 0, 18)
-                TrackBtn.BackgroundTransparency = 1
-                TrackBtn.Text = ""
-                TrackBtn.AutoButtonColor = false
-                TrackBtn.Parent = Frame
-
-                local Track = Instance.new("Frame")
+                local Track = Instance.new("TextButton")
                 Track.Size = UDim2.new(1, 0, 0, 4)
-                Track.Position = UDim2.new(0, 0, 0.5, -2)
-                Track.BackgroundColor3 = THEME.CircleOff
-                Track.BorderSizePixel = 0
-                Track.Parent = TrackBtn
+                Track.Position = UDim2.new(0, 0, 0, 22)
+                Track.BackgroundColor3 = THEME.BgSidebar
+                Track.Text = ""
+                Track.AutoButtonColor = false
+                Track.Parent = Frame
 
                 local TrackCorner = Instance.new("UICorner")
-                TrackCorner.CornerRadius = UDim.new(0, 2)
+                TrackCorner.CornerRadius = UDim.new(1, 0)
                 TrackCorner.Parent = Track
 
                 local Fill = Instance.new("Frame")
-                local initPct = math.clamp((value - min) / (max - min), 0, 1)
-                Fill.Size = UDim2.new(initPct, 0, 1, 0)
+                Fill.Size = UDim2.new(math.clamp((value - min) / (max - min), 0, 1), 0, 1, 0)
                 Fill.BackgroundColor3 = THEME.Accent
                 Fill.BorderSizePixel = 0
                 Fill.Parent = Track
 
                 local FillCorner = Instance.new("UICorner")
-                FillCorner.CornerRadius = UDim.new(0, 2)
+                FillCorner.CornerRadius = UDim.new(1, 0)
                 FillCorner.Parent = Fill
 
                 local FillGrad = Instance.new("UIGradient")
@@ -1951,77 +1910,63 @@ function NamelessWare:CreateWindow(config)
                 })
                 FillGrad.Parent = Fill
 
-                local Thumb = Instance.new("Frame")
-                Thumb.Size = UDim2.new(0, 12, 0, 12)
-                Thumb.Position = UDim2.new(1, -6, 0.5, -6)
-                Thumb.BackgroundColor3 = Color3.fromRGB(240, 240, 255)
-                Thumb.BorderSizePixel = 0
-                Thumb.ZIndex = 5
-                Thumb.Parent = Fill
+                local Dot = Instance.new("Frame")
+                Dot.Size = UDim2.new(0, 8, 0, 8)
+                Dot.Position = UDim2.new(1, -4, 0.5, -4)
+                Dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                Dot.BorderSizePixel = 0
+                Dot.Parent = Fill
 
-                local ThumbCorner = Instance.new("UICorner")
-                ThumbCorner.CornerRadius = UDim.new(1, 0)
-                ThumbCorner.Parent = Thumb
-
-                local ThumbStroke = Instance.new("UIStroke")
-                ThumbStroke.Color = THEME.Accent
-                ThumbStroke.Thickness = 1.8
-                ThumbStroke.Parent = Thumb
+                local DotCorner = Instance.new("UICorner")
+                DotCorner.CornerRadius = UDim.new(1, 0)
+                DotCorner.Parent = Dot
 
                 local dragging = false
-                local function Update(input)
-                    local absPos = Track.AbsolutePosition.X
-                    local absSize = Track.AbsoluteSize.X
-                    local pct = math.clamp((input.Position.X - absPos) / absSize, 0, 1)
-                    value = math.floor(min + (max - min) * pct)
-                    Fill.Size = UDim2.new(pct, 0, 1, 0)
-                    ValLabel.Text = maxFormat and (tostring(value) .. " / " .. tostring(max)) or (tostring(value) .. suffix)
+
+                local function UpdateVal(input)
+                    local percent = math.clamp((input.Position.X - Track.AbsolutePosition.X) / Track.AbsoluteSize.X, 0, 1)
+                    value = math.floor(min + (max - min) * percent)
+                    Fill.Size = UDim2.new(percent, 0, 1, 0)
+                    ValLabel.Text = tostring(value) .. suffix
                     callback(value)
                 end
 
-                TrackBtn.InputBegan:Connect(function(input)
+                Track.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         dragging = true
-                        Tween(Thumb, {Size = UDim2.new(0, 14, 0, 14), Position = UDim2.new(1, -7, 0.5, -7)}, 0.12)
-                        Tween(ValLabel, {TextColor3 = THEME.Accent}, 0.12)
-                        Update(input)
+                        UpdateVal(input)
                     end
                 end)
 
-                UserInputService.InputEnded:Connect(function(input)
+                Track.InputEnded:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        if dragging then
-                            dragging = false
-                            Tween(Thumb, {Size = UDim2.new(0, 12, 0, 12), Position = UDim2.new(1, -6, 0.5, -6)}, 0.12)
-                            Tween(ValLabel, {TextColor3 = THEME.TextMuted}, 0.12)
-                        end
+                        dragging = false
                     end
                 end)
 
                 UserInputService.InputChanged:Connect(function(input)
                     if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                        Update(input)
+                        UpdateVal(input)
                     end
                 end)
 
-                -- Theme subscriber for Slider
                 table.insert(NamelessWare.ThemeSubscribers, function(theme)
-                    Label.TextColor3 = theme.TextMain
-                    Track.BackgroundColor3 = theme.CircleOff
+                    TopLabel.TextColor3 = theme.TextMuted
+                    ValLabel.TextColor3 = theme.TextMain
+                    Track.BackgroundColor3 = theme.BgSidebar
                     Fill.BackgroundColor3 = theme.Accent
                     FillGrad.Color = ColorSequence.new({
                         ColorSequenceKeypoint.new(0, theme.AccentGradient),
                         ColorSequenceKeypoint.new(1, theme.Accent)
                     })
-                    ThumbStroke.Color = theme.Accent
                 end)
 
                 local controller = {
-                    Set = function(newVal)
-                        value = math.clamp(newVal, min, max)
-                        local pct = (value - min) / (max - min)
-                        Tween(Fill, {Size = UDim2.new(pct, 0, 1, 0)}, 0.15)
-                        ValLabel.Text = maxFormat and (tostring(value) .. " / " .. tostring(max)) or (tostring(value) .. suffix)
+                    Set = function(v)
+                        value = math.clamp(v, min, max)
+                        local percent = math.clamp((value - min) / (max - min), 0, 1)
+                        Fill.Size = UDim2.new(percent, 0, 1, 0)
+                        ValLabel.Text = tostring(value) .. suffix
                         callback(value)
                     end,
                     Get = function() return value end,
@@ -2035,36 +1980,36 @@ function NamelessWare:CreateWindow(config)
             function Controls:AddDropdown(cfg)
                 cfg = cfg or {}
                 local name = cfg.Name or "Dropdown"
-                local flag = cfg.Flag or name
                 local options = cfg.Options or {}
-                local default = cfg.Default or options[1] or "None"
+                local def = cfg.Default or options[1] or ""
+                local flag = cfg.Flag or name
                 local callback = cfg.Callback or function() end
-                local selected = default
-                local open = false
+                local selected = def
+                local isOpen = false
 
                 local DropFrame = Instance.new("Frame")
-                DropFrame.Name = "Dropdown_" .. name
-                DropFrame.Size = UDim2.new(1, 0, 0, 32)
+                DropFrame.Size = UDim2.new(1, 0, 0, 46)
                 DropFrame.BackgroundTransparency = 1
                 DropFrame.ClipsDescendants = false
                 DropFrame.ZIndex = 1
                 DropFrame.Parent = Card
                 table.insert(RegisteredItems, {Name = name, Element = DropFrame, Card = Card})
 
-                local Label = Instance.new("TextLabel")
-                Label.Size = UDim2.new(0.48, 0, 1, 0)
-                Label.BackgroundTransparency = 1
-                Label.Text = name
-                Label.Font = THEME.FontMain
-                Label.TextSize = 11
-                Label.TextColor3 = THEME.TextMuted
-                Label.TextXAlignment = Enum.TextXAlignment.Left
-                Label.ZIndex = 1
-                Label.Parent = DropFrame
+                local Title = Instance.new("TextLabel")
+                Title.Size = UDim2.new(1, 0, 0, 14)
+                Title.Position = UDim2.new(0, 0, 0, 0)
+                Title.BackgroundTransparency = 1
+                Title.Text = name
+                Title.Font = THEME.FontMain
+                Title.TextSize = 10
+                Title.TextColor3 = THEME.TextMuted
+                Title.TextXAlignment = Enum.TextXAlignment.Left
+                Title.ZIndex = 1
+                Title.Parent = DropFrame
 
                 local DropBtn = Instance.new("TextButton")
-                DropBtn.Size = UDim2.new(0.5, 0, 0, 24)
-                DropBtn.Position = UDim2.new(0.5, 0, 0.5, -12)
+                DropBtn.Size = UDim2.new(1, 0, 0, 26)
+                DropBtn.Position = UDim2.new(0, 0, 0, 18)
                 DropBtn.BackgroundColor3 = THEME.BgSidebar
                 DropBtn.Text = ""
                 DropBtn.AutoButtonColor = false
@@ -2072,7 +2017,7 @@ function NamelessWare:CreateWindow(config)
                 DropBtn.Parent = DropFrame
 
                 local DropCorner = Instance.new("UICorner")
-                DropCorner.CornerRadius = UDim.new(0, 7)
+                DropCorner.CornerRadius = UDim.new(0, 6)
                 DropCorner.Parent = DropBtn
 
                 local DropStroke = Instance.new("UIStroke")
@@ -2080,305 +2025,184 @@ function NamelessWare:CreateWindow(config)
                 DropStroke.Thickness = 1
                 DropStroke.Parent = DropBtn
 
-                local BtnText = Instance.new("TextLabel")
-                BtnText.Size = UDim2.new(1, -24, 1, 0)
-                BtnText.Position = UDim2.new(0, 8, 0, 0)
-                BtnText.BackgroundTransparency = 1
-                BtnText.Text = selected
-                BtnText.Font = THEME.FontMain
-                BtnText.TextSize = 10
-                BtnText.TextColor3 = THEME.TextMain
-                BtnText.TextXAlignment = Enum.TextXAlignment.Left
-                BtnText.ZIndex = 3
-                BtnText.Parent = DropBtn
+                local SelLabel = Instance.new("TextLabel")
+                SelLabel.Size = UDim2.new(1, -28, 1, 0)
+                SelLabel.Position = UDim2.new(0, 8, 0, 0)
+                SelLabel.BackgroundTransparency = 1
+                SelLabel.Text = selected
+                SelLabel.Font = THEME.FontMain
+                SelLabel.TextSize = 10
+                SelLabel.TextColor3 = THEME.TextMain
+                SelLabel.TextXAlignment = Enum.TextXAlignment.Left
+                SelLabel.ZIndex = 3
+                SelLabel.Parent = DropBtn
 
                 local Arrow = Instance.new("TextLabel")
-                Arrow.Size = UDim2.new(0, 18, 1, 0)
+                Arrow.Size = UDim2.new(0, 16, 1, 0)
                 Arrow.Position = UDim2.new(1, -20, 0, 0)
                 Arrow.BackgroundTransparency = 1
-                Arrow.Text = "v"
+                Arrow.Text = "▾"
                 Arrow.Font = THEME.FontBold
-                Arrow.TextSize = 9
+                Arrow.TextSize = 12
                 Arrow.TextColor3 = THEME.TextMuted
                 Arrow.ZIndex = 3
                 Arrow.Parent = DropBtn
 
-                local maxVisibleItems = 5
-                local totalItemsHeight = #options * 26
-                local targetHeight = math.min(totalItemsHeight + 6, maxVisibleItems * 26 + 6)
-
                 local MenuList = Instance.new("Frame")
-                MenuList.Name = "MenuList"
-                MenuList.Size = UDim2.new(0.5, 0, 0, 0)
-                MenuList.Position = UDim2.new(0.5, 0, 0, 30)
-                MenuList.BackgroundColor3 = THEME.BgMain
+                MenuList.Size = UDim2.new(1, 0, 0, 0)
+                MenuList.Position = UDim2.new(0, 0, 0, 48)
+                MenuList.BackgroundColor3 = THEME.CardBg
                 MenuList.BorderSizePixel = 0
+                MenuList.ClipsDescendants = true
                 MenuList.Visible = false
-                MenuList.ClipsDescendants = false
                 MenuList.Active = true
                 MenuList.ZIndex = 100
                 MenuList.Parent = DropFrame
 
-                local MenuShadow = Instance.new("ImageLabel")
-                MenuShadow.Size = UDim2.new(1, 24, 1, 24)
-                MenuShadow.Position = UDim2.new(0, -12, 0, -12)
-                MenuShadow.BackgroundTransparency = 1
-                MenuShadow.Image = "rbxassetid://5028857472"
-                MenuShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-                MenuShadow.ImageTransparency = 0.35
-                MenuShadow.ScaleType = Enum.ScaleType.Slice
-                MenuShadow.SliceCenter = Rect.new(24, 24, 276, 276)
-                MenuShadow.Active = false
-                MenuShadow.ZIndex = 99
-                MenuShadow.Parent = MenuList
-
                 local MenuCorner = Instance.new("UICorner")
-                MenuCorner.CornerRadius = UDim.new(0, 8)
+                MenuCorner.CornerRadius = UDim.new(0, 6)
                 MenuCorner.Parent = MenuList
 
                 local MenuStroke = Instance.new("UIStroke")
-                MenuStroke.Color = THEME.CardBorder
+                MenuStroke.Color = THEME.Accent
                 MenuStroke.Thickness = 1
                 MenuStroke.Parent = MenuList
 
                 local MenuScroll = Instance.new("ScrollingFrame")
-                MenuScroll.Size = UDim2.new(1, -2, 1, -4)
-                MenuScroll.Position = UDim2.new(0, 1, 0, 2)
+                MenuScroll.Size = UDim2.new(1, -4, 1, -4)
+                MenuScroll.Position = UDim2.new(0, 2, 0, 2)
                 MenuScroll.BackgroundTransparency = 1
-                MenuScroll.BorderSizePixel = 0
-                MenuScroll.ScrollBarThickness = (#options > maxVisibleItems) and 3 or 0
+                MenuScroll.ScrollBarThickness = 2
                 MenuScroll.ScrollBarImageColor3 = THEME.Accent
-                MenuScroll.CanvasSize = UDim2.new(0, 0, 0, totalItemsHeight)
-                MenuScroll.AutomaticCanvasSize = Enum.AutomaticSize.None
-                MenuScroll.ClipsDescendants = true
+                MenuScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+                MenuScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
                 MenuScroll.Active = true
-                MenuScroll.ZIndex = 100
+                MenuScroll.ZIndex = 101
                 MenuScroll.Parent = MenuList
 
                 local MenuLayout = Instance.new("UIListLayout")
-                MenuLayout.Padding = UDim.new(0, 0)
+                MenuLayout.Padding = UDim.new(0, 2)
                 MenuLayout.SortOrder = Enum.SortOrder.LayoutOrder
                 MenuLayout.Parent = MenuScroll
 
-                local CloseThisDropdown = nil
-                local outsideConnection = nil
-                local optionItems = {}
-
-                local function SetOpen(v)
-                    if open == v then return end
-                    open = v
-
-                    if open then
-                        if ActiveDropdown and ActiveDropdown ~= CloseThisDropdown then
-                            ActiveDropdown()
+                local function CloseDropdown()
+                    if not isOpen then return end
+                    isOpen = false
+                    Tween(Arrow, {Rotation = 0}, 0.15)
+                    Tween(DropStroke, {Color = THEME.CardBorder}, 0.15)
+                    local tw = Tween(MenuList, {Size = UDim2.new(1, 0, 0, 0)}, 0.15)
+                    tw.Completed:Connect(function()
+                        if not isOpen then
+                            MenuList.Visible = false
+                            DropFrame.ZIndex = 1
+                            Card.ZIndex = 1
                         end
-                        ActiveDropdown = CloseThisDropdown
-
-                        Card.ZIndex = 100
-                        DropFrame.ZIndex = 100
-                        DropBtn.ZIndex = 101
-                        MenuList.ZIndex = 102
-                        MenuScroll.ZIndex = 102
-
-                        MenuList.Visible = true
-                        Arrow.Text = "^"
-                        Tween(DropStroke, {Color = THEME.Accent}, 0.2)
-                        Tween(Arrow, {TextColor3 = THEME.Accent}, 0.2)
-
-                        MenuList.Size = UDim2.new(0.5, 0, 0, 0)
-                        Tween(MenuList, {Size = UDim2.new(0.5, 0, 0, targetHeight)}, 0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
-                        if outsideConnection then outsideConnection:Disconnect() end
-                        outsideConnection = UserInputService.InputBegan:Connect(function(input)
-                            if not open then
-                                if outsideConnection then
-                                    outsideConnection:Disconnect()
-                                    outsideConnection = nil
-                                end
-                                return
-                            end
-                            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                                local mousePos = input.Position
-                                local bPos = DropBtn.AbsolutePosition
-                                local bSize = DropBtn.AbsoluteSize
-                                local mPos = MenuList.AbsolutePosition
-                                local mSize = MenuList.AbsoluteSize
-
-                                local inBtn = (mousePos.X >= bPos.X and mousePos.X <= bPos.X + bSize.X and mousePos.Y >= bPos.Y and mousePos.Y <= bPos.Y + bSize.Y)
-                                local inMenu = (mousePos.X >= mPos.X and mousePos.X <= mPos.X + mSize.X and mousePos.Y >= mPos.Y and mousePos.Y <= mPos.Y + mSize.Y)
-
-                                if not inBtn and not inMenu then
-                                    SetOpen(false)
-                                end
-                            end
-                        end)
-                    else
-                        if ActiveDropdown == CloseThisDropdown then
-                            ActiveDropdown = nil
-                        end
-                        if outsideConnection then
-                            outsideConnection:Disconnect()
-                            outsideConnection = nil
-                        end
-
-                        Arrow.Text = "v"
-                        Tween(DropStroke, {Color = THEME.CardBorder}, 0.2)
-                        Tween(Arrow, {TextColor3 = THEME.TextMuted}, 0.2)
-
-                        local tw = Tween(MenuList, {Size = UDim2.new(0.5, 0, 0, 0)}, 0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
-                        tw.Completed:Connect(function()
-                            if not open then
-                                MenuList.Visible = false
-                                DropFrame.ZIndex = 1
-                                DropBtn.ZIndex = 2
-                                if ActiveDropdown == nil then
-                                    Card.ZIndex = 1
-                                end
-                            end
-                        end)
+                    end)
+                    if ActiveDropdown == CloseDropdown then
+                        ActiveDropdown = nil
                     end
                 end
 
-                CloseThisDropdown = function()
-                    if open then
-                        SetOpen(false)
+                local function OpenDropdown()
+                    if ActiveDropdown and ActiveDropdown ~= CloseDropdown then
+                        ActiveDropdown()
                     end
+                    isOpen = true
+                    ActiveDropdown = CloseDropdown
+
+                    Card.ZIndex = 100
+                    DropFrame.ZIndex = 100
+                    MenuList.Visible = true
+
+                    local targetHeight = math.min(#options * 24 + 6, 120)
+                    Tween(Arrow, {Rotation = 180}, 0.15)
+                    Tween(DropStroke, {Color = THEME.Accent}, 0.15)
+                    Tween(MenuList, {Size = UDim2.new(1, 0, 0, targetHeight)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
                 end
 
-                local function PopulateOptions(newOptions)
-                    for _, child in ipairs(MenuScroll:GetChildren()) do
-                        if child:IsA("TextButton") then
-                            child:Destroy()
-                        end
+                local function RebuildOptions()
+                    for _, ch in ipairs(MenuScroll:GetChildren()) do
+                        if ch:IsA("TextButton") then ch:Destroy() end
                     end
-                    optionItems = {}
-                    options = newOptions
 
-                    totalItemsHeight = #options * 26
-                    targetHeight = math.min(totalItemsHeight + 6, maxVisibleItems * 26 + 6)
-                    MenuScroll.CanvasSize = UDim2.new(0, 0, 0, totalItemsHeight)
-                    MenuScroll.ScrollBarThickness = (#options > maxVisibleItems) and 3 or 0
-
-                    for i, opt in ipairs(options) do
-                        local isSelected = (opt == selected)
-
+                    for _, opt in ipairs(options) do
                         local OptItem = Instance.new("TextButton")
-                        OptItem.Name = "Option_" .. opt
-                        OptItem.Size = UDim2.new(1, 0, 0, 26)
-                        OptItem.BackgroundColor3 = THEME.CardBg
-                        OptItem.BackgroundTransparency = 1
-                        OptItem.Text = ""
+                        OptItem.Size = UDim2.new(1, 0, 0, 22)
+                        OptItem.BackgroundColor3 = (opt == selected) and THEME.Accent or THEME.CardBg
+                        OptItem.BackgroundTransparency = (opt == selected) and 0.8 or 1
+                        OptItem.Text = "  " .. opt
+                        OptItem.Font = THEME.FontMain
+                        OptItem.TextSize = 10
+                        OptItem.TextColor3 = (opt == selected) and THEME.Accent or THEME.TextMain
+                        OptItem.TextXAlignment = Enum.TextXAlignment.Left
                         OptItem.AutoButtonColor = false
                         OptItem.Active = true
-                        OptItem.ZIndex = 103
-                        OptItem.LayoutOrder = i
+                        OptItem.ZIndex = 102
                         OptItem.Parent = MenuScroll
 
                         local OptCorner = Instance.new("UICorner")
-                        OptCorner.CornerRadius = UDim.new(0, 5)
+                        OptCorner.CornerRadius = UDim.new(0, 4)
                         OptCorner.Parent = OptItem
 
-                        local OptLabel = Instance.new("TextLabel")
-                        OptLabel.Size = UDim2.new(1, -24, 1, 0)
-                        OptLabel.Position = UDim2.new(0, 8, 0, 0)
-                        OptLabel.BackgroundTransparency = 1
-                        OptLabel.Text = opt
-                        OptLabel.Font = THEME.FontMain
-                        OptLabel.TextSize = 10
-                        OptLabel.TextColor3 = isSelected and THEME.Accent or THEME.TextMuted
-                        OptLabel.TextXAlignment = Enum.TextXAlignment.Left
-                        OptLabel.ZIndex = 104
-                        OptLabel.Parent = OptItem
-
-                        local OptCheck = Instance.new("ImageLabel")
-                        OptCheck.Size = UDim2.new(0, 10, 0, 10)
-                        OptCheck.Position = UDim2.new(1, -16, 0.5, -5)
-                        OptCheck.BackgroundTransparency = 1
-                        OptCheck.Image = "rbxassetid://10709790948"
-                        OptCheck.ImageColor3 = THEME.Accent
-                        OptCheck.ImageTransparency = isSelected and 0 or 1
-                        OptCheck.ScaleType = Enum.ScaleType.Fit
-                        OptCheck.ZIndex = 104
-                        OptCheck.Parent = OptItem
-
-                        table.insert(optionItems, {
-                            Option = opt,
-                            Button = OptItem,
-                            Label = OptLabel,
-                            Check = OptCheck
-                        })
-
                         OptItem.MouseEnter:Connect(function()
-                            Tween(OptItem, {BackgroundTransparency = 0.5}, 0.12)
-                            Tween(OptLabel, {TextColor3 = THEME.TextMain}, 0.12)
+                            if opt ~= selected then
+                                Tween(OptItem, {BackgroundTransparency = 0.9, TextColor3 = THEME.Accent}, 0.1)
+                            end
                         end)
 
                         OptItem.MouseLeave:Connect(function()
-                            Tween(OptItem, {BackgroundTransparency = 1}, 0.12)
-                            local isSel = (opt == selected)
-                            Tween(OptLabel, {TextColor3 = isSel and THEME.Accent or THEME.TextMuted}, 0.12)
+                            if opt ~= selected then
+                                Tween(OptItem, {BackgroundTransparency = 1, TextColor3 = THEME.TextMain}, 0.1)
+                            end
                         end)
 
                         OptItem.MouseButton1Click:Connect(function()
-                            if not open then return end
                             selected = opt
-                            BtnText.Text = selected
-
-                            for _, item in ipairs(optionItems) do
-                                local isSel = (item.Option == selected)
-                                item.Label.TextColor3 = isSel and THEME.Accent or THEME.TextMuted
-                                item.Check.ImageTransparency = isSel and 0 or 1
-                            end
-
-                            SetOpen(false)
-
-                            task.spawn(function()
-                                callback(selected)
-                            end)
+                            SelLabel.Text = selected
+                            callback(selected)
+                            CloseDropdown()
+                            RebuildOptions()
                         end)
                     end
                 end
 
-                PopulateOptions(options)
+                RebuildOptions()
 
                 DropBtn.MouseButton1Click:Connect(function()
-                    SetOpen(not open)
-                end)
-
-                -- Theme subscriber for Dropdown
-                table.insert(NamelessWare.ThemeSubscribers, function(theme)
-                    DropBtn.BackgroundColor3 = theme.BgSidebar
-                    DropStroke.Color = open and theme.Accent or theme.CardBorder
-                    BtnText.TextColor3 = theme.TextMain
-                    Arrow.TextColor3 = open and theme.Accent or theme.TextMuted
-                    MenuList.BackgroundColor3 = theme.BgMain
-                    MenuStroke.Color = theme.CardBorder
-                    MenuScroll.ScrollBarImageColor3 = theme.Accent
-                    for _, item in ipairs(optionItems) do
-                        local isSel = (item.Option == selected)
-                        item.Label.TextColor3 = isSel and theme.Accent or theme.TextMuted
-                        item.Check.ImageColor3 = theme.Accent
+                    if isOpen then
+                        CloseDropdown()
+                    else
+                        OpenDropdown()
                     end
                 end)
 
+                table.insert(NamelessWare.ThemeSubscribers, function(theme)
+                    Title.TextColor3 = theme.TextMuted
+                    DropBtn.BackgroundColor3 = theme.BgSidebar
+                    DropStroke.Color = isOpen and theme.Accent or theme.CardBorder
+                    SelLabel.TextColor3 = theme.TextMain
+                    Arrow.TextColor3 = theme.TextMuted
+                    MenuList.BackgroundColor3 = theme.CardBg
+                    MenuStroke.Color = theme.Accent
+                    MenuScroll.ScrollBarImageColor3 = theme.Accent
+                    RebuildOptions()
+                end)
+
                 local controller = {
-                    Set = function(newOpt)
-                        selected = newOpt
-                        BtnText.Text = selected
-                        for _, item in ipairs(optionItems) do
-                            local isSel = (item.Option == selected)
-                            item.Label.TextColor3 = isSel and THEME.Accent or THEME.TextMuted
-                            item.Check.ImageTransparency = isSel and 0 or 1
-                        end
+                    Set = function(v)
+                        selected = v
+                        SelLabel.Text = selected
                         callback(selected)
+                        RebuildOptions()
                     end,
                     Get = function() return selected end,
-                    Refresh = function(newOptions)
-                        PopulateOptions(newOptions)
-                        if not table.find(newOptions, selected) then
-                            selected = newOptions[1] or "None"
-                            BtnText.Text = selected
+                    Refresh = function(newOpts)
+                        options = newOpts or {}
+                        if not table.find(options, selected) then
+                            selected = options[1] or ""
+                            SelLabel.Text = selected
                         end
+                        RebuildOptions()
                     end,
                     Type = "Dropdown"
                 }
@@ -2389,84 +2213,89 @@ function NamelessWare:CreateWindow(config)
 
             function Controls:AddTextBox(cfg)
                 cfg = cfg or {}
-                local name = cfg.Name or "TextBox"
-                local flag = cfg.Flag or name
+                local name = cfg.Name or "Input"
                 local placeholder = cfg.Placeholder or "Enter text..."
-                local default = cfg.Default or ""
+                local def = cfg.Default or ""
+                local flag = cfg.Flag or name
                 local callback = cfg.Callback or function() end
-                local currentText = default
+                local value = def
 
                 local Frame = Instance.new("Frame")
-                Frame.Size = UDim2.new(1, 0, 0, 32)
+                Frame.Size = UDim2.new(1, 0, 0, 46)
                 Frame.BackgroundTransparency = 1
                 Frame.Parent = Card
                 table.insert(RegisteredItems, {Name = name, Element = Frame, Card = Card})
 
-                local Label = Instance.new("TextLabel")
-                Label.Size = UDim2.new(0.45, 0, 1, 0)
-                Label.BackgroundTransparency = 1
-                Label.Text = name
-                Label.Font = THEME.FontMain
-                Label.TextSize = 11
-                Label.TextColor3 = THEME.TextMuted
-                Label.TextXAlignment = Enum.TextXAlignment.Left
-                Label.Parent = Frame
+                local Title = Instance.new("TextLabel")
+                Title.Size = UDim2.new(1, 0, 0, 14)
+                Title.Position = UDim2.new(0, 0, 0, 0)
+                Title.BackgroundTransparency = 1
+                Title.Text = name
+                Title.Font = THEME.FontMain
+                Title.TextSize = 10
+                Title.TextColor3 = THEME.TextMuted
+                Title.TextXAlignment = Enum.TextXAlignment.Left
+                Title.Parent = Frame
 
-                local InputBox = Instance.new("Frame")
-                InputBox.Size = UDim2.new(0.53, 0, 0, 24)
-                InputBox.Position = UDim2.new(0.47, 0, 0.5, -12)
-                InputBox.BackgroundColor3 = THEME.BgSidebar
-                InputBox.Parent = Frame
+                local BoxContainer = Instance.new("Frame")
+                BoxContainer.Size = UDim2.new(1, 0, 0, 26)
+                BoxContainer.Position = UDim2.new(0, 0, 0, 18)
+                BoxContainer.BackgroundColor3 = THEME.BgSidebar
+                BoxContainer.BorderSizePixel = 0
+                BoxContainer.Parent = Frame
 
                 local BoxCorner = Instance.new("UICorner")
                 BoxCorner.CornerRadius = UDim.new(0, 6)
-                BoxCorner.Parent = InputBox
+                BoxCorner.Parent = BoxContainer
 
                 local BoxStroke = Instance.new("UIStroke")
                 BoxStroke.Color = THEME.CardBorder
                 BoxStroke.Thickness = 1
-                BoxStroke.Parent = InputBox
+                BoxStroke.Parent = BoxContainer
 
-                local BoxInput = Instance.new("TextBox")
-                BoxInput.Size = UDim2.new(1, -12, 1, 0)
-                BoxInput.Position = UDim2.new(0, 6, 0, 0)
-                BoxInput.BackgroundTransparency = 1
-                BoxInput.Text = default
-                BoxInput.PlaceholderText = placeholder
-                BoxInput.PlaceholderColor3 = THEME.TextMuted
-                BoxInput.Font = THEME.FontMain
-                BoxInput.TextSize = 10
-                BoxInput.TextColor3 = THEME.TextMain
-                BoxInput.TextXAlignment = Enum.TextXAlignment.Left
-                BoxInput.ClearTextOnFocus = false
-                BoxInput.Parent = InputBox
+                local Input = Instance.new("TextBox")
+                Input.Size = UDim2.new(1, -12, 1, 0)
+                Input.Position = UDim2.new(0, 6, 0, 0)
+                Input.BackgroundTransparency = 1
+                Input.Text = def
+                Input.PlaceholderText = placeholder
+                Input.PlaceholderColor3 = THEME.TextMuted
+                Input.Font = THEME.FontMain
+                Input.TextSize = 10
+                Input.TextColor3 = THEME.TextMain
+                Input.TextXAlignment = Enum.TextXAlignment.Left
+                Input.ClearTextOnFocus = false
+                Input.Parent = BoxContainer
 
-                BoxInput.Focused:Connect(function()
-                    Tween(BoxStroke, {Color = THEME.Accent}, 0.2)
+                Input.Focused:Connect(function()
+                    Tween(BoxStroke, {Color = THEME.Accent}, 0.15)
                 end)
 
-                BoxInput.FocusLost:Connect(function()
-                    Tween(BoxStroke, {Color = THEME.CardBorder}, 0.2)
-                    currentText = BoxInput.Text
-                    callback(currentText)
+                Input.FocusLost:Connect(function()
+                    Tween(BoxStroke, {Color = THEME.CardBorder}, 0.15)
+                    value = Input.Text
+                    callback(value)
                 end)
 
-                -- Theme subscriber for TextBox
+                Input:GetPropertyChangedSignal("Text"):Connect(function()
+                    value = Input.Text
+                end)
+
                 table.insert(NamelessWare.ThemeSubscribers, function(theme)
-                    Label.TextColor3 = theme.TextMuted
-                    InputBox.BackgroundColor3 = theme.BgSidebar
+                    Title.TextColor3 = theme.TextMuted
+                    BoxContainer.BackgroundColor3 = theme.BgSidebar
                     BoxStroke.Color = theme.CardBorder
-                    BoxInput.TextColor3 = theme.TextMain
-                    BoxInput.PlaceholderColor3 = theme.TextMuted
+                    Input.TextColor3 = theme.TextMain
+                    Input.PlaceholderColor3 = theme.TextMuted
                 end)
 
                 local controller = {
-                    Set = function(newText)
-                        currentText = newText
-                        BoxInput.Text = currentText
-                        callback(currentText)
+                    Set = function(v)
+                        value = tostring(v or "")
+                        Input.Text = value
+                        callback(value)
                     end,
-                    Get = function() return currentText end,
+                    Get = function() return value end,
                     Type = "TextBox"
                 }
 
@@ -2477,80 +2306,88 @@ function NamelessWare:CreateWindow(config)
             function Controls:AddKeybind(cfg)
                 cfg = cfg or {}
                 local name = cfg.Name or "Keybind"
+                local def = cfg.Default or Enum.KeyCode.RightShift
                 local flag = cfg.Flag or name
-                local default = cfg.Default or Enum.KeyCode.RightShift
                 local callback = cfg.Callback or function() end
+                local key = def
+                local isBinding = false
 
-                local currentKey = (typeof(default) == "EnumItem") and default.Name or tostring(default)
-                local binding = false
-
-                local Frame = Instance.new("Frame")
-                Frame.Size = UDim2.new(1, 0, 0, 30)
-                Frame.BackgroundTransparency = 1
-                Frame.Parent = Card
-                table.insert(RegisteredItems, {Name = name, Element = Frame, Card = Card})
+                local Row = Instance.new("Frame")
+                Row.Size = UDim2.new(1, 0, 0, 24)
+                Row.BackgroundTransparency = 1
+                Row.Parent = Card
+                table.insert(RegisteredItems, {Name = name, Element = Row, Card = Card})
 
                 local Label = Instance.new("TextLabel")
-                Label.Size = UDim2.new(0.55, 0, 1, 0)
+                Label.Size = UDim2.new(1, -80, 1, 0)
+                Label.Position = UDim2.new(0, 0, 0, 0)
                 Label.BackgroundTransparency = 1
                 Label.Text = name
                 Label.Font = THEME.FontMain
-                Label.TextSize = 11
-                Label.TextColor3 = THEME.TextMuted
+                Label.TextSize = 10
+                Label.TextColor3 = THEME.TextMain
                 Label.TextXAlignment = Enum.TextXAlignment.Left
-                Label.Parent = Frame
+                Label.Parent = Row
 
-                local BindBtn = Instance.new("TextButton")
-                BindBtn.Size = UDim2.new(0.42, 0, 0, 22)
-                BindBtn.Position = UDim2.new(0.58, 0, 0.5, -11)
-                BindBtn.BackgroundColor3 = THEME.BgSidebar
-                BindBtn.Text = "[" .. currentKey .. "]"
-                BindBtn.Font = THEME.FontBold
-                BindBtn.TextSize = 10
-                BindBtn.TextColor3 = THEME.TextMain
-                BindBtn.AutoButtonColor = false
-                BindBtn.Parent = Frame
+                local KeyBtn = Instance.new("TextButton")
+                KeyBtn.Size = UDim2.new(0, 75, 0, 20)
+                KeyBtn.Position = UDim2.new(1, -75, 0.5, -10)
+                KeyBtn.BackgroundColor3 = THEME.BgSidebar
+                KeyBtn.Text = "[ " .. tostring(typeof(key) == "EnumItem" and key.Name or key) .. " ]"
+                KeyBtn.Font = THEME.FontBold
+                KeyBtn.TextSize = 9
+                KeyBtn.TextColor3 = THEME.TextMuted
+                KeyBtn.AutoButtonColor = false
+                KeyBtn.Parent = Row
 
-                local BindCorner = Instance.new("UICorner")
-                BindCorner.CornerRadius = UDim.new(0, 6)
-                BindCorner.Parent = BindBtn
+                local KeyCorner = Instance.new("UICorner")
+                KeyCorner.CornerRadius = UDim.new(0, 4)
+                KeyCorner.Parent = KeyBtn
 
-                local BindStroke = Instance.new("UIStroke")
-                BindStroke.Color = THEME.CardBorder
-                BindStroke.Thickness = 1
-                BindStroke.Parent = BindBtn
+                local KeyStroke = Instance.new("UIStroke")
+                KeyStroke.Color = THEME.CardBorder
+                KeyStroke.Thickness = 1
+                KeyStroke.Parent = KeyBtn
 
-                BindBtn.MouseButton1Click:Connect(function()
-                    binding = true
-                    BindBtn.Text = "[ ... ]"
-                    Tween(BindStroke, {Color = THEME.Accent}, 0.15)
+                KeyBtn.MouseButton1Click:Connect(function()
+                    if isBinding then return end
+                    isBinding = true
+                    KeyBtn.Text = "[ ... ]"
+                    Tween(KeyStroke, {Color = THEME.Accent}, 0.15)
+                    Tween(KeyBtn, {TextColor3 = THEME.Accent}, 0.15)
+
+                    local conn
+                    conn = UserInputService.InputBegan:Connect(function(input, gp)
+                        if input.UserInputType == Enum.UserInputType.Keyboard then
+                            conn:Disconnect()
+                            isBinding = false
+                            key = input.KeyCode
+                            KeyBtn.Text = "[ " .. key.Name .. " ]"
+                            Tween(KeyStroke, {Color = THEME.CardBorder}, 0.15)
+                            Tween(KeyBtn, {TextColor3 = THEME.TextMuted}, 0.15)
+                            callback(key)
+                        end
+                    end)
                 end)
 
-                UserInputService.InputBegan:Connect(function(input, gpe)
-                    if binding and input.UserInputType == Enum.UserInputType.Keyboard then
-                        binding = false
-                        currentKey = input.KeyCode.Name
-                        BindBtn.Text = "[" .. currentKey .. "]"
-                        Tween(BindStroke, {Color = THEME.CardBorder}, 0.2)
-                        callback(input.KeyCode)
-                    end
-                end)
-
-                -- Theme subscriber for Keybind
                 table.insert(NamelessWare.ThemeSubscribers, function(theme)
-                    Label.TextColor3 = theme.TextMuted
-                    BindBtn.BackgroundColor3 = theme.BgSidebar
-                    BindBtn.TextColor3 = theme.TextMain
-                    BindStroke.Color = theme.CardBorder
+                    Label.TextColor3 = theme.TextMain
+                    KeyBtn.BackgroundColor3 = theme.BgSidebar
+                    KeyBtn.TextColor3 = isBinding and theme.Accent or theme.TextMuted
+                    KeyStroke.Color = isBinding and theme.Accent or theme.CardBorder
                 end)
 
                 local controller = {
                     Set = function(newKey)
-                        currentKey = (typeof(newKey) == "EnumItem") and newKey.Name or tostring(newKey)
-                        BindBtn.Text = "[" .. currentKey .. "]"
-                        callback(Enum.KeyCode[currentKey] or currentKey)
+                        if typeof(newKey) == "EnumItem" then
+                            key = newKey
+                        elseif typeof(newKey) == "string" and Enum.KeyCode[newKey] then
+                            key = Enum.KeyCode[newKey]
+                        end
+                        KeyBtn.Text = "[ " .. tostring(typeof(key) == "EnumItem" and key.Name or key) .. " ]"
+                        callback(key)
                     end,
-                    Get = function() return currentKey end,
+                    Get = function() return key end,
                     Type = "Keybind"
                 }
 
@@ -2600,7 +2437,6 @@ function NamelessWare:CreateWindow(config)
                     callback()
                 end)
 
-                -- Theme subscriber for Button
                 table.insert(NamelessWare.ThemeSubscribers, function(theme)
                     Btn.BackgroundColor3 = theme.BgSidebar
                     Btn.TextColor3 = theme.TextMain
@@ -2629,20 +2465,16 @@ function NamelessWare:CreateWindow(config)
             Subtitle = tabSubtitle
         })
 
-        -- 1. Profile Manager Section (SaveManager)
         local ConfigSec = SettingsTab:CreateSection("Profile Manager", "rbxassetid://10709791437")
-        NamelessWare.SaveManager:BuildConfigSection(ConfigSec)
+        SaveManager:BuildConfigSection(ConfigSec)
 
-        -- 2. Theme Customizer Section (ThemeManager)
         local ThemeSec = SettingsTab:CreateSection("Theme Customizer", "rbxassetid://10709791437")
-        NamelessWare.ThemeManager:BuildThemeSection(ThemeSec)
+        ThemeManager:BuildThemeSection(ThemeSec)
 
-        -- 3. Menu Settings Section (SettingsManager)
         local MenuSec = SettingsTab:CreateSection("Menu Controls", "rbxassetid://10734950309")
-        NamelessWare.SettingsManager:BuildSettingsSection(MenuSec)
+        SettingsManager:BuildSettingsSection(MenuSec)
 
-        -- Automatically run autoload if configured
-        NamelessWare.SaveManager:AutoLoad()
+        SaveManager:AutoLoad()
 
         return SettingsTab
     end
