@@ -508,7 +508,7 @@ function Library:CreateWindow(config)
     local logoIcon = config.Logo or "rbxassetid://105243902490842"
     local footerUser = config.Footer or (LocalPlayer and (LocalPlayer.DisplayName or LocalPlayer.Name) or "User")
     local footerRank = config.FooterRight or "Lifetime"
-    local windowSize = config.Size or UDim2.new(0, 720, 0, 510)
+    local windowSize = config.Size or UDim2.new(0, 680, 0, 460)
     local toggleKey = config.ToggleKey or Enum.KeyCode.RightControl
     local mobileLogo = config.MobileLogo or logoIcon
     local showMobile = config.ShowMobileButton ~= false
@@ -520,16 +520,22 @@ function Library:CreateWindow(config)
     ScreenGui.IgnoreGuiInset = true
     ScreenGui.Parent = getGuiParent()
 
-    -- Main Container Window (Extra Rounded 18px)
+    -- Main Container Window (Extra Rounded 18px & Auto-Scalable)
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Size = windowSize
-    MainFrame.Position = UDim2.new(0.5, -windowSize.X.Offset / 2, 0.5, -windowSize.Y.Offset / 2)
+    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     MainFrame.BackgroundColor3 = Library.Theme.Background
     MainFrame.BorderSizePixel = 0
     MainFrame.ClipsDescendants = false
     MainFrame.Parent = ScreenGui
     Library:RegisterThemeObject(MainFrame, "BackgroundColor3", "Background")
+
+    local WindowScale = Instance.new("UIScale")
+    WindowScale.Name = "WindowScale"
+    WindowScale.Scale = 1
+    WindowScale.Parent = MainFrame
 
     local MainCorner = Instance.new("UICorner")
     MainCorner.CornerRadius = UDim.new(0, 18)
@@ -1027,6 +1033,9 @@ function Library:CreateWindow(config)
         ContentHolder = ContentHolder,
         Overlay = Overlay,
         MobileButton = MobileButton,
+        WindowScale = WindowScale,
+        CurrentScale = 1,
+        CustomScaleSet = false,
         Tabs = {},
         CurrentTab = nil,
         IsOpen = true
@@ -1034,23 +1043,92 @@ function Library:CreateWindow(config)
 
     Library.CurrentWindow = WindowObj
 
+    -- Responsive auto-scaling for mobile and varying resolutions
+    local function calculateResponsiveScale()
+        local camera = workspace.CurrentCamera
+        local viewport = camera and camera.ViewportSize or Vector2.new(1920, 1080)
+        if viewport.X <= 0 or viewport.Y <= 0 then return 1 end
+
+        local isTouch = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+        local isSmall = viewport.X < 950 or viewport.Y < 600 or isTouch
+
+        local baseW = windowSize.X.Offset
+        local baseH = windowSize.Y.Offset
+
+        local safeW = viewport.X * (isSmall and 0.88 or 0.92)
+        local safeH = (viewport.Y - (isSmall and 48 or 30)) * 0.90
+
+        local scaleW = safeW / baseW
+        local scaleH = safeH / baseH
+        local fit = math.min(scaleW, scaleH)
+
+        if isSmall then
+            return math.clamp(fit, 0.48, 0.76)
+        else
+            return math.clamp(fit, 0.65, 1.0)
+        end
+    end
+
+    function WindowObj:SetScale(scale)
+        if type(scale) == "number" and scale > 0 then
+            scale = math.clamp(scale, 0.4, 1.5)
+            self.CurrentScale = scale
+            self.CustomScaleSet = true
+            createTween(WindowScale, { Scale = scale }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        end
+    end
+
+    function WindowObj:ResetScale()
+        self.CustomScaleSet = false
+        local sc = calculateResponsiveScale()
+        self.CurrentScale = sc
+        createTween(WindowScale, { Scale = sc }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    end
+
+    -- Initial Scale Setup
+    if config.Scale then
+        WindowObj:SetScale(config.Scale)
+    elseif config.MobileScale and (UserInputService.TouchEnabled or (workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize.X < 950)) then
+        WindowObj:SetScale(config.MobileScale)
+    else
+        local initScale = calculateResponsiveScale()
+        WindowObj.CurrentScale = initScale
+        WindowScale.Scale = initScale
+    end
+
+    -- Viewport Size Change Listener
+    pcall(function()
+        if workspace.CurrentCamera then
+            local vpConn = workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+                if not WindowObj.CustomScaleSet then
+                    local newSc = calculateResponsiveScale()
+                    WindowObj.CurrentScale = newSc
+                    WindowScale.Scale = newSc
+                end
+            end)
+            table.insert(Library.Signals, vpConn)
+        end
+    end)
+
     function WindowObj:Toggle(state)
         if state == nil then state = not self.IsOpen end
         self.IsOpen = state
         
+        local currentScale = self.CurrentScale or WindowScale.Scale
         if self.IsOpen then
             MainFrame.Visible = true
-            createTween(MainFrame, {
-                Size = windowSize,
-                BackgroundTransparency = 0
-            }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            WindowScale.Scale = currentScale * 0.92
+            MainFrame.BackgroundTransparency = 0.4
+            createTween(WindowScale, { Scale = currentScale }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            createTween(MainFrame, { BackgroundTransparency = 0 }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
         else
-            local tw = createTween(MainFrame, {
-                Size = windowSize - UDim2.new(0, 20, 0, 20),
-                BackgroundTransparency = 1
-            }, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+            local tw = createTween(WindowScale, { Scale = currentScale * 0.88 }, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+            createTween(MainFrame, { BackgroundTransparency = 1 }, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
             tw.Completed:Connect(function()
-                if not self.IsOpen then MainFrame.Visible = false end
+                if not self.IsOpen then
+                    MainFrame.Visible = false
+                    WindowScale.Scale = currentScale
+                end
             end)
         end
     end
@@ -1100,10 +1178,11 @@ function Library:CreateWindow(config)
         if MobileButton and showMobile then
             MobileButton.Visible = true
         end
-        createTween(MainFrame, {
-            Size = windowSize,
-            BackgroundTransparency = 0
-        }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        local currentScale = self.CurrentScale or WindowScale.Scale
+        WindowScale.Scale = currentScale * 0.92
+        MainFrame.BackgroundTransparency = 0.4
+        createTween(WindowScale, { Scale = currentScale }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        createTween(MainFrame, { BackgroundTransparency = 0 }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
         Library:Notify({
             Title = "Nameless",
             Content = "Menu visible (type /e hide to hide)",
@@ -1492,7 +1571,7 @@ function Library:CreateWindow(config)
 
                 local CheckBox = Instance.new("TextButton")
                 CheckBox.Name = "ToggleSwitch"
-                CheckBox.Size = UDim2.new(0, 36, 0, 18)
+                CheckBox.Size = UDim2.new(0, 38, 0, 20)
                 CheckBox.LayoutOrder = 100
                 CheckBox.BackgroundColor3 = default and Library.Theme.Accent or Library.Theme.ToggleOff
                 CheckBox.BorderSizePixel = 0
@@ -1512,10 +1591,10 @@ function Library:CreateWindow(config)
 
                 local SwitchKnob = Instance.new("Frame")
                 SwitchKnob.Name = "Knob"
-                SwitchKnob.Size = UDim2.new(0, 12, 0, 12)
+                SwitchKnob.Size = UDim2.new(0, 14, 0, 14)
                 SwitchKnob.AnchorPoint = Vector2.new(0, 0.5)
-                SwitchKnob.Position = default and UDim2.new(1, -15, 0.5, 0) or UDim2.new(0, 3, 0.5, 0)
-                SwitchKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                SwitchKnob.Position = default and UDim2.new(1, -17, 0.5, 0) or UDim2.new(0, 3, 0.5, 0)
+                SwitchKnob.BackgroundColor3 = default and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(220, 220, 230)
                 SwitchKnob.BorderSizePixel = 0
                 SwitchKnob.ZIndex = 12
                 SwitchKnob.Parent = CheckBox
@@ -1550,15 +1629,15 @@ function Library:CreateWindow(config)
                     if flag then Library.Flags[flag] = state end
                     
                     if state then
-                        createTween(CheckBox, { BackgroundColor3 = Library.Theme.Accent }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        createTween(CheckStroke, { Color = Library.Theme.Accent }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        createTween(SwitchKnob, { Position = UDim2.new(1, -15, 0.5, 0), Size = UDim2.new(0, 12, 0, 12) }, 0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-                        createTween(Label, { TextColor3 = Library.Theme.Text }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(CheckBox, { BackgroundColor3 = Library.Theme.Accent }, 0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(CheckStroke, { Color = Library.Theme.AccentSecondary }, 0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(SwitchKnob, { Position = UDim2.new(1, -17, 0.5, 0), Size = UDim2.new(0, 14, 0, 14), BackgroundColor3 = Color3.fromRGB(255, 255, 255) }, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                        createTween(Label, { TextColor3 = Library.Theme.Text }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                     else
                         createTween(CheckBox, { BackgroundColor3 = Library.Theme.ToggleOff }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                         createTween(CheckStroke, { Color = Library.Theme.CardBorder }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        createTween(SwitchKnob, { Position = UDim2.new(0, 3, 0.5, 0), Size = UDim2.new(0, 12, 0, 12) }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        createTween(Label, { TextColor3 = Library.Theme.TextDim }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(SwitchKnob, { Position = UDim2.new(0, 3, 0.5, 0), Size = UDim2.new(0, 14, 0, 14), BackgroundColor3 = Color3.fromRGB(220, 220, 230) }, 0.24, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(Label, { TextColor3 = Library.Theme.TextDim }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                     end
                     
                     if not ignoreCallback then
@@ -1585,11 +1664,11 @@ function Library:CreateWindow(config)
                 end
 
                 CheckBox.MouseButton1Down:Connect(function()
-                    createTween(SwitchKnob, { Size = UDim2.new(0, 15, 0, 12) }, 0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+                    createTween(SwitchKnob, { Size = UDim2.new(0, 18, 0, 14) }, 0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
                 end)
 
                 CheckBox.MouseButton1Up:Connect(function()
-                    createTween(SwitchKnob, { Size = UDim2.new(0, 12, 0, 12) }, 0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                    createTween(SwitchKnob, { Size = UDim2.new(0, 14, 0, 14) }, 0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
                 end)
 
                 CheckBox.MouseButton1Click:Connect(function()
@@ -1810,9 +1889,17 @@ function Library:CreateWindow(config)
                             end
                         else
                             CloseCurrentPopup()
+                            local curScale = (WindowScale and WindowScale.Scale > 0) and WindowScale.Scale or 1
                             local absPos = ColorBox.AbsolutePosition
                             local mainPos = MainFrame.AbsolutePosition
-                            PickerFrame.Position = UDim2.new(0, absPos.X - mainPos.X - 140, 0, absPos.Y - mainPos.Y + 20)
+                            local relX = (absPos.X - mainPos.X) / curScale
+                            local relY = (absPos.Y - mainPos.Y) / curScale
+                            local maxX = (MainFrame.AbsoluteSize.X / curScale) - 170
+                            local maxY = (MainFrame.AbsoluteSize.Y / curScale) - 150
+                            local targetX = math.clamp(relX - 140, 10, math.max(10, maxX))
+                            local targetY = math.clamp(relY + 20, 10, math.max(10, maxY))
+
+                            PickerFrame.Position = UDim2.new(0, targetX, 0, targetY)
                             PickerFrame.Visible = true
                             CurrentPopup = {
                                 Menu = PickerFrame,
@@ -2189,7 +2276,7 @@ function Library:CreateWindow(config)
 
                 local Selector = Instance.new("TextButton")
                 Selector.Name = "Selector"
-                Selector.Size = UDim2.new(1, 0, 0, 28)
+                Selector.Size = UDim2.new(1, 0, 0, 30)
                 Selector.Position = UDim2.new(0, 0, 0, 20)
                 Selector.BackgroundColor3 = Library.Theme.ItemBg
                 Selector.BorderSizePixel = 0
@@ -2209,8 +2296,8 @@ function Library:CreateWindow(config)
                 SelStroke.Parent = Selector
 
                 local SelectedText = Instance.new("TextLabel")
-                SelectedText.Size = UDim2.new(1, -30, 1, 0)
-                SelectedText.Position = UDim2.new(0, 10, 0, 0)
+                SelectedText.Size = UDim2.new(1, -34, 1, 0)
+                SelectedText.Position = UDim2.new(0, 12, 0, 0)
                 SelectedText.BackgroundTransparency = 1
                 SelectedText.Text = type(default) == "table" and table.concat(default, ", ") or tostring(default)
                 SelectedText.TextColor3 = Library.Theme.Text
@@ -2222,12 +2309,25 @@ function Library:CreateWindow(config)
 
                 local Arrow = Instance.new("ImageLabel")
                 Arrow.Size = UDim2.new(0, 14, 0, 14)
-                Arrow.Position = UDim2.new(1, -22, 0.5, -7)
+                Arrow.AnchorPoint = Vector2.new(0.5, 0.5)
+                Arrow.Position = UDim2.new(1, -16, 0.5, 0)
                 Arrow.BackgroundTransparency = 1
                 Arrow.Image = "rbxassetid://6031091004"
                 Arrow.ImageColor3 = Library.Theme.TextDark
                 Arrow.ZIndex = 12
                 Arrow.Parent = Selector
+
+                Selector.MouseEnter:Connect(function()
+                    createTween(Selector, { BackgroundColor3 = Library.Theme.ItemBgHover }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    createTween(SelStroke, { Color = Library.Theme.Accent }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                end)
+
+                Selector.MouseLeave:Connect(function()
+                    createTween(Selector, { BackgroundColor3 = Library.Theme.ItemBg }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    if not (DropdownList and DropdownList.Visible) then
+                        createTween(SelStroke, { Color = Library.Theme.ItemBorder }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    end
+                end)
 
                 local currentSelected = default
                 if flag then Library.Flags[flag] = currentSelected end
@@ -2241,13 +2341,14 @@ function Library:CreateWindow(config)
                 DropdownList.ScrollBarImageColor3 = Library.Theme.CardBorder
                 DropdownList.CanvasSize = UDim2.new(0, 0, 0, 0)
                 DropdownList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+                DropdownList.ClipsDescendants = true
                 DropdownList.Visible = false
                 DropdownList.ZIndex = 60
                 DropdownList.Parent = Overlay
                 Library:RegisterThemeObject(DropdownList, "BackgroundColor3", "CardBackground")
 
                 local ListCorner = Instance.new("UICorner")
-                ListCorner.CornerRadius = UDim.new(0, 12)
+                ListCorner.CornerRadius = UDim.new(0, 14)
                 ListCorner.Parent = DropdownList
 
                 local ListStroke = Instance.new("UIStroke")
@@ -2287,9 +2388,11 @@ function Library:CreateWindow(config)
                             else
                                 isSel = (tostring(currentSelected) == optName)
                             end
-                            child.BackgroundColor3 = isSel and Library.Theme.ItemBgHover or Color3.fromRGB(0,0,0)
-                            child.BackgroundTransparency = isSel and 0.4 or 1
-                            child.TextColor3 = isSel and Library.Theme.Accent or Library.Theme.TextDim
+                            createTween(child, {
+                                BackgroundColor3 = isSel and Library.Theme.ItemBgHover or Color3.fromRGB(0,0,0),
+                                BackgroundTransparency = isSel and 0.4 or 1,
+                                TextColor3 = isSel and Library.Theme.Accent or Library.Theme.TextDim
+                            }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                             child.Font = isSel and Library.Fonts.Bold or Library.Fonts.Medium
                         end
                     end
@@ -2311,7 +2414,7 @@ function Library:CreateWindow(config)
 
                         local OptBtn = Instance.new("TextButton")
                         OptBtn.Name = optStr
-                        OptBtn.Size = UDim2.new(1, 0, 0, 24)
+                        OptBtn.Size = UDim2.new(1, 0, 0, 26)
                         OptBtn.BackgroundColor3 = isSel and Library.Theme.ItemBgHover or Color3.fromRGB(0,0,0)
                         OptBtn.BackgroundTransparency = isSel and 0.4 or 1
                         OptBtn.Text = "  " .. optStr
@@ -2324,8 +2427,18 @@ function Library:CreateWindow(config)
                         OptBtn.Parent = DropdownList
 
                         local OptCorner = Instance.new("UICorner")
-                        OptCorner.CornerRadius = UDim.new(0, 6)
+                        OptCorner.CornerRadius = UDim.new(0, 8)
                         OptCorner.Parent = OptBtn
+
+                        OptBtn.MouseEnter:Connect(function()
+                            local isCurrentSel = (multi and type(currentSelected) == "table" and (currentSelected[opt] or currentSelected[optStr])) or (currentSelected == opt or tostring(currentSelected) == optStr)
+                            createTween(OptBtn, { BackgroundTransparency = isCurrentSel and 0.25 or 0.6, BackgroundColor3 = Library.Theme.ItemBgHover }, 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        end)
+
+                        OptBtn.MouseLeave:Connect(function()
+                            local isCurrentSel = (multi and type(currentSelected) == "table" and (currentSelected[opt] or currentSelected[optStr])) or (currentSelected == opt or tostring(currentSelected) == optStr)
+                            createTween(OptBtn, { BackgroundTransparency = isCurrentSel and 0.4 or 1 }, 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        end)
 
                         OptBtn.MouseButton1Click:Connect(function()
                             if multi then
@@ -2416,25 +2529,44 @@ function Library:CreateWindow(config)
                 end
 
                 Selector.MouseButton1Click:Connect(function()
+                    local curScale = (WindowScale and WindowScale.Scale > 0) and WindowScale.Scale or 1
+                    local relWidth = Selector.AbsoluteSize.X / curScale
                     if DropdownList.Visible then
-                        DropdownList.Visible = false
-                        if CurrentPopup and CurrentPopup.Menu == DropdownList then
-                            CurrentPopup = nil
-                        end
+                        createTween(Arrow, { Rotation = 0, ImageColor3 = Library.Theme.TextDark }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(SelStroke, { Color = Library.Theme.ItemBorder }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        local tw = createTween(DropdownList, { Size = UDim2.new(0, relWidth, 0, 0) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+                        tw.Completed:Connect(function()
+                            DropdownList.Visible = false
+                            if CurrentPopup and CurrentPopup.Menu == DropdownList then
+                                CurrentPopup = nil
+                            end
+                        end)
                     else
                         CloseCurrentPopup()
                         local absPos = Selector.AbsolutePosition
                         local mainPos = MainFrame.AbsolutePosition
-                        DropdownList.Position = UDim2.new(0, absPos.X - mainPos.X, 0, absPos.Y - mainPos.Y + 32)
-                        DropdownList.Size = UDim2.new(0, Selector.AbsoluteSize.X, 0, math.min(math.max(#options * 28 + 12, 36), 160))
+                        local targetHeight = math.min(math.max(#options * 30 + 14, 40), 175)
+                        local relX = (absPos.X - mainPos.X) / curScale
+                        local relY = (absPos.Y - mainPos.Y) / curScale
+
+                        DropdownList.Position = UDim2.new(0, relX, 0, relY + 34)
+                        DropdownList.Size = UDim2.new(0, relWidth, 0, 0)
                         DropdownList.Visible = true
+                        createTween(DropdownList, { Size = UDim2.new(0, relWidth, 0, targetHeight) }, 0.24, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(Arrow, { Rotation = 180, ImageColor3 = Library.Theme.Accent }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(SelStroke, { Color = Library.Theme.Accent }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                         refreshOptions()
 
                         CurrentPopup = {
                             Menu = DropdownList,
                             Holder = Selector,
                             Close = function()
-                                DropdownList.Visible = false
+                                createTween(Arrow, { Rotation = 0, ImageColor3 = Library.Theme.TextDark }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                                createTween(SelStroke, { Color = Library.Theme.ItemBorder }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                                local tw = createTween(DropdownList, { Size = UDim2.new(0, relWidth, 0, 0) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+                                tw.Completed:Connect(function()
+                                    DropdownList.Visible = false
+                                end)
                             end
                         }
                     end
@@ -3205,9 +3337,17 @@ function Library:CreateWindow(config)
                             end
                         else
                             CloseCurrentPopup()
+                            local curScale = (WindowScale and WindowScale.Scale > 0) and WindowScale.Scale or 1
                             local absPos = ColorBox.AbsolutePosition
                             local mainPos = MainFrame.AbsolutePosition
-                            PickerFrame.Position = UDim2.new(0, absPos.X - mainPos.X - 140, 0, absPos.Y - mainPos.Y + 20)
+                            local relX = (absPos.X - mainPos.X) / curScale
+                            local relY = (absPos.Y - mainPos.Y) / curScale
+                            local maxX = (MainFrame.AbsoluteSize.X / curScale) - 170
+                            local maxY = (MainFrame.AbsoluteSize.Y / curScale) - 150
+                            local targetX = math.clamp(relX - 140, 10, math.max(10, maxX))
+                            local targetY = math.clamp(relY + 20, 10, math.max(10, maxY))
+
+                            PickerFrame.Position = UDim2.new(0, targetX, 0, targetY)
                             PickerFrame.Visible = true
                             CurrentPopup = {
                                 Menu = PickerFrame,
@@ -3521,9 +3661,17 @@ function Library:CreateWindow(config)
                         end
                     else
                         CloseCurrentPopup()
+                        local curScale = (WindowScale and WindowScale.Scale > 0) and WindowScale.Scale or 1
                         local absPos = ColorBox.AbsolutePosition
                         local mainPos = MainFrame.AbsolutePosition
-                        PickerFrame.Position = UDim2.new(0, absPos.X - mainPos.X - 140, 0, absPos.Y - mainPos.Y + 20)
+                        local relX = (absPos.X - mainPos.X) / curScale
+                        local relY = (absPos.Y - mainPos.Y) / curScale
+                        local maxX = (MainFrame.AbsoluteSize.X / curScale) - 170
+                        local maxY = (MainFrame.AbsoluteSize.Y / curScale) - 150
+                        local targetX = math.clamp(relX - 140, 10, math.max(10, maxX))
+                        local targetY = math.clamp(relY + 20, 10, math.max(10, maxY))
+
+                        PickerFrame.Position = UDim2.new(0, targetX, 0, targetY)
                         PickerFrame.Visible = true
                         CurrentPopup = {
                             Menu = PickerFrame,
@@ -4009,7 +4157,7 @@ function Library:CreateWindow(config)
             end
         })
 
-        -- Reset Button
+        -- Reset Theme Button
         targetSection:AddButton({
             Text = "Reset to Nameless Theme",
             Func = function()
@@ -4022,6 +4170,35 @@ function Library:CreateWindow(config)
                     Content = "Reset to default Nameless theme.",
                     Duration = 2
                 })
+            end
+        })
+
+        targetSection:AddDivider()
+        targetSection:AddLabel("UI Scaling & Display")
+
+        local currentSc = math.floor(((WindowObj and WindowObj.CurrentScale) or (WindowScale and WindowScale.Scale) or 1) * 100 + 0.5)
+        local ScaleSlider = targetSection:AddSlider("Theme_MenuScale", {
+            Text = "Menu Scale",
+            Min = 45,
+            Max = 125,
+            Default = currentSc,
+            Suffix = "%",
+            Callback = function(val)
+                if WindowObj and WindowObj.SetScale then
+                    WindowObj:SetScale(val / 100)
+                end
+            end
+        })
+
+        targetSection:AddButton({
+            Text = "Auto / Reset Scale",
+            Func = function()
+                if WindowObj and WindowObj.ResetScale then
+                    WindowObj:ResetScale()
+                    if ScaleSlider and ScaleSlider.Set then
+                        ScaleSlider:Set(math.floor((WindowObj.CurrentScale or 1) * 100 + 0.5), true)
+                    end
+                end
             end
         })
     end
@@ -4762,6 +4939,19 @@ function Library:CreateWindow(config)
         if Library.CurrentWindow and Library.CurrentWindow.Show then
             Library.CurrentWindow:Show()
         end
+    end
+
+    function Library:SetScale(scale)
+        if Library.CurrentWindow and Library.CurrentWindow.SetScale then
+            Library.CurrentWindow:SetScale(scale)
+        end
+    end
+
+    function Library:GetScale()
+        if Library.CurrentWindow and Library.CurrentWindow.CurrentScale then
+            return Library.CurrentWindow.CurrentScale
+        end
+        return 1
     end
 
     -- Toggle Menu Keybind Listener
