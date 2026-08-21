@@ -967,19 +967,6 @@ function Library:CreateWindow(config)
             lastFpsTime = now
             local elapsed = tick() - StartExecutionTime
             UptimeLabel.Text = "⏱ Uptime: " .. formatUptime(elapsed)
-            end
-
-            local pingMs = 0
-            pcall(function()
-                local serverStats = StatsService:FindFirstChild("ServerStatsItem") or (StatsService.Network and StatsService.Network:FindFirstChild("ServerStatsItem"))
-                if serverStats and serverStats:FindFirstChild("Data Ping") then
-                    pingMs = math.floor(serverStats["Data Ping"]:GetValue())
-                elseif LocalPlayer and LocalPlayer.GetNetworkPing then
-                    pingMs = math.floor(LocalPlayer:GetNetworkPing() * 1000)
-                end
-            end)
-            if pingMs == 0 then pingMs = math.random(30, 50) end
-            PingLabel.Text = "📶 " .. tostring(pingMs) .. " ms"
         end
     end)
 
