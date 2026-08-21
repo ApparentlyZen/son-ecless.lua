@@ -2,7 +2,7 @@
     ╔══════════════════════════════════════════════════════════════════════════╗
     ║                         NAMELESS UI LIBRARY v3.4                         ║
     ║   Sidebar Tabs | 15+ Modern Themes | UI Manager | Mobile & GIF Support   ║
-    ║   Live User Tracker (Avatar, Execution Time, FPS, Ping) | Gotham Fonts   ║
+    ║   User Profile Card (Avatar & Rank Badge) | Gotham Fonts                 ║
     ║   Extra Smooth Rounded Corners | Untinted Logo | Full SaveManager        ║
     ╚══════════════════════════════════════════════════════════════════════════╝
 ]]
@@ -12,11 +12,9 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
-local StatsService = game:GetService("Stats")
 local GuiService = game:GetService("GuiService")
 
 local LocalPlayer = Players.LocalPlayer
-local StartExecutionTime = tick()
 
 local BaseURL = "https://raw.githubusercontent.com/deividcomsono/Obsidian/refs/heads/main/"
 local CustomImageManager = {}
@@ -738,13 +736,6 @@ local function getGuiParent()
     return LocalPlayer:WaitForChild("PlayerGui")
 end
 
-local function formatUptime(seconds)
-    local h = math.floor(seconds / 3600)
-    local m = math.floor((seconds % 3600) / 60)
-    local s = math.floor(seconds % 60)
-    return string.format("%02d:%02d:%02d", h, m, s)
-end
-
 local function createTween(instance, properties, duration, style, direction)
     duration = duration or 0.2
     style = style or Enum.EasingStyle.Quart
@@ -960,6 +951,7 @@ function Library:CreateWindow(config)
     BrandLogo.Size = UDim2.new(0, 26, 0, 26)
     BrandLogo.Position = UDim2.new(0, 14, 0.5, -13)
     BrandLogo.BackgroundTransparency = 1
+    BrandLogo.ScaleType = Enum.ScaleType.Fit
     Library.ApplyIcon(BrandLogo, Library.GetCustomIcon(logoIcon))
     BrandLogo.ImageColor3 = Color3.fromRGB(255, 255, 255)
     BrandLogo.ZIndex = 7
@@ -982,7 +974,7 @@ function Library:CreateWindow(config)
     -- Sidebar Tabs List
     local TabsContainer = Instance.new("ScrollingFrame")
     TabsContainer.Name = "TabsContainer"
-    TabsContainer.Size = UDim2.new(1, 0, 1, -182)
+    TabsContainer.Size = UDim2.new(1, 0, 1, -114)
     TabsContainer.Position = UDim2.new(0, 0, 0, 56)
     TabsContainer.BackgroundTransparency = 1
     TabsContainer.BorderSizePixel = 0
@@ -1003,11 +995,11 @@ function Library:CreateWindow(config)
     TabsPadding.PaddingTop = UDim.new(0, 8)
     TabsPadding.Parent = TabsContainer
 
-    -- ==================== USER PROFILE & LIVE TRACKER ====================
+    -- ==================== USER PROFILE FOOTER ====================
     local SidebarFooter = Instance.new("Frame")
     SidebarFooter.Name = "SidebarFooter"
-    SidebarFooter.Size = UDim2.new(1, 0, 0, 120)
-    SidebarFooter.Position = UDim2.new(0, 0, 1, -120)
+    SidebarFooter.Size = UDim2.new(1, 0, 0, 52)
+    SidebarFooter.Position = UDim2.new(0, 0, 1, -52)
     SidebarFooter.BackgroundColor3 = Color3.fromRGB(8, 8, 11)
     SidebarFooter.BorderSizePixel = 0
     SidebarFooter.ZIndex = 6
@@ -1035,8 +1027,8 @@ function Library:CreateWindow(config)
 
     local ProfileCard = Instance.new("Frame")
     ProfileCard.Name = "ProfileCard"
-    ProfileCard.Size = UDim2.new(1, -14, 1, -12)
-    ProfileCard.Position = UDim2.new(0, 7, 0, 6)
+    ProfileCard.Size = UDim2.new(1, -14, 1, -10)
+    ProfileCard.Position = UDim2.new(0, 7, 0, 5)
     ProfileCard.BackgroundColor3 = Library.Theme.CardBackground
     ProfileCard.BorderSizePixel = 0
     ProfileCard.ZIndex = 7
@@ -1055,8 +1047,8 @@ function Library:CreateWindow(config)
 
     local AvatarWrapper = Instance.new("Frame")
     AvatarWrapper.Name = "AvatarWrapper"
-    AvatarWrapper.Size = UDim2.new(0, 32, 0, 32)
-    AvatarWrapper.Position = UDim2.new(0, 7, 0, 7)
+    AvatarWrapper.Size = UDim2.new(0, 30, 0, 30)
+    AvatarWrapper.Position = UDim2.new(0, 6, 0.5, -15)
     AvatarWrapper.BackgroundColor3 = Library.Theme.ItemBg
     AvatarWrapper.BorderSizePixel = 0
     AvatarWrapper.ZIndex = 8
@@ -1118,8 +1110,8 @@ function Library:CreateWindow(config)
 
     local DisplayNameLabel = Instance.new("TextLabel")
     DisplayNameLabel.Name = "DisplayName"
-    DisplayNameLabel.Size = UDim2.new(1, -46, 0, 14)
-    DisplayNameLabel.Position = UDim2.new(0, 44, 0, 6)
+    DisplayNameLabel.Size = UDim2.new(1, -44, 0, 14)
+    DisplayNameLabel.Position = UDim2.new(0, 42, 0, 5)
     DisplayNameLabel.BackgroundTransparency = 1
     DisplayNameLabel.Text = LocalPlayer and LocalPlayer.DisplayName or footerUser
     DisplayNameLabel.TextColor3 = Library.Theme.Text
@@ -1133,8 +1125,8 @@ function Library:CreateWindow(config)
 
     local RankPill = Instance.new("Frame")
     RankPill.Name = "RankPill"
-    RankPill.Size = UDim2.new(0, 56, 0, 13)
-    RankPill.Position = UDim2.new(0, 44, 0, 22)
+    RankPill.Size = UDim2.new(0, 54, 0, 13)
+    RankPill.Position = UDim2.new(0, 42, 0, 22)
     RankPill.BackgroundColor3 = Library.Theme.Accent
     RankPill.BackgroundTransparency = 0.85
     RankPill.BorderSizePixel = 0
@@ -1162,157 +1154,6 @@ function Library:CreateWindow(config)
     RankText.ZIndex = 9
     RankText.Parent = RankPill
     Library:RegisterThemeObject(RankText, "TextColor3", "Accent")
-
-    local CardDivider = Instance.new("Frame")
-    CardDivider.Name = "Divider"
-    CardDivider.Size = UDim2.new(1, -12, 0, 1)
-    CardDivider.Position = UDim2.new(0, 6, 0, 44)
-    CardDivider.BackgroundColor3 = Library.Theme.CardBorder
-    CardDivider.BorderSizePixel = 0
-    CardDivider.ZIndex = 8
-    CardDivider.Parent = ProfileCard
-    Library:RegisterThemeObject(CardDivider, "BackgroundColor3", "CardBorder")
-
-    local UptimePill = Instance.new("Frame")
-    UptimePill.Name = "UptimePill"
-    UptimePill.Size = UDim2.new(1, -12, 0, 24)
-    UptimePill.Position = UDim2.new(0, 6, 0, 50)
-    UptimePill.BackgroundColor3 = Library.Theme.ItemBg
-    UptimePill.BorderSizePixel = 0
-    UptimePill.ZIndex = 8
-    UptimePill.Parent = ProfileCard
-    Library:RegisterThemeObject(UptimePill, "BackgroundColor3", "ItemBg")
-
-    local UptimeCorner = Instance.new("UICorner")
-    UptimeCorner.CornerRadius = UDim.new(0, 6)
-    UptimeCorner.Parent = UptimePill
-
-    local UptimeStroke = Instance.new("UIStroke")
-    UptimeStroke.Color = Library.Theme.ItemBorder
-    UptimeStroke.Thickness = 0.8
-    UptimeStroke.Parent = UptimePill
-    Library:RegisterThemeObject(UptimeStroke, "Color", "ItemBorder")
-
-    local UptimeLabel = Instance.new("TextLabel")
-    UptimeLabel.Name = "UptimeLabel"
-    UptimeLabel.Size = UDim2.new(1, -8, 1, 0)
-    UptimeLabel.Position = UDim2.new(0, 6, 0, 0)
-    UptimeLabel.BackgroundTransparency = 1
-    UptimeLabel.Text = "⏱ Uptime: 00:00:00"
-    UptimeLabel.TextColor3 = Library.Theme.TextDim
-    UptimeLabel.Font = Library.Fonts.Bold
-    UptimeLabel.TextSize = 9
-    UptimeLabel.TextXAlignment = Enum.TextXAlignment.Left
-    UptimeLabel.ZIndex = 9
-    UptimeLabel.Parent = UptimePill
-
-    local PerfRow = Instance.new("Frame")
-    PerfRow.Name = "PerfRow"
-    PerfRow.Size = UDim2.new(1, -12, 0, 24)
-    PerfRow.Position = UDim2.new(0, 6, 0, 78)
-    PerfRow.BackgroundTransparency = 1
-    PerfRow.ZIndex = 8
-    PerfRow.Parent = ProfileCard
-
-    local FpsBadge = Instance.new("Frame")
-    FpsBadge.Name = "FpsBadge"
-    FpsBadge.Size = UDim2.new(0.5, -3, 1, 0)
-    FpsBadge.Position = UDim2.new(0, 0, 0, 0)
-    FpsBadge.BackgroundColor3 = Library.Theme.ItemBg
-    FpsBadge.BorderSizePixel = 0
-    FpsBadge.ZIndex = 8
-    FpsBadge.Parent = PerfRow
-    Library:RegisterThemeObject(FpsBadge, "BackgroundColor3", "ItemBg")
-
-    local FpsCorner = Instance.new("UICorner")
-    FpsCorner.CornerRadius = UDim.new(0, 6)
-    FpsCorner.Parent = FpsBadge
-
-    local FpsStroke = Instance.new("UIStroke")
-    FpsStroke.Color = Library.Theme.ItemBorder
-    FpsStroke.Thickness = 0.8
-    FpsStroke.Parent = FpsBadge
-    Library:RegisterThemeObject(FpsStroke, "Color", "ItemBorder")
-
-    local FpsLabel = Instance.new("TextLabel")
-    FpsLabel.Name = "FpsLabel"
-    FpsLabel.Size = UDim2.new(1, 0, 1, 0)
-    FpsLabel.BackgroundTransparency = 1
-    FpsLabel.Text = "⚡ 60 FPS"
-    FpsLabel.TextColor3 = Color3.fromRGB(105, 215, 120)
-    FpsLabel.Font = Library.Fonts.Bold
-    FpsLabel.TextSize = 9
-    FpsLabel.ZIndex = 9
-    FpsLabel.Parent = FpsBadge
-
-    local PingBadge = Instance.new("Frame")
-    PingBadge.Name = "PingBadge"
-    PingBadge.Size = UDim2.new(0.5, -3, 1, 0)
-    PingBadge.Position = UDim2.new(0.5, 3, 0, 0)
-    PingBadge.BackgroundColor3 = Library.Theme.ItemBg
-    PingBadge.BorderSizePixel = 0
-    PingBadge.ZIndex = 8
-    PingBadge.Parent = PerfRow
-    Library:RegisterThemeObject(PingBadge, "BackgroundColor3", "ItemBg")
-
-    local PingCorner = Instance.new("UICorner")
-    PingCorner.CornerRadius = UDim.new(0, 6)
-    PingCorner.Parent = PingBadge
-
-    local PingStroke = Instance.new("UIStroke")
-    PingStroke.Color = Library.Theme.ItemBorder
-    PingStroke.Thickness = 0.8
-    PingStroke.Parent = PingBadge
-    Library:RegisterThemeObject(PingStroke, "Color", "ItemBorder")
-
-    local PingLabel = Instance.new("TextLabel")
-    PingLabel.Name = "PingLabel"
-    PingLabel.Size = UDim2.new(1, 0, 1, 0)
-    PingLabel.BackgroundTransparency = 1
-    PingLabel.Text = "📶 0 MS"
-    PingLabel.TextColor3 = Color3.fromRGB(93, 197, 216)
-    PingLabel.Font = Library.Fonts.Bold
-    PingLabel.TextSize = 9
-    PingLabel.ZIndex = 9
-    PingLabel.Parent = PingBadge
-
-    local frameCount = 0
-    local lastFpsTime = tick()
-    local currentFps = 60
-
-    RunService.RenderStepped:Connect(function()
-        frameCount = frameCount + 1
-        local now = tick()
-        if now - lastFpsTime >= 0.5 then
-            currentFps = math.floor(frameCount / (now - lastFpsTime))
-            frameCount = 0
-            lastFpsTime = now
-            
-            local elapsed = tick() - StartExecutionTime
-            UptimeLabel.Text = "⏱ Uptime: " .. formatUptime(elapsed)
-            
-            FpsLabel.Text = "⚡ " .. tostring(currentFps) .. " FPS"
-            if currentFps >= 50 then
-                FpsLabel.TextColor3 = Color3.fromRGB(105, 215, 120)
-            elseif currentFps >= 30 then
-                FpsLabel.TextColor3 = Color3.fromRGB(240, 180, 70)
-            else
-                FpsLabel.TextColor3 = Color3.fromRGB(245, 90, 90)
-            end
-
-            local pingMs = 0
-            pcall(function()
-                local serverStats = StatsService:FindFirstChild("ServerStatsItem") or (StatsService.Network and StatsService.Network:FindFirstChild("ServerStatsItem"))
-                if serverStats and serverStats:FindFirstChild("Data Ping") then
-                    pingMs = math.floor(serverStats["Data Ping"]:GetValue())
-                elseif LocalPlayer and LocalPlayer.GetNetworkPing then
-                    pingMs = math.floor(LocalPlayer:GetNetworkPing() * 1000)
-                end
-            end)
-            if pingMs == 0 then pingMs = math.random(30, 50) end
-            PingLabel.Text = "📶 " .. tostring(pingMs) .. " ms"
-        end
-    end)
 
     -- ==================== RIGHT MAIN CONTENT AREA ====================
     local MainContent = Instance.new("Frame")
@@ -1385,33 +1226,24 @@ function Library:CreateWindow(config)
         end
     end
 
-    -- ==================== MOBILE DRAGGABLE ROUND BUTTON ====================
+    -- ==================== MOBILE DRAGGABLE LOGO BUTTON ====================
     local MobileButton = Instance.new("ImageButton")
     MobileButton.Name = "NamelessMobileBtn"
-    MobileButton.Size = UDim2.new(0, 50, 0, 50)
+    MobileButton.Size = UDim2.new(0, 48, 0, 48)
     MobileButton.Position = UDim2.new(0, 24, 0.25, 0)
-    MobileButton.BackgroundColor3 = Library.Theme.Sidebar
+    MobileButton.BackgroundTransparency = 1
+    MobileButton.BorderSizePixel = 0
     MobileButton.AutoButtonColor = false
     MobileButton.ZIndex = 100
     MobileButton.Visible = showMobile and (UserInputService.TouchEnabled or config.ForceMobileButton)
     MobileButton.Parent = ScreenGui
-    Library:RegisterThemeObject(MobileButton, "BackgroundColor3", "Sidebar")
-
-    local MobileCorner = Instance.new("UICorner")
-    MobileCorner.CornerRadius = UDim.new(1, 0)
-    MobileCorner.Parent = MobileButton
-
-    local MobileStroke = Instance.new("UIStroke")
-    MobileStroke.Color = Library.Theme.Accent
-    MobileStroke.Thickness = 2
-    MobileStroke.Parent = MobileButton
-    Library:RegisterThemeObject(MobileStroke, "Color", "Accent")
 
     local MobileLogoImg = Instance.new("ImageLabel")
     MobileLogoImg.Name = "Logo"
-    MobileLogoImg.Size = UDim2.new(0, 28, 0, 28)
-    MobileLogoImg.Position = UDim2.new(0.5, -14, 0.5, -14)
+    MobileLogoImg.Size = UDim2.new(1, 0, 1, 0)
+    MobileLogoImg.Position = UDim2.new(0, 0, 0, 0)
     MobileLogoImg.BackgroundTransparency = 1
+    MobileLogoImg.ScaleType = Enum.ScaleType.Fit
     Library.ApplyIcon(MobileLogoImg, Library.GetCustomIcon(mobileLogo))
     MobileLogoImg.ImageColor3 = Color3.fromRGB(255, 255, 255)
     MobileLogoImg.ZIndex = 101
@@ -1421,20 +1253,18 @@ function Library:CreateWindow(config)
 
     MobileButton.MouseEnter:Connect(function()
         createTween(MobileButton, { Size = UDim2.new(0, 54, 0, 54) }, 0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-        createTween(MobileStroke, { Thickness = 2.8, Color = Library.Theme.AccentSecondary }, 0.2)
     end)
 
     MobileButton.MouseLeave:Connect(function()
-        createTween(MobileButton, { Size = UDim2.new(0, 50, 0, 50) }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        createTween(MobileStroke, { Thickness = 2, Color = Library.Theme.Accent }, 0.2)
+        createTween(MobileButton, { Size = UDim2.new(0, 48, 0, 48) }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
     end)
 
     MobileButton.MouseButton1Down:Connect(function()
-        createTween(MobileButton, { Size = UDim2.new(0, 46, 0, 46) }, 0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        createTween(MobileButton, { Size = UDim2.new(0, 42, 0, 42) }, 0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
     end)
 
     MobileButton.MouseButton1Up:Connect(function()
-        createTween(MobileButton, { Size = UDim2.new(0, 50, 0, 50) }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        createTween(MobileButton, { Size = UDim2.new(0, 48, 0, 48) }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
     end)
 
     local WindowObj = {
@@ -5584,4 +5414,5 @@ if genv then
     genv.ThemeManager = Library.ThemeManager
 end
 
+return Library
 return Library
