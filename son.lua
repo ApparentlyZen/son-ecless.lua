@@ -2549,9 +2549,11 @@ function NamelessWare:CreateWindow(config)
 
                 local WheelDot = Instance.new("Frame")
                 WheelDot.Name = "Dot"
-                WheelDot.Size = UDim2.new(0, 8, 0, 8)
+                WheelDot.Size = UDim2.new(0, 10, 0, 10)
+                WheelDot.AnchorPoint = Vector2.new(0.5, 0.5)
                 WheelDot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 WheelDot.BorderSizePixel = 0
+                WheelDot.Active = false
                 WheelDot.Parent = Wheel
 
                 local DotCorner = Instance.new("UICorner")
@@ -2560,7 +2562,7 @@ function NamelessWare:CreateWindow(config)
 
                 local DotStroke = Instance.new("UIStroke")
                 DotStroke.Color = Color3.fromRGB(0, 0, 0)
-                DotStroke.Thickness = 1.2
+                DotStroke.Thickness = 1.5
                 DotStroke.Parent = WheelDot
 
                 local RightControls = Instance.new("Frame")
@@ -2631,7 +2633,8 @@ function NamelessWare:CreateWindow(config)
 
                 local ValThumb = Instance.new("Frame")
                 ValThumb.Size = UDim2.new(0, 10, 0, 10)
-                ValThumb.Position = UDim2.new(currentVal, -5, 0.5, -5)
+                ValThumb.AnchorPoint = Vector2.new(0.5, 0.5)
+                ValThumb.Position = UDim2.new(currentVal, 0, 0.5, 0)
                 ValThumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 ValThumb.BorderSizePixel = 0
                 ValThumb.Parent = ValTrack
@@ -2670,12 +2673,12 @@ function NamelessWare:CreateWindow(config)
                 PreviewHex.Parent = PreviewBar
 
                 local function UpdateDotPosition()
-                    local r = currentSat * ((Wheel.AbsoluteSize.X > 0 and Wheel.AbsoluteSize.X or 82) / 2)
+                    local radius = ((Wheel.AbsoluteSize.X > 0 and Wheel.AbsoluteSize.X or 82) / 2)
                     local angle = currentHue * math.pi * 2
-                    local center = (Wheel.AbsoluteSize.X > 0 and Wheel.AbsoluteSize.X or 82) / 2
-                    local x = center + math.cos(angle) * r - 5
-                    local y = center + math.sin(angle) * r - 5
-                    WheelDot.Position = UDim2.new(0, math.clamp(x, 0, 72), 0, math.clamp(y, 0, 72))
+                    local clampedDist = currentSat * radius
+                    local dotX = radius + math.cos(angle) * clampedDist
+                    local dotY = radius + math.sin(angle) * clampedDist
+                    WheelDot.Position = UDim2.new(0, dotX, 0, dotY)
                 end
 
                 local function UpdateColor(col, triggerCallback)
@@ -2691,7 +2694,7 @@ function NamelessWare:CreateWindow(config)
                         ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
                         ColorSequenceKeypoint.new(1, Color3.fromHSV(currentHue, currentSat, 1))
                     })
-                    ValThumb.Position = UDim2.new(currentVal, -5, 0.5, -5)
+                    ValThumb.Position = UDim2.new(currentVal, 0, 0.5, 0)
                     UpdateDotPosition()
 
                     if triggerCallback ~= false then
@@ -2724,21 +2727,24 @@ function NamelessWare:CreateWindow(config)
                 local wheelDragging = false
                 local valDragging = false
 
-                local function UpdateFromWheelPos(posX, posY)
-                    local wheelCenter = Wheel.AbsolutePosition + (Wheel.AbsoluteSize / 2)
-                    local delta = Vector2.new(posX, posY) - wheelCenter
-                    local maxRadius = Wheel.AbsoluteSize.X / 2
+                local function UpdateFromWheelPos(screenX, screenY)
+                    local wheelAbsPos = Wheel.AbsolutePosition
+                    local wheelAbsSize = Wheel.AbsoluteSize
+                    local radius = (wheelAbsSize.X > 0 and wheelAbsSize.X or 82) / 2
+                    local center = wheelAbsPos + Vector2.new(radius, radius)
+
+                    local delta = Vector2.new(screenX, screenY) - center
                     local dist = delta.Magnitude
-                    local clampedDist = math.clamp(dist, 0, maxRadius)
+                    local clampedDist = math.clamp(dist, 0, radius)
+
                     local angle = math.atan2(delta.Y, delta.X)
                     if angle < 0 then angle = angle + (math.pi * 2) end
 
                     currentHue = (angle / (math.pi * 2)) % 1
-                    currentSat = math.clamp(clampedDist / maxRadius, 0, 1)
+                    currentSat = math.clamp(clampedDist / radius, 0, 1)
 
-                    local dotRadius = currentSat * (Wheel.AbsoluteSize.X / 2)
-                    local dotX = (Wheel.AbsoluteSize.X / 2) + math.cos(angle) * dotRadius - 5
-                    local dotY = (Wheel.AbsoluteSize.Y / 2) + math.sin(angle) * dotRadius - 5
+                    local dotX = radius + math.cos(angle) * clampedDist
+                    local dotY = radius + math.sin(angle) * clampedDist
                     WheelDot.Position = UDim2.new(0, dotX, 0, dotY)
 
                     currentColor = Color3.fromHSV(currentHue, currentSat, currentVal)
@@ -2756,10 +2762,13 @@ function NamelessWare:CreateWindow(config)
                     callback(currentColor)
                 end
 
-                local function UpdateFromValPos(posX)
-                    local percent = math.clamp((posX - ValTrack.AbsolutePosition.X) / ValTrack.AbsoluteSize.X, 0, 1)
+                local function UpdateFromValPos(screenX)
+                    local trackAbsPos = ValTrack.AbsolutePosition
+                    local trackAbsSize = ValTrack.AbsoluteSize
+                    local percent = math.clamp((screenX - trackAbsPos.X) / (trackAbsSize.X > 0 and trackAbsSize.X or 1), 0, 1)
                     currentVal = percent
-                    ValThumb.Position = UDim2.new(currentVal, -5, 0.5, -5)
+
+                    ValThumb.Position = UDim2.new(currentVal, 0, 0.5, 0)
 
                     currentColor = Color3.fromHSV(currentHue, currentSat, currentVal)
                     SwatchBtn.BackgroundColor3 = currentColor
@@ -2771,11 +2780,21 @@ function NamelessWare:CreateWindow(config)
                     callback(currentColor)
                 end
 
+                Wheel.MouseButton1Down:Connect(function(x, y)
+                    wheelDragging = true
+                    UpdateFromWheelPos(x, y)
+                end)
+
                 Wheel.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         wheelDragging = true
                         UpdateFromWheelPos(input.Position.X, input.Position.Y)
                     end
+                end)
+
+                ValTrack.MouseButton1Down:Connect(function(x, y)
+                    valDragging = true
+                    UpdateFromValPos(x)
                 end)
 
                 ValTrack.InputBegan:Connect(function(input)
