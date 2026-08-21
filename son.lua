@@ -658,13 +658,14 @@ function NamelessWare:CreateWindow(config)
                 BoxStroke.Thickness = 1.2
                 BoxStroke.Parent = BoxFrame
 
-                local CheckIcon = Instance.new("TextLabel")
-                CheckIcon.Size = UDim2.new(1, 0, 1, 0)
+                local CheckIcon = Instance.new("ImageLabel")
+                CheckIcon.Size = UDim2.new(0, 12, 0, 12)
+                CheckIcon.Position = UDim2.new(0.5, -6, 0.5, -6)
                 CheckIcon.BackgroundTransparency = 1
-                CheckIcon.Text = state and "✓" or ""
-                CheckIcon.Font = THEME.FontBold
-                CheckIcon.TextSize = 11
-                CheckIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
+                CheckIcon.Image = "rbxassetid://10709790948"
+                CheckIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
+                CheckIcon.ImageTransparency = state and 0 or 1
+                CheckIcon.ScaleType = Enum.ScaleType.Fit
                 CheckIcon.Parent = BoxFrame
 
                 local function SetState(newVal)
@@ -672,12 +673,12 @@ function NamelessWare:CreateWindow(config)
                     if state then
                         Tween(BoxFrame, {BackgroundColor3 = AccentColor}, 0.18)
                         Tween(BoxStroke, {Color = THEME.AccentGradient}, 0.18)
-                        CheckIcon.Text = "✓"
+                        Tween(CheckIcon, {ImageTransparency = 0}, 0.18)
                         Tween(Label, {TextColor3 = THEME.TextMain}, 0.18)
                     else
                         Tween(BoxFrame, {BackgroundColor3 = THEME.CircleOff}, 0.18)
                         Tween(BoxStroke, {Color = THEME.CircleOffBorder}, 0.18)
-                        CheckIcon.Text = ""
+                        Tween(CheckIcon, {ImageTransparency = 1}, 0.18)
                         Tween(Label, {TextColor3 = THEME.TextMuted}, 0.18)
                     end
                     callback(state)
