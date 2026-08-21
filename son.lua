@@ -18,6 +18,276 @@ local GuiService = game:GetService("GuiService")
 local LocalPlayer = Players.LocalPlayer
 local StartExecutionTime = tick()
 
+local BaseURL = "https://raw.githubusercontent.com/deividcomsono/Obsidian/refs/heads/main/"
+local CustomImageManager = {}
+local CustomImageManagerAssets = {
+    TransparencyTexture = {
+        RobloxId = 139785960036434,
+        Path = "Obsidian/assets/TransparencyTexture.png",
+        URL = BaseURL .. "assets/TransparencyTexture.png",
+
+        Id = nil,
+    },
+
+    SaturationMap = {
+        RobloxId = 4155801252,
+        Path = "Obsidian/assets/SaturationMap.png",
+        URL = BaseURL .. "assets/SaturationMap.png",
+
+        Id = nil,
+    },
+
+    LoadingIcon = {
+        RobloxId = 97544096941083,
+        Path = "Obsidian/assets/LoadingIcon.png",
+        URL = BaseURL .. "assets/LoadingIcon.png",
+
+        Id = nil,
+    },
+
+    CheckIcon = {
+        RobloxId = 97682394690683,
+        Path = "Obsidian/assets/CheckIcon.png",
+        URL = BaseURL .. "assets/CheckIcon.png",
+
+        Id = nil,
+    },
+}
+do
+    local function RecursiveCreatePath(Path: string, IsFile: boolean?)
+        if not isfolder or not makefolder then
+            return
+        end
+
+        local Segments = Path:split("/")
+        local TraversedPath = ""
+
+        if IsFile then
+            table.remove(Segments, #Segments)
+        end
+
+        for _, Segment in ipairs(Segments) do
+            if not isfolder(TraversedPath .. Segment) then
+                makefolder(TraversedPath .. Segment)
+            end
+
+            TraversedPath = TraversedPath .. Segment .. "/"
+        end
+
+        return TraversedPath
+    end
+
+    function CustomImageManager.AddAsset(
+        AssetName: string,
+        RobloxAssetId: number,
+        URL: string,
+        ForceRedownload: boolean?
+    )
+        if CustomImageManagerAssets[AssetName] ~= nil then
+            error(string.format("Asset %q already exists", AssetName))
+        end
+
+        assert(typeof(RobloxAssetId) == "number", "RobloxAssetId must be a number")
+
+        CustomImageManagerAssets[AssetName] = {
+            RobloxId = RobloxAssetId,
+            Path = string.format("Obsidian/custom_assets/%s", AssetName),
+            URL = URL,
+
+            Id = nil,
+        }
+
+        CustomImageManager.DownloadAsset(AssetName, ForceRedownload)
+    end
+
+    function CustomImageManager.GetAsset(AssetName: string)
+        if not CustomImageManagerAssets[AssetName] then
+            return nil
+        end
+
+        local AssetData = CustomImageManagerAssets[AssetName]
+        if AssetData.Id then
+            return AssetData.Id
+        end
+
+        local AssetID = string.format("rbxassetid://%s", AssetData.RobloxId)
+
+        if getcustomasset then
+            local Success, NewID = pcall(getcustomasset, AssetData.Path)
+
+            if Success and NewID then
+                AssetID = NewID
+            end
+        end
+
+        AssetData.Id = AssetID
+        return AssetID
+    end
+
+    function CustomImageManager.DownloadAsset(AssetName: string, ForceRedownload: boolean?)
+        if not getcustomasset or not writefile or not isfile then
+            return false, "missing functions"
+        end
+
+        local AssetData = CustomImageManagerAssets[AssetName]
+
+        RecursiveCreatePath(AssetData.Path, true)
+
+        if ForceRedownload ~= true and isfile(AssetData.Path) then
+            return true, nil
+        end
+
+        local success, errorMessage = pcall(function()
+            writefile(AssetData.Path, game:HttpGet(AssetData.URL))
+        end)
+
+        return success, errorMessage
+    end
+
+    for AssetName, _ in CustomImageManagerAssets do
+        CustomImageManager.DownloadAsset(AssetName)
+    end
+end
+
+local function IsValidCustomIcon(Icon: string)
+    return typeof(Icon) == "string" and (Icon:match("^rbxasset://textures/") or Icon:match("roblox%.com/asset/%?id=") or Icon:match("rbxthumb://type="))
+end
+
+local function IsCustomAssetIcon(Icon: string, IncludeAssetId: boolean)
+    return typeof(Icon) == "string" and (Icon:match("^content://") or Icon:match("^rbxasset://") or (IncludeAssetId == true and Icon:match("^rbxassetid://")))
+end
+
+type Icon = {
+    Url: string,
+    Id: number,
+    IconName: string,
+    ImageRectOffset: Vector2,
+    ImageRectSize: Vector2,
+}
+
+type IconModule = {
+    Icons: { string },
+    GetAsset: (Name: string) -> Icon?,
+}
+
+local FetchIcons, Icons = pcall(function()
+    return (loadstring(
+        game:HttpGet("https://raw.githubusercontent.com/deividcomsono/lucide-roblox-direct/refs/heads/main/source.lua")
+    ) :: () -> IconModule)()
+end)
+
+local IconAliases = {
+    -- Main / Dashboard
+    ["home"] = "home",
+    ["main"] = "home",
+    ["menu"] = "menu",
+    ["dashboard"] = "layout-dashboard",
+
+    -- Combat / Aimbot / Weapons
+    ["combat"] = "swords",
+    ["sword"] = "sword",
+    ["swords"] = "swords",
+    ["aimbot"] = "crosshair",
+    ["aim"] = "crosshair",
+    ["crosshair"] = "crosshair",
+    ["target"] = "target",
+    ["gun"] = "crosshair",
+    ["silent"] = "crosshair",
+    ["trigger"] = "crosshair",
+    ["silentaim"] = "crosshair",
+    ["blacklistsilentaim"] = "user-x",
+    ["blacklist"] = "user-x",
+
+    -- Visuals / ESP / Render
+    ["visuals"] = "eye",
+    ["visual"] = "eye",
+    ["eye"] = "eye",
+    ["esp"] = "eye",
+    ["chams"] = "sparkles",
+    ["render"] = "eye",
+    ["world"] = "globe",
+    ["globe"] = "globe",
+    ["apparence"] = "palette",
+    ["appearance"] = "palette",
+
+    -- Player / Character / Movement
+    ["player"] = "user",
+    ["players"] = "users",
+    ["user"] = "user",
+    ["character"] = "user",
+    ["movement"] = "zap",
+    ["speed"] = "zap",
+    ["fly"] = "wind",
+    ["zap"] = "zap",
+    ["bolt"] = "zap",
+
+    -- Defense / Safety
+    ["shield"] = "shield",
+    ["protection"] = "shield-check",
+    ["defense"] = "shield",
+    ["lock"] = "lock",
+    ["key"] = "key",
+
+    -- Misc / Utility
+    ["misc"] = "folder",
+    ["miscellaneous"] = "folder",
+    ["folder"] = "folder",
+    ["more"] = "more-horizontal",
+    ["tools"] = "wrench",
+    ["box"] = "box",
+    ["package"] = "package",
+
+    -- Settings / Config / Themes
+    ["settings"] = "settings-2",
+    ["setting"] = "settings-2",
+    ["config"] = "file-cog",
+    ["configs"] = "file-cog",
+    ["gear"] = "settings",
+    ["cog"] = "cog",
+    ["sliders"] = "sliders",
+    ["controls"] = "sliders-horizontal",
+    ["theme"] = "palette",
+    ["themes"] = "palette",
+    ["palette"] = "palette",
+    ["color"] = "palette",
+
+    -- Scripts / Dev / Extra
+    ["code"] = "code-2",
+    ["script"] = "file-code",
+    ["scripts"] = "file-code-2",
+    ["macro"] = "terminal",
+    ["glitch"] = "zap-off",
+    ["terminal"] = "terminal",
+    ["console"] = "terminal",
+    ["flame"] = "flame",
+    ["fire"] = "flame",
+    ["skull"] = "skull",
+    ["star"] = "star",
+    ["info"] = "info",
+    ["help"] = "help-circle",
+    ["check"] = "check",
+    ["chevron-up"] = "chevron-up",
+    ["chevron-down"] = "chevron-down",
+    ["arrow"] = "chevron-down",
+}
+
+local function ApplyIcon(imageInstance, iconData)
+    if not imageInstance then return end
+    if typeof(iconData) == "table" and iconData.Url then
+        imageInstance.Image = iconData.Url
+        imageInstance.ImageRectOffset = iconData.ImageRectOffset or Vector2.zero
+        imageInstance.ImageRectSize = iconData.ImageRectSize or Vector2.zero
+    elseif typeof(iconData) == "string" then
+        imageInstance.Image = iconData
+        imageInstance.ImageRectOffset = Vector2.zero
+        imageInstance.ImageRectSize = Vector2.zero
+    else
+        imageInstance.Image = ""
+        imageInstance.ImageRectOffset = Vector2.zero
+        imageInstance.ImageRectSize = Vector2.zero
+    end
+end
+
 local Library = {
     Version = "3.4.0",
     Flags = {},
@@ -28,126 +298,115 @@ local Library = {
     Buttons = {},
     Folder = "NamelessConfigs",
     IgnoreIndexes = {},
-    Icons = {
-        -- Main / Dashboard
-        ["home"] = "rbxassetid://10723407389",
-        ["main"] = "rbxassetid://10723407389",
-        ["menu"] = "rbxassetid://10709791437",
-        ["dashboard"] = "rbxassetid://10723407389",
-        
-        -- Combat / Aimbot / Weapons
-        ["combat"] = "rbxassetid://10734975692",
-        ["sword"] = "rbxassetid://10734975692",
-        ["swords"] = "rbxassetid://10734975692",
-        ["aimbot"] = "rbxassetid://10734898124",
-        ["aim"] = "rbxassetid://10734898124",
-        ["crosshair"] = "rbxassetid://10734898124",
-        ["target"] = "rbxassetid://10734898124",
-        ["gun"] = "rbxassetid://10734898124",
-        ["silent"] = "rbxassetid://10734898124",
-        ["trigger"] = "rbxassetid://10734898124",
+    ImageManager = CustomImageManager,
+    CustomImageManager = CustomImageManager,
+    CustomImageManagerAssets = CustomImageManagerAssets,
+    ApplyIcon = function(self, imageInstance, iconData)
+        if typeof(self) ~= "table" or self ~= Library then
+            ApplyIcon(self, imageInstance)
+        else
+            ApplyIcon(imageInstance, iconData)
+        end
+    end,
+    GetIconRaw = function(IconName: string)
+        if not IconName then return nil end
+        local cleanName = tostring(IconName):lower():gsub("%s+", "")
+        local targetName = IconAliases[cleanName] or cleanName
 
-        -- Visuals / ESP / Render
-        ["visuals"] = "rbxassetid://10723346959",
-        ["visual"] = "rbxassetid://10723346959",
-        ["eye"] = "rbxassetid://10723346959",
-        ["esp"] = "rbxassetid://10723346959",
-        ["chams"] = "rbxassetid://10723346959",
-        ["render"] = "rbxassetid://10723346959",
-        ["world"] = "rbxassetid://10723395215",
-        ["globe"] = "rbxassetid://10723395215",
-
-        -- Player / Character / Movement
-        ["player"] = "rbxassetid://10747373176",
-        ["players"] = "rbxassetid://10747373176",
-        ["user"] = "rbxassetid://10747373176",
-        ["character"] = "rbxassetid://10747373176",
-        ["movement"] = "rbxassetid://10734984926",
-        ["speed"] = "rbxassetid://10734984926",
-        ["fly"] = "rbxassetid://10734984926",
-        ["zap"] = "rbxassetid://10734984926",
-        ["bolt"] = "rbxassetid://10734984926",
-
-        -- Defense / Safety
-        ["shield"] = "rbxassetid://10734966600",
-        ["protection"] = "rbxassetid://10734966600",
-        ["defense"] = "rbxassetid://10734966600",
-        ["lock"] = "rbxassetid://10723434711",
-        ["key"] = "rbxassetid://10723434711",
-
-        -- Misc / Utility
-        ["misc"] = "rbxassetid://10723387563",
-        ["miscellaneous"] = "rbxassetid://10723387563",
-        ["folder"] = "rbxassetid://10723387563",
-        ["more"] = "rbxassetid://10723387563",
-        ["tools"] = "rbxassetid://10723387563",
-        ["box"] = "rbxassetid://10709789304",
-        ["package"] = "rbxassetid://10709789304",
-
-        -- Settings / Config / Themes
-        ["settings"] = "rbxassetid://10734950309",
-        ["setting"] = "rbxassetid://10734950309",
-        ["config"] = "rbxassetid://10734950309",
-        ["configs"] = "rbxassetid://10734950309",
-        ["gear"] = "rbxassetid://10734950309",
-        ["cog"] = "rbxassetid://10734950309",
-        ["sliders"] = "rbxassetid://10734974911",
-        ["controls"] = "rbxassetid://10734974911",
-        ["theme"] = "rbxassetid://10734940232",
-        ["themes"] = "rbxassetid://10734940232",
-        ["palette"] = "rbxassetid://10734940232",
-        ["color"] = "rbxassetid://10734940232",
-
-        -- Scripts / Dev / Extra
-        ["code"] = "rbxassetid://10709790644",
-        ["script"] = "rbxassetid://10709790644",
-        ["scripts"] = "rbxassetid://10709790644",
-        ["macro"] = "rbxassetid://10709790644",
-        ["glitch"] = "rbxassetid://10723385202",
-        ["apparence"] = "rbxassetid://10723346959",
-        ["appearance"] = "rbxassetid://10723346959",
-        ["blacklist"] = "rbxassetid://10734973356",
-        ["blacklistsilentaim"] = "rbxassetid://10734973356",
-        ["silentaim"] = "rbxassetid://10734898124",
-        ["terminal"] = "rbxassetid://10734981858",
-        ["console"] = "rbxassetid://10734981858",
-        ["flame"] = "rbxassetid://10723385202",
-        ["fire"] = "rbxassetid://10723385202",
-        ["skull"] = "rbxassetid://10734973356",
-        ["star"] = "rbxassetid://10734977012",
-        ["info"] = "rbxassetid://10723415903",
-        ["help"] = "rbxassetid://10723415903"
-    },
-    GetIcon = function(self, icon, fallbackName)
-        if not icon and fallbackName then
-            local lowerName = tostring(fallbackName):lower():gsub("%s+", "")
-            if self.Icons[lowerName] then
-                return self.Icons[lowerName]
+        if FetchIcons and Icons then
+            local Success, Icon = pcall(Icons.GetAsset, targetName)
+            if Success and Icon then
+                return Icon
             end
-            for key, val in pairs(self.Icons) do
-                if lowerName:find(key) then
-                    return val
+            if targetName ~= cleanName then
+                local Success2, Icon2 = pcall(Icons.GetAsset, cleanName)
+                if Success2 and Icon2 then
+                    return Icon2
                 end
             end
         end
-        if type(icon) == "number" or (type(icon) == "string" and tonumber(icon)) then
-            return "rbxassetid://" .. tostring(icon)
-        end
-        if type(icon) == "string" then
-            if icon:find("rbxassetid://") or icon:find("http://") or icon:find("https://") then
-                return icon
-            end
-            local lowerKey = icon:lower():gsub("%s+", "")
-            if self.Icons[lowerKey] then
-                return self.Icons[lowerKey]
-            end
-            for key, val in pairs(self.Icons) do
-                if lowerKey:find(key) then
-                    return val
-                end
-            end
-        end
+
         return nil
+    end,
+    GetCustomIcon = function(selfOrIcon, maybeIcon)
+        local IconName = (type(selfOrIcon) == "table" and selfOrIcon == Library) and maybeIcon or selfOrIcon
+        if not IconName then
+            return nil
+        end
+
+        if typeof(IconName) == "table" and IconName.Url then
+            return IconName
+        end
+
+        if tonumber(IconName) then
+            IconName = string.format("rbxassetid://%s", tostring(IconName))
+        end
+
+        if typeof(IconName) == "string" and IconName:match("^https?://") then
+            if getcustomasset and writefile and game.HttpGet then
+                local FileName = "Obsidian/cache/" .. IconName:gsub("[^%w%.]", "_") .. ".png"
+                if not isfile(FileName) then
+                    pcall(function()
+                        if not isfolder("Obsidian") then makefolder("Obsidian") end
+                        if not isfolder("Obsidian/cache") then makefolder("Obsidian/cache") end
+                        writefile(FileName, game:HttpGet(IconName))
+                    end)
+                end
+
+                if isfile(FileName) then
+                    local Success, AssetId = pcall(getcustomasset, FileName)
+                    if Success then
+                        IconName = AssetId
+                    end
+                end
+            end
+        end
+
+        if IsCustomAssetIcon(IconName, true) then
+            return {
+                Url = IconName,
+                ImageRectOffset = Vector2.zero,
+                ImageRectSize = Vector2.zero,
+            }
+        elseif IsValidCustomIcon(IconName) then
+            return {
+                Url = IconName,
+                ImageRectOffset = Vector2.zero,
+                ImageRectSize = Vector2.zero,
+                Custom = true,
+            }
+        end
+
+        local LucideIcon = Library.GetIconRaw(IconName)
+        if LucideIcon then
+            return LucideIcon
+        end
+
+        return {
+            Url = tostring(IconName),
+            ImageRectOffset = Vector2.zero,
+            ImageRectSize = Vector2.zero,
+        }
+    end,
+    GetIcon = function(selfOrIcon, maybeIcon, maybeFallback)
+        local icon, fallbackName
+        if type(selfOrIcon) == "table" and (selfOrIcon.Icons or selfOrIcon == Library) then
+            icon = maybeIcon
+            fallbackName = maybeFallback
+        else
+            icon = selfOrIcon
+            fallbackName = maybeIcon
+        end
+
+        local target = icon or fallbackName
+        if not target then return nil end
+
+        return Library.GetCustomIcon(target)
+    end,
+    SetIconModule = function(selfOrModule, maybeModule)
+        local module = (type(selfOrModule) == "table" and selfOrModule == Library) and maybeModule or selfOrModule
+        FetchIcons = true
+        Icons = module
     end,
     Fonts = {
         Bold = Enum.Font.GothamBold,
@@ -626,7 +885,7 @@ function Library:CreateWindow(config)
     config = config or {}
     local windowTitle = config.Title or "Nameless"
     local windowSubtitle = config.SubTitle or "Ware"
-    local logoIcon = config.Logo or "rbxassetid://105243902490842"
+    local logoIcon = config.Logo or "https://github.com/ApparentlyZen/image-namelessWare/blob/main/165abdd521328d77324b02ce8a77e090_1780162334922.webp?raw=true"
     local footerUser = config.Footer or (LocalPlayer and (LocalPlayer.DisplayName or LocalPlayer.Name) or "User")
     local footerRank = config.FooterRight or "Lifetime"
     local windowSize = config.Size or UDim2.new(0, 680, 0, 460)
@@ -701,7 +960,7 @@ function Library:CreateWindow(config)
     BrandLogo.Size = UDim2.new(0, 26, 0, 26)
     BrandLogo.Position = UDim2.new(0, 14, 0.5, -13)
     BrandLogo.BackgroundTransparency = 1
-    BrandLogo.Image = logoIcon
+    Library.ApplyIcon(BrandLogo, Library.GetCustomIcon(logoIcon))
     BrandLogo.ImageColor3 = Color3.fromRGB(255, 255, 255)
     BrandLogo.ZIndex = 7
     BrandLogo.Parent = BrandHeader
@@ -1153,7 +1412,7 @@ function Library:CreateWindow(config)
     MobileLogoImg.Size = UDim2.new(0, 28, 0, 28)
     MobileLogoImg.Position = UDim2.new(0.5, -14, 0.5, -14)
     MobileLogoImg.BackgroundTransparency = 1
-    MobileLogoImg.Image = mobileLogo
+    Library.ApplyIcon(MobileLogoImg, Library.GetCustomIcon(mobileLogo))
     MobileLogoImg.ImageColor3 = Color3.fromRGB(255, 255, 255)
     MobileLogoImg.ZIndex = 101
     MobileLogoImg.Parent = MobileButton
@@ -1479,13 +1738,13 @@ function Library:CreateWindow(config)
         TabIndicatorCorner.Parent = TabIndicator
 
         local TabIcon
-        if resolvedIcon and resolvedIcon ~= "" then
+        if resolvedIcon and (typeof(resolvedIcon) == "table" or (typeof(resolvedIcon) == "string" and resolvedIcon ~= "")) then
             TabIcon = Instance.new("ImageLabel")
             TabIcon.Name = "TabIcon"
             TabIcon.Size = UDim2.new(0, 16, 0, 16)
             TabIcon.Position = UDim2.new(0, 15, 0.5, -8)
             TabIcon.BackgroundTransparency = 1
-            TabIcon.Image = resolvedIcon
+            Library.ApplyIcon(TabIcon, resolvedIcon)
             TabIcon.ImageColor3 = Library.Theme.TextDark
             TabIcon.ZIndex = 8
             TabIcon.Parent = TabBtn
@@ -1594,8 +1853,8 @@ function Library:CreateWindow(config)
 
             -- Smooth Header Title & Icon Slide & Fade
             if CurrentTabIcon then
-                if resolvedIcon and resolvedIcon ~= "" then
-                    CurrentTabIcon.Image = resolvedIcon
+                if resolvedIcon and (typeof(resolvedIcon) == "table" or (typeof(resolvedIcon) == "string" and resolvedIcon ~= "")) then
+                    Library.ApplyIcon(CurrentTabIcon, resolvedIcon)
                     CurrentTabIcon.Visible = true
                     CurrentTabIcon.ImageTransparency = 0.5
                     CurrentTabIcon.Position = UDim2.new(0, 10, 0.5, -8)
@@ -1988,7 +2247,7 @@ function Library:CreateWindow(config)
                     SatVal.Size = UDim2.new(1, -16, 0, 90)
                     SatVal.Position = UDim2.new(0, 8, 0, 8)
                     SatVal.BackgroundColor3 = cpDefault
-                    SatVal.Image = "rbxassetid://4155801252"
+                    SatVal.Image = CustomImageManager.GetAsset("SaturationMap") or "rbxassetid://4155801252"
                     SatVal.BorderSizePixel = 0
                     SatVal.AutoButtonColor = false
                     SatVal.ZIndex = 61
@@ -2631,7 +2890,7 @@ function Library:CreateWindow(config)
                 Arrow.AnchorPoint = Vector2.new(0.5, 0.5)
                 Arrow.Position = UDim2.new(1, -16, 0.5, 0)
                 Arrow.BackgroundTransparency = 1
-                Arrow.Image = "rbxassetid://6031091004"
+                Library.ApplyIcon(Arrow, Library.GetCustomIcon("chevron-down") or "rbxassetid://6031091004")
                 Arrow.ImageColor3 = Library.Theme.TextDark
                 Arrow.ZIndex = 12
                 Arrow.Parent = Selector
@@ -3509,7 +3768,7 @@ function Library:CreateWindow(config)
                     SatVal.Size = UDim2.new(1, -16, 0, 90)
                     SatVal.Position = UDim2.new(0, 8, 0, 8)
                     SatVal.BackgroundColor3 = cpDefault
-                    SatVal.Image = "rbxassetid://4155801252"
+                    SatVal.Image = CustomImageManager.GetAsset("SaturationMap") or "rbxassetid://4155801252"
                     SatVal.BorderSizePixel = 0
                     SatVal.AutoButtonColor = false
                     SatVal.ZIndex = 61
@@ -3832,7 +4091,7 @@ function Library:CreateWindow(config)
                 SatVal.Size = UDim2.new(1, -16, 0, 90)
                 SatVal.Position = UDim2.new(0, 8, 0, 8)
                 SatVal.BackgroundColor3 = default
-                SatVal.Image = "rbxassetid://4155801252"
+                SatVal.Image = CustomImageManager.GetAsset("SaturationMap") or "rbxassetid://4155801252"
                 SatVal.BorderSizePixel = 0
                 SatVal.AutoButtonColor = false
                 SatVal.ZIndex = 61
