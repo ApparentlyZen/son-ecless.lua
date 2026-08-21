@@ -2512,7 +2512,7 @@ function NamelessWare:CreateWindow(config)
                 PickerPanel.Parent = ColorPickerRow
 
                 local PanelCorner = Instance.new("UICorner")
-                PanelCorner.CornerRadius = UDim.new(0, 6)
+                PanelCorner.CornerRadius = UDim.new(0, 8)
                 PanelCorner.Parent = PickerPanel
 
                 local PanelStroke = Instance.new("UIStroke")
@@ -2527,20 +2527,61 @@ function NamelessWare:CreateWindow(config)
                 PanelPadding.PaddingRight = UDim.new(0, 8)
                 PanelPadding.Parent = PickerPanel
 
-                local PanelLayout = Instance.new("UIListLayout")
-                PanelLayout.Padding = UDim.new(0, 6)
-                PanelLayout.SortOrder = Enum.SortOrder.LayoutOrder
-                PanelLayout.Parent = PickerPanel
+                local currentHue, currentSat, currentVal = Color3.toHSV(currentColor)
+
+                local Wheel = Instance.new("ImageButton")
+                Wheel.Name = "ColorWheel"
+                Wheel.Size = UDim2.new(0, 82, 0, 82)
+                Wheel.Position = UDim2.new(0, 0, 0, 0)
+                Wheel.BackgroundTransparency = 1
+                Wheel.Image = "rbxassetid://6020299385"
+                Wheel.AutoButtonColor = false
+                Wheel.Parent = PickerPanel
+
+                local WheelCorner = Instance.new("UICorner")
+                WheelCorner.CornerRadius = UDim.new(1, 0)
+                WheelCorner.Parent = Wheel
+
+                local WheelStroke = Instance.new("UIStroke")
+                WheelStroke.Color = Color3.fromRGB(45, 45, 60)
+                WheelStroke.Thickness = 1.2
+                WheelStroke.Parent = Wheel
+
+                local WheelDot = Instance.new("Frame")
+                WheelDot.Name = "Dot"
+                WheelDot.Size = UDim2.new(0, 8, 0, 8)
+                WheelDot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                WheelDot.BorderSizePixel = 0
+                WheelDot.Parent = Wheel
+
+                local DotCorner = Instance.new("UICorner")
+                DotCorner.CornerRadius = UDim.new(1, 0)
+                DotCorner.Parent = WheelDot
+
+                local DotStroke = Instance.new("UIStroke")
+                DotStroke.Color = Color3.fromRGB(0, 0, 0)
+                DotStroke.Thickness = 1.2
+                DotStroke.Parent = WheelDot
+
+                local RightControls = Instance.new("Frame")
+                RightControls.Size = UDim2.new(1, -90, 0, 82)
+                RightControls.Position = UDim2.new(0, 90, 0, 0)
+                RightControls.BackgroundTransparency = 1
+                RightControls.Parent = PickerPanel
+
+                local RightLayout = Instance.new("UIListLayout")
+                RightLayout.Padding = UDim.new(0, 6)
+                RightLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                RightLayout.Parent = RightControls
 
                 local SwatchGrid = Instance.new("Frame")
-                SwatchGrid.Size = UDim2.new(1, 0, 0, 18)
+                SwatchGrid.Size = UDim2.new(1, 0, 0, 16)
                 SwatchGrid.BackgroundTransparency = 1
-                SwatchGrid.Parent = PickerPanel
+                SwatchGrid.Parent = RightControls
 
                 local GridLay = Instance.new("UIListLayout")
                 GridLay.FillDirection = Enum.FillDirection.Horizontal
                 GridLay.Padding = UDim.new(0, 4)
-                GridLay.HorizontalAlignment = Enum.HorizontalAlignment.Center
                 GridLay.Parent = SwatchGrid
 
                 local QuickColors = {
@@ -2552,19 +2593,106 @@ function NamelessWare:CreateWindow(config)
                     Color3.fromRGB(255, 45, 75),
                     Color3.fromRGB(255, 180, 35),
                     Color3.fromRGB(255, 255, 255),
-                    Color3.fromRGB(160, 160, 180),
-                    Color3.fromRGB(20, 20, 29),
                 }
 
-                local RSlider, GSlider, BSlider
+                local ValRow = Instance.new("Frame")
+                ValRow.Size = UDim2.new(1, 0, 0, 20)
+                ValRow.BackgroundTransparency = 1
+                ValRow.Parent = RightControls
+
+                local ValLabel = Instance.new("TextLabel")
+                ValLabel.Size = UDim2.new(0, 48, 1, 0)
+                ValLabel.BackgroundTransparency = 1
+                ValLabel.Text = "Light"
+                ValLabel.Font = THEME.FontMain
+                ValLabel.TextSize = 9
+                ValLabel.TextColor3 = THEME.TextMuted
+                ValLabel.TextXAlignment = Enum.TextXAlignment.Left
+                ValLabel.Parent = ValRow
+
+                local ValTrack = Instance.new("TextButton")
+                ValTrack.Size = UDim2.new(1, -52, 0, 6)
+                ValTrack.Position = UDim2.new(0, 52, 0.5, -3)
+                ValTrack.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                ValTrack.Text = ""
+                ValTrack.AutoButtonColor = false
+                ValTrack.Parent = ValRow
+
+                local ValCorner = Instance.new("UICorner")
+                ValCorner.CornerRadius = UDim.new(1, 0)
+                ValCorner.Parent = ValTrack
+
+                local ValGrad = Instance.new("UIGradient")
+                ValGrad.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
+                    ColorSequenceKeypoint.new(1, Color3.fromHSV(currentHue, currentSat, 1))
+                })
+                ValGrad.Parent = ValTrack
+
+                local ValThumb = Instance.new("Frame")
+                ValThumb.Size = UDim2.new(0, 10, 0, 10)
+                ValThumb.Position = UDim2.new(currentVal, -5, 0.5, -5)
+                ValThumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                ValThumb.BorderSizePixel = 0
+                ValThumb.Parent = ValTrack
+
+                local ValThumbCorner = Instance.new("UICorner")
+                ValThumbCorner.CornerRadius = UDim.new(1, 0)
+                ValThumbCorner.Parent = ValThumb
+
+                local ValThumbStroke = Instance.new("UIStroke")
+                ValThumbStroke.Color = Color3.fromRGB(0, 0, 0)
+                ValThumbStroke.Thickness = 1
+                ValThumbStroke.Parent = ValThumb
+
+                local PreviewBar = Instance.new("Frame")
+                PreviewBar.Size = UDim2.new(1, 0, 0, 20)
+                PreviewBar.BackgroundColor3 = currentColor
+                PreviewBar.BorderSizePixel = 0
+                PreviewBar.Parent = RightControls
+
+                local PreviewCorner = Instance.new("UICorner")
+                PreviewCorner.CornerRadius = UDim.new(0, 5)
+                PreviewCorner.Parent = PreviewBar
+
+                local PreviewStroke = Instance.new("UIStroke")
+                PreviewStroke.Color = THEME.CardBorder
+                PreviewStroke.Thickness = 1
+                PreviewStroke.Parent = PreviewBar
+
+                local PreviewHex = Instance.new("TextLabel")
+                PreviewHex.Size = UDim2.new(1, 0, 1, 0)
+                PreviewHex.BackgroundTransparency = 1
+                PreviewHex.Text = "#" .. currentColor:ToHex():upper()
+                PreviewHex.Font = THEME.FontBold
+                PreviewHex.TextSize = 9
+                PreviewHex.TextColor3 = (currentVal > 0.5) and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(255, 255, 255)
+                PreviewHex.Parent = PreviewBar
+
+                local function UpdateDotPosition()
+                    local r = currentSat * 37
+                    local angle = currentHue * math.pi * 2
+                    local x = 41 + math.cos(angle) * r - 4
+                    local y = 41 + math.sin(angle) * r - 4
+                    WheelDot.Position = UDim2.new(0, math.clamp(x, 0, 74), 0, math.clamp(y, 0, 74))
+                end
 
                 local function UpdateColor(col, triggerCallback)
                     currentColor = col
+                    currentHue, currentSat, currentVal = Color3.toHSV(col)
                     SwatchBtn.BackgroundColor3 = currentColor
                     HexLabel.Text = "#" .. currentColor:ToHex():upper()
-                    if RSlider then RSlider.Update(currentColor.R * 255) end
-                    if GSlider then GSlider.Update(currentColor.G * 255) end
-                    if BSlider then BSlider.Update(currentColor.B * 255) end
+                    PreviewBar.BackgroundColor3 = currentColor
+                    PreviewHex.Text = "#" .. currentColor:ToHex():upper()
+                    PreviewHex.TextColor3 = (currentVal > 0.5) and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(255, 255, 255)
+
+                    ValGrad.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
+                        ColorSequenceKeypoint.new(1, Color3.fromHSV(currentHue, currentSat, 1))
+                    })
+                    ValThumb.Position = UDim2.new(currentVal, -5, 0.5, -5)
+                    UpdateDotPosition()
+
                     if triggerCallback ~= false then
                         callback(currentColor)
                     end
@@ -2592,111 +2720,74 @@ function NamelessWare:CreateWindow(config)
                     end)
                 end
 
-                local function CreateRGBSlider(compName, getComp, onCompChange)
-                    local SRow = Instance.new("Frame")
-                    SRow.Size = UDim2.new(1, 0, 0, 16)
-                    SRow.BackgroundTransparency = 1
-                    SRow.Parent = PickerPanel
+                local wheelDragging = false
+                local function UpdateFromWheel(input)
+                    local center = Wheel.AbsolutePosition + Wheel.AbsoluteSize / 2
+                    local delta = Vector2.new(input.Position.X, input.Position.Y) - center
+                    local maxRadius = Wheel.AbsoluteSize.X / 2
+                    local dist = delta.Magnitude
+                    local clampedDist = math.clamp(dist, 0, maxRadius)
+                    local angle = math.atan2(delta.Y, delta.X)
+                    if angle < 0 then angle = angle + math.pi * 2 end
+                    local hue = (angle / (math.pi * 2)) % 1
+                    local sat = math.clamp(clampedDist / maxRadius, 0, 1)
 
-                    local SLabel = Instance.new("TextLabel")
-                    SLabel.Size = UDim2.new(0, 14, 1, 0)
-                    SLabel.BackgroundTransparency = 1
-                    SLabel.Text = compName
-                    SLabel.Font = THEME.FontBold
-                    SLabel.TextSize = 9
-                    SLabel.TextColor3 = THEME.TextMuted
-                    SLabel.Parent = SRow
-
-                    local STrack = Instance.new("TextButton")
-                    STrack.Size = UDim2.new(1, -45, 0, 4)
-                    STrack.Position = UDim2.new(0, 18, 0.5, -2)
-                    STrack.BackgroundColor3 = THEME.CardBg
-                    STrack.Text = ""
-                    STrack.AutoButtonColor = false
-                    STrack.Parent = SRow
-
-                    local STrackCorner = Instance.new("UICorner")
-                    STrackCorner.CornerRadius = UDim.new(1, 0)
-                    STrackCorner.Parent = STrack
-
-                    local SFill = Instance.new("Frame")
-                    SFill.Size = UDim2.new(getComp() / 255, 0, 1, 0)
-                    SFill.BackgroundColor3 = THEME.Accent
-                    SFill.BorderSizePixel = 0
-                    SFill.Parent = STrack
-
-                    local SFillCorner = Instance.new("UICorner")
-                    SFillCorner.CornerRadius = UDim.new(1, 0)
-                    SFillCorner.Parent = SFill
-
-                    local SValLabel = Instance.new("TextLabel")
-                    SValLabel.Size = UDim2.new(0, 24, 1, 0)
-                    SValLabel.Position = UDim2.new(1, -24, 0, 0)
-                    SValLabel.BackgroundTransparency = 1
-                    SValLabel.Text = tostring(math.floor(getComp()))
-                    SValLabel.Font = THEME.FontMain
-                    SValLabel.TextSize = 9
-                    SValLabel.TextColor3 = THEME.TextMain
-                    SValLabel.Parent = SRow
-
-                    local sDragging = false
-                    local function SetValFromInput(input)
-                        local p = math.clamp((input.Position.X - STrack.AbsolutePosition.X) / STrack.AbsoluteSize.X, 0, 1)
-                        local v = math.floor(p * 255)
-                        SFill.Size = UDim2.new(p, 0, 1, 0)
-                        SValLabel.Text = tostring(v)
-                        onCompChange(v)
-                    end
-
-                    STrack.InputBegan:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                            sDragging = true
-                            SetValFromInput(input)
-                        end
-                    end)
-
-                    STrack.InputEnded:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                            sDragging = false
-                        end
-                    end)
-
-                    UserInputService.InputChanged:Connect(function(input)
-                        if sDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                            SetValFromInput(input)
-                        end
-                    end)
-
-                    return {
-                        Update = function(val)
-                            local p = math.clamp(val / 255, 0, 1)
-                            SFill.Size = UDim2.new(p, 0, 1, 0)
-                            SValLabel.Text = tostring(math.floor(val))
-                        end
-                    }
+                    currentHue = hue
+                    currentSat = sat
+                    local newCol = Color3.fromHSV(currentHue, currentSat, currentVal)
+                    UpdateColor(newCol, true)
                 end
 
-                RSlider = CreateRGBSlider("R", function() return currentColor.R * 255 end, function(v)
-                    local col = Color3.fromRGB(v, math.floor(currentColor.G * 255), math.floor(currentColor.B * 255))
-                    UpdateColor(col, true)
+                Wheel.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        wheelDragging = true
+                        UpdateFromWheel(input)
+                    end
                 end)
 
-                GSlider = CreateRGBSlider("G", function() return currentColor.G * 255 end, function(v)
-                    local col = Color3.fromRGB(math.floor(currentColor.R * 255), v, math.floor(currentColor.B * 255))
-                    UpdateColor(col, true)
+                Wheel.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        wheelDragging = false
+                    end
                 end)
 
-                BSlider = CreateRGBSlider("B", function() return currentColor.B * 255 end, function(v)
-                    local col = Color3.fromRGB(math.floor(currentColor.R * 255), math.floor(currentColor.G * 255), v)
-                    UpdateColor(col, true)
+                UserInputService.InputChanged:Connect(function(input)
+                    if wheelDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                        UpdateFromWheel(input)
+                    end
+                end)
+
+                local valDragging = false
+                local function UpdateFromValTrack(input)
+                    local percent = math.clamp((input.Position.X - ValTrack.AbsolutePosition.X) / ValTrack.AbsoluteSize.X, 0, 1)
+                    currentVal = percent
+                    local newCol = Color3.fromHSV(currentHue, currentSat, currentVal)
+                    UpdateColor(newCol, true)
+                end
+
+                ValTrack.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        valDragging = true
+                        UpdateFromValTrack(input)
+                    end
+                end)
+
+                ValTrack.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        valDragging = false
+                    end
+                end)
+
+                UserInputService.InputChanged:Connect(function(input)
+                    if valDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                        UpdateFromValTrack(input)
+                    end
                 end)
 
                 local function TogglePicker()
                     isPickerOpen = not isPickerOpen
                     if isPickerOpen then
-                        RSlider.Update(currentColor.R * 255)
-                        GSlider.Update(currentColor.G * 255)
-                        BSlider.Update(currentColor.B * 255)
+                        UpdateColor(currentColor, false)
                         PickerPanel.Visible = true
                         Tween(PickerPanel, {Size = UDim2.new(1, 0, 0, 100)}, 0.18)
                         Tween(SwatchStroke, {Color = THEME.Accent}, 0.15)
