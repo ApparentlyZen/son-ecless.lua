@@ -1,9 +1,9 @@
 --[[
     ╔═══════════════════════════════════════════════════════════════════════╗
     ║                        NAMELESS WARE UI LIBRARY                       ║
-    ║         Modern Dark Acrylic & Neon Purple • High-End Cheat UI         ║
-    ║         Exact Match: Toggles, Sliders, Dropdowns, Side Tabs           ║
-    ║         100% Mobile Friendly • Touch Drag • Smooth Animations         ║
+    ║             Ultra-Aesthetic Flow Edition • Spring Animations          ║
+    ║         Gradients, Glow Effects, Accordion Dropdowns, Micro-Tweens    ║
+    ║         100% Mobile Friendly • Touch Drag • High-FPS Smooth Motion    ║
     ╚═══════════════════════════════════════════════════════════════════════╝
 ]]
 
@@ -60,9 +60,9 @@ local function FetchCustomAsset(url, fileName)
     return nil
 end
 
--- Helper: Tweening
+-- Helper: Advanced Tweening Engine
 local function Tween(obj, props, time, style, dir)
-    time = time or 0.2
+    time = time or 0.22
     style = style or Enum.EasingStyle.Quad
     dir = dir or Enum.EasingDirection.Out
     local tw = TweenService:Create(obj, TweenInfo.new(time, style, dir), props)
@@ -119,17 +119,21 @@ end
 local NamelessWare = {}
 NamelessWare.__index = NamelessWare
 
--- Premium Theme Palette
+-- Curated Neon Purple Aesthetic Palette
 local THEME = {
-    Accent = Color3.fromRGB(155, 90, 255),       -- Vibrant Purple Glow
-    AccentDark = Color3.fromRGB(120, 50, 225),
-    BgMain = Color3.fromRGB(18, 18, 25),         -- Obsidian Body
-    BgSidebar = Color3.fromRGB(14, 14, 19),      -- Dark Sidebar
-    CardBg = Color3.fromRGB(23, 23, 32),         -- Card Surface
-    CardBorder = Color3.fromRGB(36, 36, 50),     -- 1px Stroke
-    TextMain = Color3.fromRGB(245, 245, 250),
-    TextMuted = Color3.fromRGB(135, 135, 155),
-    ToggleOff = Color3.fromRGB(32, 32, 44),
+    Accent = Color3.fromRGB(155, 90, 255),          -- Electric Neon Purple
+    AccentGradient = Color3.fromRGB(185, 125, 255),  -- Gradient Top
+    AccentDark = Color3.fromRGB(115, 45, 220),      -- Deep Purple Shadow
+    BgMain = Color3.fromRGB(16, 16, 23),            -- Deep Obsidian
+    BgMainGradient = Color3.fromRGB(20, 20, 29),
+    BgSidebar = Color3.fromRGB(13, 13, 18),         -- Dark Sidebar
+    CardBg = Color3.fromRGB(22, 22, 31),            -- Card Surface
+    CardBgGradient = Color3.fromRGB(26, 26, 37),    -- Card Gradient Top
+    CardBorder = Color3.fromRGB(38, 38, 54),        -- Sleek Outline
+    CardBorderLight = Color3.fromRGB(55, 55, 78),
+    TextMain = Color3.fromRGB(245, 245, 252),
+    TextMuted = Color3.fromRGB(135, 135, 160),
+    ToggleOff = Color3.fromRGB(30, 30, 42),
     FontMain = Enum.Font.GothamMedium,
     FontBold = Enum.Font.GothamBold,
 }
@@ -143,7 +147,7 @@ function NamelessWare:CreateWindow(config)
     local AccentColor = config.Accent or THEME.Accent
     local LogoUrl = config.LogoUrl or RAW_LOGO_URL
 
-    -- Destroy existing UI
+    -- Destroy old instance
     if _G.NamelessWareInstance then
         pcall(function() _G.NamelessWareInstance:Destroy() end)
     end
@@ -158,12 +162,12 @@ function NamelessWare:CreateWindow(config)
     local customLogoAsset = FetchCustomAsset(LogoUrl, "NamelessWare_Logo.webp")
 
     ----------------------------------------------------------------------------
-    -- 📱 MOBILE FLOATING TOGGLE BUTTON
+    -- 📱 MOBILE FLOATING TOGGLE BUTTON (With Pulsing Neon Glow Ring)
     ----------------------------------------------------------------------------
     local MobileBtn = Instance.new("ImageButton")
     MobileBtn.Name = "NamelessMobileBtn"
-    MobileBtn.Size = UDim2.new(0, 48, 0, 48)
-    MobileBtn.Position = UDim2.new(0, 15, 0.5, -24)
+    MobileBtn.Size = UDim2.new(0, 50, 0, 50)
+    MobileBtn.Position = UDim2.new(0, 16, 0.5, -25)
     MobileBtn.BackgroundColor3 = THEME.BgSidebar
     MobileBtn.AutoButtonColor = false
     MobileBtn.Parent = ScreenGui
@@ -177,6 +181,17 @@ function NamelessWare:CreateWindow(config)
     MobileBtnStroke.Thickness = 2
     MobileBtnStroke.Parent = MobileBtn
 
+    -- Subtle Neon Glow for Mobile Button
+    local MobileGlow = Instance.new("ImageLabel")
+    MobileGlow.Size = UDim2.new(1, 16, 1, 16)
+    MobileGlow.Position = UDim2.new(0, -8, 0, -8)
+    MobileGlow.BackgroundTransparency = 1
+    MobileGlow.Image = "rbxassetid://10734975692"
+    MobileGlow.ImageColor3 = AccentColor
+    MobileGlow.ImageTransparency = 0.6
+    MobileGlow.ZIndex = 0
+    MobileGlow.Parent = MobileBtn
+
     if customLogoAsset then
         MobileBtn.Image = customLogoAsset
     else
@@ -185,7 +200,7 @@ function NamelessWare:CreateWindow(config)
         FallbackText.BackgroundTransparency = 1
         FallbackText.Text = "NW"
         FallbackText.Font = THEME.FontBold
-        FallbackText.TextSize = 15
+        FallbackText.TextSize = 16
         FallbackText.TextColor3 = AccentColor
         FallbackText.Parent = MobileBtn
     end
@@ -193,7 +208,7 @@ function NamelessWare:CreateWindow(config)
     MakeDraggable(MobileBtn)
 
     ----------------------------------------------------------------------------
-    -- 🖥️ MAIN WINDOW (Exact Clean Dimensions & Ratio)
+    -- 🖥️ MAIN WINDOW (With Ambient Glow & Gradient Shading)
     ----------------------------------------------------------------------------
     local MainWindow = Instance.new("Frame")
     MainWindow.Name = "MainWindow"
@@ -205,8 +220,17 @@ function NamelessWare:CreateWindow(config)
     MainWindow.Parent = ScreenGui
 
     local MainCorner = Instance.new("UICorner")
-    MainCorner.CornerRadius = UDim.new(0, 10)
+    MainCorner.CornerRadius = UDim.new(0, 12)
     MainCorner.Parent = MainWindow
+
+    -- Gradient Shading on Window Body
+    local MainGrad = Instance.new("UIGradient")
+    MainGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, THEME.BgMainGradient),
+        ColorSequenceKeypoint.new(1, THEME.BgMain)
+    })
+    MainGrad.Rotation = 90
+    MainGrad.Parent = MainWindow
 
     local MainStroke = Instance.new("UIStroke")
     MainStroke.Color = THEME.CardBorder
@@ -216,13 +240,13 @@ function NamelessWare:CreateWindow(config)
     -- Left Navigation Sidebar
     local Sidebar = Instance.new("Frame")
     Sidebar.Name = "Sidebar"
-    Sidebar.Size = UDim2.new(0, 140, 1, 0)
+    Sidebar.Size = UDim2.new(0, 145, 1, 0)
     Sidebar.BackgroundColor3 = THEME.BgSidebar
     Sidebar.BorderSizePixel = 0
     Sidebar.Parent = MainWindow
 
     local SidebarCorner = Instance.new("UICorner")
-    SidebarCorner.CornerRadius = UDim.new(0, 10)
+    SidebarCorner.CornerRadius = UDim.new(0, 12)
     SidebarCorner.Parent = Sidebar
 
     local SidebarStroke = Instance.new("UIStroke")
@@ -230,25 +254,25 @@ function NamelessWare:CreateWindow(config)
     SidebarStroke.Thickness = 1
     SidebarStroke.Parent = Sidebar
 
-    -- Brand Top Left Header
+    -- Brand Top Left Header with Glowing Box
     local BrandFrame = Instance.new("Frame")
-    BrandFrame.Size = UDim2.new(1, 0, 0, 48)
+    BrandFrame.Size = UDim2.new(1, 0, 0, 50)
     BrandFrame.BackgroundTransparency = 1
     BrandFrame.Parent = Sidebar
 
     local LogoBox = Instance.new("Frame")
-    LogoBox.Size = UDim2.new(0, 24, 0, 24)
-    LogoBox.Position = UDim2.new(0, 12, 0.5, -12)
+    LogoBox.Size = UDim2.new(0, 26, 0, 26)
+    LogoBox.Position = UDim2.new(0, 12, 0.5, -13)
     LogoBox.BackgroundColor3 = THEME.CardBg
     LogoBox.Parent = BrandFrame
 
     local LogoBoxCorner = Instance.new("UICorner")
-    LogoBoxCorner.CornerRadius = UDim.new(0, 6)
+    LogoBoxCorner.CornerRadius = UDim.new(0, 7)
     LogoBoxCorner.Parent = LogoBox
 
     local LogoGlow = Instance.new("UIStroke")
     LogoGlow.Color = AccentColor
-    LogoGlow.Thickness = 1
+    LogoGlow.Thickness = 1.2
     LogoGlow.Parent = LogoBox
 
     if customLogoAsset then
@@ -265,14 +289,14 @@ function NamelessWare:CreateWindow(config)
         LogoTxt.BackgroundTransparency = 1
         LogoTxt.Text = "NW"
         LogoTxt.Font = THEME.FontBold
-        LogoTxt.TextSize = 11
+        LogoTxt.TextSize = 12
         LogoTxt.TextColor3 = AccentColor
         LogoTxt.Parent = LogoBox
     end
 
     local BrandTitle = Instance.new("TextLabel")
-    BrandTitle.Size = UDim2.new(1, -45, 1, 0)
-    BrandTitle.Position = UDim2.new(0, 42, 0, 0)
+    BrandTitle.Size = UDim2.new(1, -48, 1, 0)
+    BrandTitle.Position = UDim2.new(0, 44, 0, 0)
     BrandTitle.BackgroundTransparency = 1
     BrandTitle.Text = Title
     BrandTitle.Font = THEME.FontBold
@@ -298,11 +322,11 @@ function NamelessWare:CreateWindow(config)
     NavLayout.SortOrder = Enum.SortOrder.LayoutOrder
     NavLayout.Parent = NavScroll
 
-    -- Top Header in Content Area
+    -- Top Header in Content Area (With dynamic animated titles)
     local HeaderFrame = Instance.new("Frame")
     HeaderFrame.Name = "HeaderFrame"
-    HeaderFrame.Size = UDim2.new(1, -150, 0, 45)
-    HeaderFrame.Position = UDim2.new(0, 146, 0, 5)
+    HeaderFrame.Size = UDim2.new(1, -155, 0, 45)
+    HeaderFrame.Position = UDim2.new(0, 150, 0, 5)
     HeaderFrame.BackgroundTransparency = 1
     HeaderFrame.Parent = MainWindow
 
@@ -330,19 +354,36 @@ function NamelessWare:CreateWindow(config)
 
     MakeDraggable(MainWindow, HeaderFrame)
 
-    -- Content Container (Holds Tab Pages)
+    -- Content Container (Holds Tab Pages with smooth fading transitions)
     local ContentArea = Instance.new("Frame")
     ContentArea.Name = "ContentArea"
-    ContentArea.Size = UDim2.new(1, -150, 1, -55)
-    ContentArea.Position = UDim2.new(0, 146, 0, 50)
+    ContentArea.Size = UDim2.new(1, -155, 1, -55)
+    ContentArea.Position = UDim2.new(0, 150, 0, 50)
     ContentArea.BackgroundTransparency = 1
     ContentArea.Parent = MainWindow
 
-    -- Mobile Toggle
+    -- Mobile Toggle with Spring / Pop Animation
     local isUIOpen = true
-    MobileBtn.MouseButton1Click:Connect(function()
+    local function ToggleUI()
         isUIOpen = not isUIOpen
-        MainWindow.Visible = isUIOpen
+        if isUIOpen then
+            MainWindow.Visible = true
+            MainWindow.Position = UDim2.new(0.5, -290, 0.5, -170)
+            Tween(MainWindow, {Position = UDim2.new(0.5, -290, 0.5, -205)}, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            Tween(MobileBtn, {Size = UDim2.new(0, 50, 0, 50)}, 0.15)
+        else
+            Tween(MainWindow, {Position = UDim2.new(0.5, -290, 0.5, -170)}, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+            task.wait(0.2)
+            if not isUIOpen then
+                MainWindow.Visible = false
+            end
+        end
+    end
+
+    MobileBtn.MouseButton1Click:Connect(function()
+        Tween(MobileBtn, {Size = UDim2.new(0, 44, 0, 44)}, 0.08)
+        task.wait(0.08)
+        ToggleUI()
     end)
 
     local Window = {
@@ -363,16 +404,16 @@ function NamelessWare:CreateWindow(config)
         local Cat = Instance.new("TextLabel")
         Cat.Size = UDim2.new(1, 0, 0, 22)
         Cat.BackgroundTransparency = 1
-        Cat.Text = "  " .. catName
+        Cat.Text = "  " .. string.upper(catName)
         Cat.Font = THEME.FontBold
-        Cat.TextSize = 10
-        Cat.TextColor3 = THEME.TextMuted
+        Cat.TextSize = 9
+        Cat.TextColor3 = Color3.fromRGB(110, 110, 135)
         Cat.TextXAlignment = Enum.TextXAlignment.Left
         Cat.Parent = NavScroll
     end
 
     ----------------------------------------------------------------------------
-    -- 📑 CREATE TAB (Icon + Label in Sidebar)
+    -- 📑 CREATE TAB (With Glowing Capsule & Hover Tween)
     ----------------------------------------------------------------------------
     function Window:CreateTab(tabConfig)
         tabConfig = tabConfig or {}
@@ -381,7 +422,7 @@ function NamelessWare:CreateWindow(config)
         local subText = tabConfig.Subtitle or (name .. " - default hotkeys")
 
         local TabBtn = Instance.new("TextButton")
-        TabBtn.Size = UDim2.new(1, 0, 0, 30)
+        TabBtn.Size = UDim2.new(1, 0, 0, 32)
         TabBtn.BackgroundColor3 = AccentColor
         TabBtn.BackgroundTransparency = 1
         TabBtn.Text = ""
@@ -389,20 +430,28 @@ function NamelessWare:CreateWindow(config)
         TabBtn.Parent = NavScroll
 
         local TabBtnCorner = Instance.new("UICorner")
-        TabBtnCorner.CornerRadius = UDim.new(0, 6)
+        TabBtnCorner.CornerRadius = UDim.new(0, 7)
         TabBtnCorner.Parent = TabBtn
 
+        local TabGrad = Instance.new("UIGradient")
+        TabGrad.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, THEME.AccentGradient),
+            ColorSequenceKeypoint.new(1, THEME.AccentDark)
+        })
+        TabGrad.Rotation = 90
+        TabGrad.Parent = TabBtn
+
         local TabIcon = Instance.new("ImageLabel")
-        TabIcon.Size = UDim2.new(0, 15, 0, 15)
-        TabIcon.Position = UDim2.new(0, 8, 0.5, -7.5)
+        TabIcon.Size = UDim2.new(0, 16, 0, 16)
+        TabIcon.Position = UDim2.new(0, 9, 0.5, -8)
         TabIcon.BackgroundTransparency = 1
         TabIcon.Image = iconId
         TabIcon.ImageColor3 = THEME.TextMuted
         TabIcon.Parent = TabBtn
 
         local TabLabel = Instance.new("TextLabel")
-        TabLabel.Size = UDim2.new(1, -30, 1, 0)
-        TabLabel.Position = UDim2.new(0, 28, 0, 0)
+        TabLabel.Size = UDim2.new(1, -32, 1, 0)
+        TabLabel.Position = UDim2.new(0, 30, 0, 0)
         TabLabel.BackgroundTransparency = 1
         TabLabel.Text = name
         TabLabel.Font = THEME.FontMain
@@ -411,7 +460,7 @@ function NamelessWare:CreateWindow(config)
         TabLabel.TextXAlignment = Enum.TextXAlignment.Left
         TabLabel.Parent = TabBtn
 
-        -- Tab Content Scrolling Frame (2 Columns Grid)
+        -- Content Page with 2-Column Grid
         local TabPage = Instance.new("ScrollingFrame")
         TabPage.Name = name .. "_Page"
         TabPage.Size = UDim2.new(1, 0, 1, 0)
@@ -435,20 +484,47 @@ function NamelessWare:CreateWindow(config)
         ColumnsLayout.SortOrder = Enum.SortOrder.LayoutOrder
         ColumnsLayout.Parent = ColumnsHolder
 
+        local isCurrentTab = false
+
         local function ActivateTab()
             for _, t in pairs(Window.Tabs) do
                 t.Page.Visible = false
+                t.IsActive = false
                 Tween(t.Button, {BackgroundTransparency = 1}, 0.2)
                 Tween(t.Label, {TextColor3 = THEME.TextMuted}, 0.2)
                 Tween(t.Icon, {ImageColor3 = THEME.TextMuted}, 0.2)
             end
+
             TabPage.Visible = true
+            isCurrentTab = true
             HeaderTabTitle.Text = name
             HeaderTabSub.Text = subText
-            Tween(TabBtn, {BackgroundTransparency = 0, BackgroundColor3 = AccentColor}, 0.2)
+
+            -- Smooth Spring Slide for Content Page
+            TabPage.Position = UDim2.new(0, 10, 0, 0)
+            Tween(TabPage, {Position = UDim2.new(0, 0, 0, 0)}, 0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+            Tween(TabBtn, {BackgroundTransparency = 0}, 0.2)
             Tween(TabLabel, {TextColor3 = Color3.fromRGB(255, 255, 255)}, 0.2)
             Tween(TabIcon, {ImageColor3 = Color3.fromRGB(255, 255, 255)}, 0.2)
         end
+
+        -- Hover Animations for Tab Buttons
+        TabBtn.MouseEnter:Connect(function()
+            if not isCurrentTab then
+                Tween(TabBtn, {BackgroundTransparency = 0.8}, 0.2)
+                Tween(TabLabel, {TextColor3 = THEME.TextMain}, 0.2)
+                Tween(TabIcon, {ImageColor3 = THEME.TextMain}, 0.2)
+            end
+        end)
+
+        TabBtn.MouseLeave:Connect(function()
+            if not isCurrentTab then
+                Tween(TabBtn, {BackgroundTransparency = 1}, 0.2)
+                Tween(TabLabel, {TextColor3 = THEME.TextMuted}, 0.2)
+                Tween(TabIcon, {ImageColor3 = THEME.TextMuted}, 0.2)
+            end
+        end)
 
         TabBtn.MouseButton1Click:Connect(ActivateTab)
 
@@ -456,7 +532,8 @@ function NamelessWare:CreateWindow(config)
             Button = TabBtn,
             Label = TabLabel,
             Icon = TabIcon,
-            Page = TabPage
+            Page = TabPage,
+            IsActive = isCurrentTab
         }
         table.insert(Window.Tabs, TabObject)
 
@@ -468,7 +545,7 @@ function NamelessWare:CreateWindow(config)
         local TabMethods = {}
 
         ------------------------------------------------------------------------
-        -- 🗃️ CREATE SECTION / CARD (Left or Right Column)
+        -- 🗃️ CREATE SECTION / CARD (With Gradient Background & Sleek Border)
         ------------------------------------------------------------------------
         function TabMethods:CreateSection(secTitle, secIcon)
             local Card = Instance.new("Frame")
@@ -479,8 +556,16 @@ function NamelessWare:CreateWindow(config)
             Card.Parent = ColumnsHolder
 
             local CardCorner = Instance.new("UICorner")
-            CardCorner.CornerRadius = UDim.new(0, 8)
+            CardCorner.CornerRadius = UDim.new(0, 9)
             CardCorner.Parent = Card
+
+            local CardGrad = Instance.new("UIGradient")
+            CardGrad.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, THEME.CardBgGradient),
+                ColorSequenceKeypoint.new(1, THEME.CardBg)
+            })
+            CardGrad.Rotation = 90
+            CardGrad.Parent = Card
 
             local CardStroke = Instance.new("UIStroke")
             CardStroke.Color = THEME.CardBorder
@@ -488,10 +573,10 @@ function NamelessWare:CreateWindow(config)
             CardStroke.Parent = Card
 
             local CardPadding = Instance.new("UIPadding")
-            CardPadding.PaddingTop = UDim.new(0, 8)
-            CardPadding.PaddingBottom = UDim.new(0, 8)
-            CardPadding.PaddingLeft = UDim.new(0, 10)
-            CardPadding.PaddingRight = UDim.new(0, 10)
+            CardPadding.PaddingTop = UDim.new(0, 9)
+            CardPadding.PaddingBottom = UDim.new(0, 9)
+            CardPadding.PaddingLeft = UDim.new(0, 11)
+            CardPadding.PaddingRight = UDim.new(0, 11)
             CardPadding.Parent = Card
 
             local CardLayout = Instance.new("UIListLayout")
@@ -553,7 +638,7 @@ function NamelessWare:CreateWindow(config)
                 SubText.Parent = SubHeader
             end
 
-            -- 1. TOGGLE (Capsule Switch + Optional Keybind Badge)
+            -- 1. TOGGLE (Neon Capsule Switch with Spring Pulse)
             function Controls:AddToggle(cfg)
                 cfg = cfg or {}
                 local name = cfg.Name or "Toggle"
@@ -588,8 +673,13 @@ function NamelessWare:CreateWindow(config)
                     KeyBadge.Parent = Row
 
                     local KCorner = Instance.new("UICorner")
-                    KCorner.CornerRadius = UDim.new(0, 3)
+                    KCorner.CornerRadius = UDim.new(0, 4)
                     KCorner.Parent = KeyBadge
+
+                    local KStroke = Instance.new("UIStroke")
+                    KStroke.Color = THEME.CardBorder
+                    KStroke.Thickness = 1
+                    KStroke.Parent = KeyBadge
                 end
 
                 local Switch = Instance.new("TextButton")
@@ -618,7 +708,7 @@ function NamelessWare:CreateWindow(config)
                     state = newVal
                     if state then
                         Tween(Switch, {BackgroundColor3 = AccentColor}, 0.2)
-                        Tween(Dot, {Position = UDim2.new(1, -15, 0.5, -6)}, 0.2)
+                        Tween(Dot, {Position = UDim2.new(1, -15, 0.5, -6)}, 0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
                         Tween(Label, {TextColor3 = THEME.TextMain}, 0.2)
                     else
                         Tween(Switch, {BackgroundColor3 = THEME.ToggleOff}, 0.2)
@@ -629,13 +719,17 @@ function NamelessWare:CreateWindow(config)
                 end
 
                 Switch.MouseButton1Click:Connect(function()
+                    -- Spring bounce on knob
+                    Tween(Dot, {Size = UDim2.new(0, 14, 0, 14)}, 0.08)
+                    task.wait(0.08)
+                    Tween(Dot, {Size = UDim2.new(0, 12, 0, 12)}, 0.1)
                     SetState(not state)
                 end)
 
                 return {Set = SetState}
             end
 
-            -- 2. SLIDER (Dual Value Display & Touch Drag)
+            -- 2. SLIDER (Dual Value Display & Interactive Glowing Track)
             function Controls:AddSlider(cfg)
                 cfg = cfg or {}
                 local name = cfg.Name or "Slider"
@@ -694,13 +788,20 @@ function NamelessWare:CreateWindow(config)
                 FillCorner.CornerRadius = UDim.new(1, 0)
                 FillCorner.Parent = Fill
 
+                local FillGrad = Instance.new("UIGradient")
+                FillGrad.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, THEME.AccentGradient),
+                    ColorSequenceKeypoint.new(1, THEME.Accent)
+                })
+                FillGrad.Parent = Fill
+
                 local dragging = false
                 local function Update(input)
                     local absPos = Track.AbsolutePosition.X
                     local absSize = Track.AbsoluteSize.X
                     local pct = math.clamp((input.Position.X - absPos) / absSize, 0, 1)
                     value = math.floor(min + (max - min) * pct)
-                    Fill.Size = UDim2.new(pct, 0, 1, 0)
+                    Tween(Fill, {Size = UDim2.new(pct, 0, 1, 0)}, 0.05)
                     ValLabel.Text = maxFormat and (tostring(value) .. " / " .. tostring(max)) or (tostring(value) .. suffix)
                     callback(value)
                 end
@@ -708,6 +809,7 @@ function NamelessWare:CreateWindow(config)
                 Track.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         dragging = true
+                        Tween(ValLabel, {TextColor3 = AccentColor}, 0.2)
                         Update(input)
                     end
                 end)
@@ -715,6 +817,7 @@ function NamelessWare:CreateWindow(config)
                 UserInputService.InputEnded:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         dragging = false
+                        Tween(ValLabel, {TextColor3 = THEME.TextMuted}, 0.2)
                     end
                 end)
 
@@ -725,7 +828,7 @@ function NamelessWare:CreateWindow(config)
                 end)
             end
 
-            -- 3. DROPDOWN (Sleek Inline Box)
+            -- 3. DROPDOWN (With Smooth Accordion Expansion & Hover Effects)
             function Controls:AddDropdown(cfg)
                 cfg = cfg or {}
                 local name = cfg.Name or "Dropdown"
@@ -762,20 +865,26 @@ function NamelessWare:CreateWindow(config)
                 DropBtn.Parent = DropFrame
 
                 local DropCorner = Instance.new("UICorner")
-                DropCorner.CornerRadius = UDim.new(0, 4)
+                DropCorner.CornerRadius = UDim.new(0, 5)
                 DropCorner.Parent = DropBtn
 
+                local DropStroke = Instance.new("UIStroke")
+                DropStroke.Color = THEME.CardBorder
+                DropStroke.Thickness = 1
+                DropStroke.Parent = DropBtn
+
                 local MenuList = Instance.new("Frame")
-                MenuList.Size = UDim2.new(1, 0, 0, #options * 22)
+                MenuList.Size = UDim2.new(1, 0, 0, #options * 24)
                 MenuList.Position = UDim2.new(0, 0, 1, 3)
                 MenuList.BackgroundColor3 = THEME.BgMain
                 MenuList.BorderSizePixel = 0
                 MenuList.Visible = false
+                MenuList.ClipsDescendants = true
                 MenuList.ZIndex = 30
                 MenuList.Parent = DropBtn
 
                 local MenuCorner = Instance.new("UICorner")
-                MenuCorner.CornerRadius = UDim.new(0, 4)
+                MenuCorner.CornerRadius = UDim.new(0, 6)
                 MenuCorner.Parent = MenuList
 
                 local MenuStroke = Instance.new("UIStroke")
@@ -788,7 +897,7 @@ function NamelessWare:CreateWindow(config)
 
                 for _, opt in ipairs(options) do
                     local OptItem = Instance.new("TextButton")
-                    OptItem.Size = UDim2.new(1, 0, 0, 22)
+                    OptItem.Size = UDim2.new(1, 0, 0, 24)
                     OptItem.BackgroundTransparency = 1
                     OptItem.Text = "  " .. opt
                     OptItem.Font = THEME.FontMain
@@ -796,12 +905,22 @@ function NamelessWare:CreateWindow(config)
                     OptItem.TextColor3 = (opt == selected) and AccentColor or THEME.TextMuted
                     OptItem.TextXAlignment = Enum.TextXAlignment.Left
                     OptItem.ZIndex = 31
+                    OptItem.AutoButtonColor = false
                     OptItem.Parent = MenuList
+
+                    OptItem.MouseEnter:Connect(function()
+                        Tween(OptItem, {BackgroundTransparency = 0.8, TextColor3 = THEME.TextMain}, 0.15)
+                    end)
+
+                    OptItem.MouseLeave:Connect(function()
+                        Tween(OptItem, {BackgroundTransparency = 1, TextColor3 = (opt == selected) and AccentColor or THEME.TextMuted}, 0.15)
+                    end)
 
                     OptItem.MouseButton1Click:Connect(function()
                         selected = opt
                         DropBtn.Text = selected .. " ▾"
                         MenuList.Visible = false
+                        open = false
                         callback(selected)
                     end)
                 end
@@ -809,17 +928,21 @@ function NamelessWare:CreateWindow(config)
                 DropBtn.MouseButton1Click:Connect(function()
                     open = not open
                     MenuList.Visible = open
+                    if open then
+                        MenuList.Size = UDim2.new(1, 0, 0, 0)
+                        Tween(MenuList, {Size = UDim2.new(1, 0, 0, #options * 24)}, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+                    end
                 end)
             end
 
-            -- 4. BUTTON
+            -- 4. BUTTON (Interactive Ripple & Bounce Effect)
             function Controls:AddButton(cfg)
                 cfg = cfg or {}
                 local text = cfg.Name or "Button"
                 local callback = cfg.Callback or function() end
 
                 local Btn = Instance.new("TextButton")
-                Btn.Size = UDim2.new(1, 0, 0, 26)
+                Btn.Size = UDim2.new(1, 0, 0, 28)
                 Btn.BackgroundColor3 = THEME.BgSidebar
                 Btn.Text = text
                 Btn.Font = THEME.FontMain
@@ -829,13 +952,23 @@ function NamelessWare:CreateWindow(config)
                 Btn.Parent = Card
 
                 local BtnCorner = Instance.new("UICorner")
-                BtnCorner.CornerRadius = UDim.new(0, 4)
+                BtnCorner.CornerRadius = UDim.new(0, 6)
                 BtnCorner.Parent = Btn
 
                 local BtnStroke = Instance.new("UIStroke")
                 BtnStroke.Color = THEME.CardBorder
                 BtnStroke.Thickness = 1
                 BtnStroke.Parent = Btn
+
+                Btn.MouseEnter:Connect(function()
+                    Tween(Btn, {BackgroundColor3 = THEME.CardBg}, 0.2)
+                    Tween(BtnStroke, {Color = AccentColor}, 0.2)
+                end)
+
+                Btn.MouseLeave:Connect(function()
+                    Tween(Btn, {BackgroundColor3 = THEME.BgSidebar}, 0.2)
+                    Tween(BtnStroke, {Color = THEME.CardBorder}, 0.2)
+                end)
 
                 Btn.MouseButton1Click:Connect(function()
                     Tween(Btn, {BackgroundColor3 = AccentColor}, 0.1)
