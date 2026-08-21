@@ -426,6 +426,7 @@ function NamelessWare:CreateWindow(config)
     ContentArea.Parent = MainWindow
 
     local isUIOpen = true
+    local ActiveDropdown = nil
     local function ToggleUI()
         isUIOpen = not isUIOpen
         if isUIOpen then
@@ -760,7 +761,7 @@ function NamelessWare:CreateWindow(config)
                 BoxCorner.Parent = BoxFrame
 
                 local BoxStroke = Instance.new("UIStroke")
-                BoxStroke.Color = state and THEME.AccentGradient or THEME.CircleOffBorder
+                BoxStrokea.Color = state and THEME.AccentGradient or THEME.CircleOffBorder
                 BoxStroke.Thickness = 1.2
                 BoxStroke.Parent = BoxFrame
 
@@ -952,6 +953,7 @@ function NamelessWare:CreateWindow(config)
                 local DropFrame = Instance.new("Frame")
                 DropFrame.Size = UDim2.new(1, 0, 0, 32)
                 DropFrame.BackgroundTransparency = 1
+                DropFrame.ZIndex = 1
                 DropFrame.Parent = Card
                 table.insert(RegisteredItems, {Name = name, Element = DropFrame, Card = Card})
 
@@ -971,6 +973,7 @@ function NamelessWare:CreateWindow(config)
                 DropBtn.BackgroundColor3 = THEME.BgSidebar
                 DropBtn.Text = ""
                 DropBtn.AutoButtonColor = false
+                DropBtn.ZIndex = 1
                 DropBtn.Parent = DropFrame
 
                 local DropCorner = Instance.new("UICorner")
@@ -991,6 +994,7 @@ function NamelessWare:CreateWindow(config)
                 BtnText.TextSize = 10
                 BtnText.TextColor3 = THEME.TextMain
                 BtnText.TextXAlignment = Enum.TextXAlignment.Left
+                BtnText.ZIndex = 2
                 BtnText.Parent = DropBtn
 
                 local Arrow = Instance.new("TextLabel")
@@ -1001,6 +1005,7 @@ function NamelessWare:CreateWindow(config)
                 Arrow.Font = THEME.FontBold
                 Arrow.TextSize = 9
                 Arrow.TextColor3 = THEME.TextMuted
+                Arrow.ZIndex = 2
                 Arrow.Parent = DropBtn
 
                 local MenuList = Instance.new("Frame")
@@ -1010,7 +1015,7 @@ function NamelessWare:CreateWindow(config)
                 MenuList.BorderSizePixel = 0
                 MenuList.Visible = false
                 MenuList.ClipsDescendants = false
-                MenuList.ZIndex = 30
+                MenuList.ZIndex = 10
                 MenuList.Parent = DropBtn
 
                 local MenuShadow = Instance.new("ImageLabel")
@@ -1022,7 +1027,7 @@ function NamelessWare:CreateWindow(config)
                 MenuShadow.ImageTransparency = 0.35
                 MenuShadow.ScaleType = Enum.ScaleType.Slice
                 MenuShadow.SliceCenter = Rect.new(24, 24, 276, 276)
-                MenuShadow.ZIndex = 29
+                MenuShadow.ZIndex = 9
                 MenuShadow.Parent = MenuList
 
                 local MenuCorner = Instance.new("UICorner")
@@ -1038,7 +1043,7 @@ function NamelessWare:CreateWindow(config)
                 MenuScroll.Size = UDim2.new(1, 0, 1, 0)
                 MenuScroll.BackgroundTransparency = 1
                 MenuScroll.ClipsDescendants = true
-                MenuScroll.ZIndex = 30
+                MenuScroll.ZIndex = 10
                 MenuScroll.Parent = MenuList
 
                 local MenuScrollCorner = Instance.new("UICorner")
@@ -1047,6 +1052,47 @@ function NamelessWare:CreateWindow(config)
 
                 local MenuLayout = Instance.new("UIListLayout")
                 MenuLayout.Parent = MenuScroll
+
+                local CloseThisDropdown = nil
+
+                local function SetOpen(v)
+                    open = v
+                    if open then
+                        if ActiveDropdown and ActiveDropdown ~= CloseThisDropdown then
+                            ActiveDropdown()
+                        end
+                        ActiveDropdown = CloseThisDropdown
+                        DropFrame.ZIndex = 50
+                        DropBtn.ZIndex = 51
+                        Card.ZIndex = 25
+                        MenuList.Visible = true
+                        Arrow.Text = "^"
+                        Tween(DropStroke, {Color = AccentColor}, 0.2)
+                        MenuList.Size = UDim2.new(1, 0, 0, 0)
+                        Tween(MenuList, {Size = UDim2.new(1, 0, 0, #options * 26)}, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+                    else
+                        if ActiveDropdown == CloseThisDropdown then
+                            ActiveDropdown = nil
+                        end
+                        Arrow.Text = "v"
+                        Tween(DropStroke, {Color = THEME.CardBorder}, 0.2)
+                        local tw = Tween(MenuList, {Size = UDim2.new(1, 0, 0, 0)}, 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+                        tw.Completed:Connect(function()
+                            if not open then
+                                MenuList.Visible = false
+                                DropFrame.ZIndex = 1
+                                DropBtn.ZIndex = 1
+                                Card.ZIndex = 1
+                            end
+                        end)
+                    end
+                end
+
+                CloseThisDropdown = function()
+                    if open then
+                        SetOpen(false)
+                    end
+                end
 
                 for _, opt in ipairs(options) do
                     local OptItem = Instance.new("TextButton")
@@ -1057,7 +1103,7 @@ function NamelessWare:CreateWindow(config)
                     OptItem.TextSize = 10
                     OptItem.TextColor3 = (opt == selected) and AccentColor or THEME.TextMuted
                     OptItem.TextXAlignment = Enum.TextXAlignment.Left
-                    OptItem.ZIndex = 31
+                    OptItem.ZIndex = 11
                     OptItem.AutoButtonColor = false
                     OptItem.Parent = MenuScroll
 
@@ -1072,25 +1118,13 @@ function NamelessWare:CreateWindow(config)
                     OptItem.MouseButton1Click:Connect(function()
                         selected = opt
                         BtnText.Text = selected
-                        MenuList.Visible = false
-                        open = false
-                        Arrow.Text = "v"
-                        Tween(DropStroke, {Color = THEME.CardBorder}, 0.2)
+                        SetOpen(false)
                         callback(selected)
                     end)
                 end
 
                 DropBtn.MouseButton1Click:Connect(function()
-                    open = not open
-                    MenuList.Visible = open
-                    Arrow.Text = open and "^" or "v"
-                    if open then
-                        Tween(DropStroke, {Color = AccentColor}, 0.2)
-                        MenuList.Size = UDim2.new(1, 0, 0, 0)
-                        Tween(MenuList, {Size = UDim2.new(1, 0, 0, #options * 26)}, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-                    else
-                        Tween(DropStroke, {Color = THEME.CardBorder}, 0.2)
-                    end
+                    SetOpen(not open)
                 end)
             end
 
