@@ -1820,8 +1820,13 @@ function NamelessWare:CreateWindow(config)
                     ColorBox.Parent = RightHold
 
                     local ColorCorner = Instance.new("UICorner")
-                    ColorCorner.CornerRadius = UDim.new(0, 3)
+                    ColorCorner.CornerRadius = UDim.new(1, 0)
                     ColorCorner.Parent = ColorBox
+
+                    local ColorStroke = Instance.new("UIStroke")
+                    ColorStroke.Color = Color3.fromRGB(55, 55, 75)
+                    ColorStroke.Thickness = 1
+                    ColorStroke.Parent = ColorBox
                 end
 
                 local Circle = Instance.new("Frame")
@@ -2470,24 +2475,24 @@ function NamelessWare:CreateWindow(config)
                 SwatchHolder.Parent = HeaderRow
 
                 local SwatchBtn = Instance.new("TextButton")
-                SwatchBtn.Size = UDim2.new(0, 26, 0, 16)
-                SwatchBtn.Position = UDim2.new(1, -26, 0.5, -8)
+                SwatchBtn.Size = UDim2.new(0, 16, 0, 16)
+                SwatchBtn.Position = UDim2.new(1, -16, 0.5, -8)
                 SwatchBtn.BackgroundColor3 = currentColor
                 SwatchBtn.Text = ""
                 SwatchBtn.AutoButtonColor = false
                 SwatchBtn.Parent = SwatchHolder
 
                 local SwatchCorner = Instance.new("UICorner")
-                SwatchCorner.CornerRadius = UDim.new(0, 4)
+                SwatchCorner.CornerRadius = UDim.new(1, 0)
                 SwatchCorner.Parent = SwatchBtn
 
                 local SwatchStroke = Instance.new("UIStroke")
                 SwatchStroke.Color = THEME.CardBorder
-                SwatchStroke.Thickness = 1
+                SwatchStroke.Thickness = 1.5
                 SwatchStroke.Parent = SwatchBtn
 
                 local HexLabel = Instance.new("TextLabel")
-                HexLabel.Size = UDim2.new(1, -32, 1, 0)
+                HexLabel.Size = UDim2.new(1, -22, 1, 0)
                 HexLabel.Position = UDim2.new(0, 0, 0, 0)
                 HexLabel.BackgroundTransparency = 1
                 HexLabel.Text = "#" .. currentColor:ToHex():upper()
