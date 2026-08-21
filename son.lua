@@ -1,11 +1,11 @@
 --[[
     ╔═══════════════════════════════════════════════════════════════════════╗
-    ║                 NAMELESS WARE UI LIBRARY - BUG FIX V3                 ║
-    ║  - Fixed Unicode Box Glitch on Dropdowns (Replaced with Custom Icon)  ║
-    ║  - Replaced Capsule Toggles with True Round Color-Morphing Circles    ║
-    ║  - Fixed Slider Overlap & Added Visible Glowing Circle Thumbs         ║
-    ║  - Fixed Text Clipping & Sidebar Title Breathing Room                 ║
-    ║  - Fixed Card Scrolling & Bottom Clipping                             ║
+    ║                        NAMELESS WARE UI LIBRARY                       ║
+    ║                   👑 FLOW EDITION - CLEAN POLISH                      ║
+    ║         - Removed the white inner dot from toggles (Clean Solid Glow) ║
+    ║         - Sleek Solid Purple Circle or Crisp Checkmark on Active      ║
+    ║         - Proportional Clean Sliders with Smooth Touch Control        ║
+    ║         - Extended Height (445px) & Smooth Scrolling - Zero Clipping  ║
     ╚═══════════════════════════════════════════════════════════════════════╝
 ]]
 
@@ -64,7 +64,7 @@ end
 
 -- Helper: Advanced Tweening Engine
 local function Tween(obj, props, time, style, dir)
-    time = time or 0.2
+    time = time or 0.18
     style = style or Enum.EasingStyle.Quad
     dir = dir or Enum.EasingDirection.Out
     local tw = TweenService:Create(obj, TweenInfo.new(time, style, dir), props)
@@ -116,7 +116,7 @@ local function MakeDraggable(frame, handle)
 end
 
 --------------------------------------------------------------------------------
--- 👑 NAMELESS WARE ENGINE
+-- 👑 NAMELESS WARE ENGINE - FLOW EDITION
 --------------------------------------------------------------------------------
 local NamelessWare = {}
 NamelessWare.__index = NamelessWare
@@ -199,12 +199,12 @@ function NamelessWare:CreateWindow(config)
     MakeDraggable(MobileBtn)
 
     ----------------------------------------------------------------------------
-    -- 🖥️ MAIN WINDOW (Proportions fixed: 600px width for spacious layout)
+    -- 🖥️ MAIN WINDOW (Proportions: 600px width x 445px height)
     ----------------------------------------------------------------------------
     local MainWindow = Instance.new("Frame")
     MainWindow.Name = "MainWindow"
-    MainWindow.Size = UDim2.new(0, 600, 0, 425)
-    MainWindow.Position = UDim2.new(0.5, -300, 0.5, -212)
+    MainWindow.Size = UDim2.new(0, 600, 0, 445)
+    MainWindow.Position = UDim2.new(0.5, -300, 0.5, -222)
     MainWindow.BackgroundColor3 = THEME.BgMain
     MainWindow.BorderSizePixel = 0
     MainWindow.ClipsDescendants = false
@@ -227,7 +227,7 @@ function NamelessWare:CreateWindow(config)
     MainStroke.Thickness = 1.5
     MainStroke.Parent = MainWindow
 
-    -- Left Navigation Sidebar (155px width for zero text cutoff)
+    -- Left Navigation Sidebar (155px width)
     local Sidebar = Instance.new("Frame")
     Sidebar.Name = "Sidebar"
     Sidebar.Size = UDim2.new(0, 155, 1, 0)
@@ -358,10 +358,10 @@ function NamelessWare:CreateWindow(config)
         isUIOpen = not isUIOpen
         if isUIOpen then
             MainWindow.Visible = true
-            MainWindow.Position = UDim2.new(0.5, -300, 0.5, -180)
-            Tween(MainWindow, {Position = UDim2.new(0.5, -300, 0.5, -212)}, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            MainWindow.Position = UDim2.new(0.5, -300, 0.5, -190)
+            Tween(MainWindow, {Position = UDim2.new(0.5, -300, 0.5, -222)}, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
         else
-            Tween(MainWindow, {Position = UDim2.new(0.5, -300, 0.5, -180)}, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+            Tween(MainWindow, {Position = UDim2.new(0.5, -300, 0.5, -190)}, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
             task.wait(0.2)
             if not isUIOpen then
                 MainWindow.Visible = false
@@ -627,7 +627,7 @@ function NamelessWare:CreateWindow(config)
             end
 
             --------------------------------------------------------------------
-            -- 🔘 1. TRUE CIRCULAR TOGGLE BUTTON (With Color Morph & Blooming Dot)
+            -- 🔘 1. CLEAN SOLID PURPLE TOGGLE (NO WHITE INNER DOT)
             --------------------------------------------------------------------
             function Controls:AddToggle(cfg)
                 cfg = cfg or {}
@@ -674,10 +674,10 @@ function NamelessWare:CreateWindow(config)
                     KStroke.Parent = KeyBadge
                 end
 
-                -- Outer Circular Button
+                -- Solid Circle Toggle (Clean Purple Glow when active, Dark when inactive)
                 local CircleFrame = Instance.new("Frame")
-                CircleFrame.Size = UDim2.new(0, 20, 0, 20)
-                CircleFrame.Position = UDim2.new(1, -22, 0.5, -10)
+                CircleFrame.Size = UDim2.new(0, 18, 0, 18)
+                CircleFrame.Position = UDim2.new(1, -20, 0.5, -9)
                 CircleFrame.BackgroundColor3 = state and AccentColor or THEME.CircleOff
                 CircleFrame.Parent = RowBtn
 
@@ -690,38 +690,36 @@ function NamelessWare:CreateWindow(config)
                 CircleStroke.Thickness = 1.5
                 CircleStroke.Parent = CircleFrame
 
-                -- Center Blooming Dot
-                local InnerDot = Instance.new("Frame")
-                InnerDot.Size = state and UDim2.new(0, 10, 0, 10) or UDim2.new(0, 0, 0, 0)
-                InnerDot.Position = UDim2.new(0.5, 0, 0.5, 0)
-                InnerDot.AnchorPoint = Vector2.new(0.5, 0.5)
-                InnerDot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                InnerDot.Parent = CircleFrame
-
-                local InnerCorner = Instance.new("UICorner")
-                InnerCorner.CornerRadius = UDim.new(1, 0)
-                InnerCorner.Parent = InnerDot
+                -- Crisp White Checkmark (Only shown when active, NO ugly big white ball)
+                local CheckIcon = Instance.new("TextLabel")
+                CheckIcon.Size = UDim2.new(1, 0, 1, 0)
+                CheckIcon.BackgroundTransparency = 1
+                CheckIcon.Text = state and "✓" or ""
+                CheckIcon.Font = THEME.FontBold
+                CheckIcon.TextSize = 11
+                CheckIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
+                CheckIcon.Parent = CircleFrame
 
                 local function SetState(newVal)
                     state = newVal
                     if state then
                         Tween(CircleFrame, {BackgroundColor3 = AccentColor}, 0.2)
                         Tween(CircleStroke, {Color = THEME.AccentGradient}, 0.2)
-                        Tween(InnerDot, {Size = UDim2.new(0, 10, 0, 10), BackgroundColor3 = Color3.fromRGB(255, 255, 255)}, 0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                        CheckIcon.Text = "✓"
                         Tween(Label, {TextColor3 = THEME.TextMain}, 0.2)
                     else
                         Tween(CircleFrame, {BackgroundColor3 = THEME.CircleOff}, 0.2)
                         Tween(CircleStroke, {Color = THEME.CircleOffBorder}, 0.2)
-                        Tween(InnerDot, {Size = UDim2.new(0, 0, 0, 0)}, 0.18)
+                        CheckIcon.Text = ""
                         Tween(Label, {TextColor3 = THEME.TextMuted}, 0.2)
                     end
                     callback(state)
                 end
 
                 RowBtn.MouseButton1Click:Connect(function()
-                    Tween(CircleFrame, {Size = UDim2.new(0, 23, 0, 23), Position = UDim2.new(1, -23.5, 0.5, -11.5)}, 0.08)
+                    Tween(CircleFrame, {Size = UDim2.new(0, 21, 0, 21), Position = UDim2.new(1, -21.5, 0.5, -10.5)}, 0.08)
                     task.wait(0.08)
-                    Tween(CircleFrame, {Size = UDim2.new(0, 20, 0, 20), Position = UDim2.new(1, -22, 0.5, -10)}, 0.12)
+                    Tween(CircleFrame, {Size = UDim2.new(0, 18, 0, 18), Position = UDim2.new(1, -20, 0.5, -9)}, 0.12)
                     SetState(not state)
                 end)
 
@@ -729,7 +727,7 @@ function NamelessWare:CreateWindow(config)
             end
 
             --------------------------------------------------------------------
-            -- 🎚️ 2. ROUND SLIDER (Spaced Out & Clear Thumb Circle)
+            -- 🎚️ 2. ROUND SLIDER (Proportional Thumb & Clean Track)
             --------------------------------------------------------------------
             function Controls:AddSlider(cfg)
                 cfg = cfg or {}
@@ -742,9 +740,8 @@ function NamelessWare:CreateWindow(config)
                 local callback = cfg.Callback or function() end
                 local value = default
 
-                -- 46px height for ample breathing room between label and track
                 local Frame = Instance.new("Frame")
-                Frame.Size = UDim2.new(1, 0, 0, 46)
+                Frame.Size = UDim2.new(1, 0, 0, 44)
                 Frame.BackgroundTransparency = 1
                 Frame.Parent = Card
 
@@ -770,10 +767,9 @@ function NamelessWare:CreateWindow(config)
                 ValLabel.TextXAlignment = Enum.TextXAlignment.Right
                 ValLabel.Parent = Frame
 
-                -- Rounded Track (Placed comfortably at Y = 26px)
                 local Track = Instance.new("Frame")
                 Track.Size = UDim2.new(1, 0, 0, 6)
-                Track.Position = UDim2.new(0, 0, 0, 26)
+                Track.Position = UDim2.new(0, 0, 0, 24)
                 Track.BackgroundColor3 = THEME.CircleOff
                 Track.Parent = Frame
 
@@ -786,7 +782,6 @@ function NamelessWare:CreateWindow(config)
                 TrackStroke.Thickness = 1
                 TrackStroke.Parent = Track
 
-                -- Glowing Fill Bar
                 local Fill = Instance.new("Frame")
                 local initPct = math.clamp((value - min) / (max - min), 0, 1)
                 Fill.Size = UDim2.new(initPct, 0, 1, 0)
@@ -805,10 +800,10 @@ function NamelessWare:CreateWindow(config)
                 })
                 FillGrad.Parent = Fill
 
-                -- Circular White Thumb Knob (14x14px with purple border)
+                -- Sleek 12x12 Thumb Knob
                 local Thumb = Instance.new("Frame")
-                Thumb.Size = UDim2.new(0, 14, 0, 14)
-                Thumb.Position = UDim2.new(1, -7, 0.5, -7)
+                Thumb.Size = UDim2.new(0, 12, 0, 12)
+                Thumb.Position = UDim2.new(1, -6, 0.5, -6)
                 Thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 Thumb.ZIndex = 5
                 Thumb.Parent = Fill
@@ -819,7 +814,7 @@ function NamelessWare:CreateWindow(config)
 
                 local ThumbStroke = Instance.new("UIStroke")
                 ThumbStroke.Color = AccentColor
-                ThumbStroke.Thickness = 2
+                ThumbStroke.Thickness = 1.5
                 ThumbStroke.Parent = Thumb
 
                 local dragging = false
@@ -836,7 +831,7 @@ function NamelessWare:CreateWindow(config)
                 Frame.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         dragging = true
-                        Tween(Thumb, {Size = UDim2.new(0, 18, 0, 18), Position = UDim2.new(1, -9, 0.5, -9)}, 0.15)
+                        Tween(Thumb, {Size = UDim2.new(0, 16, 0, 16), Position = UDim2.new(1, -8, 0.5, -8)}, 0.15)
                         Tween(ValLabel, {TextColor3 = AccentColor}, 0.15)
                         Update(input)
                     end
@@ -845,7 +840,7 @@ function NamelessWare:CreateWindow(config)
                 UserInputService.InputEnded:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         dragging = false
-                        Tween(Thumb, {Size = UDim2.new(0, 14, 0, 14), Position = UDim2.new(1, -7, 0.5, -7)}, 0.15)
+                        Tween(Thumb, {Size = UDim2.new(0, 12, 0, 12), Position = UDim2.new(1, -6, 0.5, -6)}, 0.15)
                         Tween(ValLabel, {TextColor3 = THEME.TextMuted}, 0.15)
                     end
                 end)
@@ -858,7 +853,7 @@ function NamelessWare:CreateWindow(config)
             end
 
             --------------------------------------------------------------------
-            -- 🔽 3. ROUNDED DROPDOWN (Fixed Box Glyphs Glitch)
+            -- 🔽 3. ROUNDED DROPDOWN (Clean & Fixed)
             --------------------------------------------------------------------
             function Controls:AddDropdown(cfg)
                 cfg = cfg or {}
@@ -912,7 +907,6 @@ function NamelessWare:CreateWindow(config)
                 BtnText.TextXAlignment = Enum.TextXAlignment.Left
                 BtnText.Parent = DropBtn
 
-                -- Clean Arrow Indicator (No Unicode Bug)
                 local Arrow = Instance.new("TextLabel")
                 Arrow.Size = UDim2.new(0, 18, 1, 0)
                 Arrow.Position = UDim2.new(1, -20, 0, 0)
@@ -923,7 +917,6 @@ function NamelessWare:CreateWindow(config)
                 Arrow.TextColor3 = THEME.TextMuted
                 Arrow.Parent = DropBtn
 
-                -- Floating Menu List
                 local MenuList = Instance.new("Frame")
                 MenuList.Size = UDim2.new(1, 0, 0, #options * 26)
                 MenuList.Position = UDim2.new(0, 0, 1, 4)
