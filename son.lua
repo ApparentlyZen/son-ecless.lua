@@ -1,8 +1,9 @@
 --[[
     ╔═══════════════════════════════════════════════════════════════════════╗
-    ║                 NAMELESS WARE UI LIBRARY - V2 ULTIMATE                ║
-    ║        Exact Passion / Dutty Layout • Pixel Perfect • No Overflow     ║
-    ║        Scoped Sub-Tabs • Dual Column Cards • Mobile Touch Friendly    ║
+    ║                        NAMELESS WARE UI LIBRARY                       ║
+    ║         Modern Dark Acrylic & Neon Purple • High-End Cheat UI         ║
+    ║         Exact Match: Toggles, Sliders, Dropdowns, Side Tabs           ║
+    ║         100% Mobile Friendly • Touch Drag • Smooth Animations         ║
     ╚═══════════════════════════════════════════════════════════════════════╝
 ]]
 
@@ -30,7 +31,7 @@ local function GetSafeParent()
     return LocalPlayer:WaitForChild("PlayerGui")
 end
 
--- Helper: Custom Asset Downloader
+-- Custom Asset Loader
 local function FetchCustomAsset(url, fileName)
     fileName = fileName or "NamelessWare_Logo.webp"
     if getcustomasset and (writefile and readfile and isfile) then
@@ -113,23 +114,22 @@ local function MakeDraggable(frame, handle)
 end
 
 --------------------------------------------------------------------------------
--- 👑 NAMELESS WARE LIBRARY CORE
+-- 👑 NAMELESS WARE ENGINE
 --------------------------------------------------------------------------------
 local NamelessWare = {}
 NamelessWare.__index = NamelessWare
 
--- Visual Theme Matching Passion / Dutty Style + Nameless Ware Neon
+-- Premium Theme Palette
 local THEME = {
-    Accent = Color3.fromRGB(175, 95, 255),       -- Electric Purple
-    AccentGlow = Color3.fromRGB(200, 140, 255),
-    BgMain = Color3.fromRGB(15, 15, 20),         -- Deep obsidian
-    BgDock = Color3.fromRGB(10, 10, 14),         -- Dark Dock
-    CardBg = Color3.fromRGB(20, 20, 27),         -- Card surface
-    CardBorder = Color3.fromRGB(34, 34, 46),     -- Subtle 1px stroke
+    Accent = Color3.fromRGB(155, 90, 255),       -- Vibrant Purple Glow
+    AccentDark = Color3.fromRGB(120, 50, 225),
+    BgMain = Color3.fromRGB(18, 18, 25),         -- Obsidian Body
+    BgSidebar = Color3.fromRGB(14, 14, 19),      -- Dark Sidebar
+    CardBg = Color3.fromRGB(23, 23, 32),         -- Card Surface
+    CardBorder = Color3.fromRGB(36, 36, 50),     -- 1px Stroke
     TextMain = Color3.fromRGB(245, 245, 250),
-    TextMuted = Color3.fromRGB(130, 130, 150),
-    ToggleOff = Color3.fromRGB(30, 30, 42),
-    GreenSuccess = Color3.fromRGB(34, 197, 94),
+    TextMuted = Color3.fromRGB(135, 135, 155),
+    ToggleOff = Color3.fromRGB(32, 32, 44),
     FontMain = Enum.Font.GothamMedium,
     FontBold = Enum.Font.GothamBold,
 }
@@ -139,11 +139,11 @@ local RAW_LOGO_URL = "https://raw.githubusercontent.com/ApparentlyZen/image-name
 function NamelessWare:CreateWindow(config)
     config = config or {}
     local Title = config.Title or "NAMELESS WARE"
-    local SubTitle = config.SubTitle or "v2.0 • dutty layout"
+    local SubTitle = config.SubTitle or "Combat - default hotkeys"
     local AccentColor = config.Accent or THEME.Accent
     local LogoUrl = config.LogoUrl or RAW_LOGO_URL
 
-    -- Clean old instance
+    -- Destroy existing UI
     if _G.NamelessWareInstance then
         pcall(function() _G.NamelessWareInstance:Destroy() end)
     end
@@ -158,13 +158,13 @@ function NamelessWare:CreateWindow(config)
     local customLogoAsset = FetchCustomAsset(LogoUrl, "NamelessWare_Logo.webp")
 
     ----------------------------------------------------------------------------
-    -- 📱 MOBILE FLOATING BUTTON
+    -- 📱 MOBILE FLOATING TOGGLE BUTTON
     ----------------------------------------------------------------------------
     local MobileBtn = Instance.new("ImageButton")
     MobileBtn.Name = "NamelessMobileBtn"
     MobileBtn.Size = UDim2.new(0, 48, 0, 48)
     MobileBtn.Position = UDim2.new(0, 15, 0.5, -24)
-    MobileBtn.BackgroundColor3 = THEME.BgDock
+    MobileBtn.BackgroundColor3 = THEME.BgSidebar
     MobileBtn.AutoButtonColor = false
     MobileBtn.Parent = ScreenGui
 
@@ -193,12 +193,12 @@ function NamelessWare:CreateWindow(config)
     MakeDraggable(MobileBtn)
 
     ----------------------------------------------------------------------------
-    -- 🖥️ MAIN WINDOW (Exact Passion / Dutty Sizing & Proportions)
+    -- 🖥️ MAIN WINDOW (Exact Clean Dimensions & Ratio)
     ----------------------------------------------------------------------------
     local MainWindow = Instance.new("Frame")
     MainWindow.Name = "MainWindow"
-    MainWindow.Size = UDim2.new(0, 560, 0, 390)
-    MainWindow.Position = UDim2.new(0.5, -280, 0.5, -195)
+    MainWindow.Size = UDim2.new(0, 580, 0, 410)
+    MainWindow.Position = UDim2.new(0.5, -290, 0.5, -205)
     MainWindow.BackgroundColor3 = THEME.BgMain
     MainWindow.BorderSizePixel = 0
     MainWindow.ClipsDescendants = false
@@ -213,996 +213,642 @@ function NamelessWare:CreateWindow(config)
     MainStroke.Thickness = 1.5
     MainStroke.Parent = MainWindow
 
-    -- Left Icon Dock
-    local Dock = Instance.new("Frame")
-    Dock.Name = "Dock"
-    Dock.Size = UDim2.new(0, 52, 1, 0)
-    Dock.BackgroundColor3 = THEME.BgDock
-    Dock.BorderSizePixel = 0
-    Dock.Parent = MainWindow
+    -- Left Navigation Sidebar
+    local Sidebar = Instance.new("Frame")
+    Sidebar.Name = "Sidebar"
+    Sidebar.Size = UDim2.new(0, 140, 1, 0)
+    Sidebar.BackgroundColor3 = THEME.BgSidebar
+    Sidebar.BorderSizePixel = 0
+    Sidebar.Parent = MainWindow
 
-    local DockCorner = Instance.new("UICorner")
-    DockCorner.CornerRadius = UDim.new(0, 10)
-    DockCorner.Parent = Dock
+    local SidebarCorner = Instance.new("UICorner")
+    SidebarCorner.CornerRadius = UDim.new(0, 10)
+    SidebarCorner.Parent = Sidebar
 
-    local DockStroke = Instance.new("UIStroke")
-    DockStroke.Color = THEME.CardBorder
-    DockStroke.Thickness = 1
-    DockStroke.Parent = Dock
+    local SidebarStroke = Instance.new("UIStroke")
+    SidebarStroke.Color = THEME.CardBorder
+    SidebarStroke.Thickness = 1
+    SidebarStroke.Parent = Sidebar
 
-    -- Top Brand Logo in Dock
-    local LogoContainer = Instance.new("Frame")
-    LogoContainer.Size = UDim2.new(0, 36, 0, 36)
-    LogoContainer.Position = UDim2.new(0.5, -18, 0, 8)
-    LogoContainer.BackgroundColor3 = THEME.CardBg
-    LogoContainer.Parent = Dock
+    -- Brand Top Left Header
+    local BrandFrame = Instance.new("Frame")
+    BrandFrame.Size = UDim2.new(1, 0, 0, 48)
+    BrandFrame.BackgroundTransparency = 1
+    BrandFrame.Parent = Sidebar
 
-    local LogoCorner = Instance.new("UICorner")
-    LogoCorner.CornerRadius = UDim.new(0, 8)
-    LogoCorner.Parent = LogoContainer
+    local LogoBox = Instance.new("Frame")
+    LogoBox.Size = UDim2.new(0, 24, 0, 24)
+    LogoBox.Position = UDim2.new(0, 12, 0.5, -12)
+    LogoBox.BackgroundColor3 = THEME.CardBg
+    LogoBox.Parent = BrandFrame
+
+    local LogoBoxCorner = Instance.new("UICorner")
+    LogoBoxCorner.CornerRadius = UDim.new(0, 6)
+    LogoBoxCorner.Parent = LogoBox
 
     local LogoGlow = Instance.new("UIStroke")
     LogoGlow.Color = AccentColor
-    LogoGlow.Thickness = 1.5
-    LogoGlow.Parent = LogoContainer
+    LogoGlow.Thickness = 1
+    LogoGlow.Parent = LogoBox
 
     if customLogoAsset then
         local LogoImg = Instance.new("ImageLabel")
-        LogoImg.Size = UDim2.new(1, -4, 1, -4)
-        LogoImg.Position = UDim2.new(0, 2, 0, 2)
+        LogoImg.Size = UDim2.new(1, -2, 1, -2)
+        LogoImg.Position = UDim2.new(0, 1, 0, 1)
         LogoImg.BackgroundTransparency = 1
         LogoImg.Image = customLogoAsset
         LogoImg.ScaleType = Enum.ScaleType.Fit
-        LogoImg.Parent = LogoContainer
+        LogoImg.Parent = LogoBox
     else
-        local LogoText = Instance.new("TextLabel")
-        LogoText.Size = UDim2.new(1, 0, 1, 0)
-        LogoText.BackgroundTransparency = 1
-        LogoText.Text = "NW"
-        LogoText.Font = THEME.FontBold
-        LogoText.TextSize = 14
-        LogoText.TextColor3 = AccentColor
-        LogoText.Parent = LogoContainer
+        local LogoTxt = Instance.new("TextLabel")
+        LogoTxt.Size = UDim2.new(1, 0, 1, 0)
+        LogoTxt.BackgroundTransparency = 1
+        LogoTxt.Text = "NW"
+        LogoTxt.Font = THEME.FontBold
+        LogoTxt.TextSize = 11
+        LogoTxt.TextColor3 = AccentColor
+        LogoTxt.Parent = LogoBox
     end
 
-    MakeDraggable(MainWindow, Dock)
+    local BrandTitle = Instance.new("TextLabel")
+    BrandTitle.Size = UDim2.new(1, -45, 1, 0)
+    BrandTitle.Position = UDim2.new(0, 42, 0, 0)
+    BrandTitle.BackgroundTransparency = 1
+    BrandTitle.Text = Title
+    BrandTitle.Font = THEME.FontBold
+    BrandTitle.TextSize = 12
+    BrandTitle.TextColor3 = THEME.TextMain
+    BrandTitle.TextXAlignment = Enum.TextXAlignment.Left
+    BrandTitle.Parent = BrandFrame
 
-    -- Dock Scroll List for Main Icons
-    local DockScroll = Instance.new("ScrollingFrame")
-    DockScroll.Size = UDim2.new(1, 0, 1, -55)
-    DockScroll.Position = UDim2.new(0, 0, 0, 50)
-    DockScroll.BackgroundTransparency = 1
-    DockScroll.ScrollBarThickness = 0
-    DockScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-    DockScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    DockScroll.Parent = Dock
+    MakeDraggable(MainWindow, BrandFrame)
 
-    local DockLayout = Instance.new("UIListLayout")
-    DockLayout.Padding = UDim.new(0, 6)
-    DockLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    DockLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    DockLayout.Parent = DockScroll
+    -- Sidebar Category & Tab Scroll List
+    local NavScroll = Instance.new("ScrollingFrame")
+    NavScroll.Size = UDim2.new(1, -12, 1, -55)
+    NavScroll.Position = UDim2.new(0, 6, 0, 50)
+    NavScroll.BackgroundTransparency = 1
+    NavScroll.ScrollBarThickness = 0
+    NavScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    NavScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    NavScroll.Parent = Sidebar
 
-    -- Top Header Container (Holds the Sub-Tabs bar per active tab)
-    local TopHeader = Instance.new("Frame")
-    TopHeader.Name = "TopHeader"
-    TopHeader.Size = UDim2.new(1, -62, 0, 42)
-    TopHeader.Position = UDim2.new(0, 58, 0, 4)
-    TopHeader.BackgroundTransparency = 1
-    TopHeader.Parent = MainWindow
+    local NavLayout = Instance.new("UIListLayout")
+    NavLayout.Padding = UDim.new(0, 4)
+    NavLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    NavLayout.Parent = NavScroll
 
-    -- Search / Status Icon in Top Right
-    local SearchBtn = Instance.new("ImageButton")
-    SearchBtn.Size = UDim2.new(0, 18, 0, 18)
-    SearchBtn.Position = UDim2.new(1, -26, 0.5, -9)
-    SearchBtn.BackgroundTransparency = 1
-    SearchBtn.Image = "rbxassetid://10734975692"
-    SearchBtn.ImageColor3 = THEME.TextMuted
-    SearchBtn.AutoButtonColor = false
-    SearchBtn.Parent = TopHeader
+    -- Top Header in Content Area
+    local HeaderFrame = Instance.new("Frame")
+    HeaderFrame.Name = "HeaderFrame"
+    HeaderFrame.Size = UDim2.new(1, -150, 0, 45)
+    HeaderFrame.Position = UDim2.new(0, 146, 0, 5)
+    HeaderFrame.BackgroundTransparency = 1
+    HeaderFrame.Parent = MainWindow
 
-    -- Pink/Purple Active Underline Track
-    local UnderlineTrack = Instance.new("Frame")
-    UnderlineTrack.Size = UDim2.new(1, -62, 0, 2)
-    UnderlineTrack.Position = UDim2.new(0, 58, 0, 44)
-    UnderlineTrack.BackgroundColor3 = THEME.CardBorder
-    UnderlineTrack.BorderSizePixel = 0
-    UnderlineTrack.Parent = MainWindow
+    local HeaderTabTitle = Instance.new("TextLabel")
+    HeaderTabTitle.Size = UDim2.new(1, 0, 0, 20)
+    HeaderTabTitle.Position = UDim2.new(0, 8, 0, 4)
+    HeaderTabTitle.BackgroundTransparency = 1
+    HeaderTabTitle.Text = "Combat"
+    HeaderTabTitle.Font = THEME.FontBold
+    HeaderTabTitle.TextSize = 14
+    HeaderTabTitle.TextColor3 = THEME.TextMain
+    HeaderTabTitle.TextXAlignment = Enum.TextXAlignment.Left
+    HeaderTabTitle.Parent = HeaderFrame
 
-    local ActiveUnderline = Instance.new("Frame")
-    ActiveUnderline.Size = UDim2.new(0, 50, 1, 0)
-    ActiveUnderline.Position = UDim2.new(0, 0, 0, 0)
-    ActiveUnderline.BackgroundColor3 = AccentColor
-    ActiveUnderline.BorderSizePixel = 0
-    ActiveUnderline.Parent = UnderlineTrack
+    local HeaderTabSub = Instance.new("TextLabel")
+    HeaderTabSub.Size = UDim2.new(1, 0, 0, 14)
+    HeaderTabSub.Position = UDim2.new(0, 8, 0, 24)
+    HeaderTabSub.BackgroundTransparency = 1
+    HeaderTabSub.Text = SubTitle
+    HeaderTabSub.Font = THEME.FontMain
+    HeaderTabSub.TextSize = 10
+    HeaderTabSub.TextColor3 = THEME.TextMuted
+    HeaderTabSub.TextXAlignment = Enum.TextXAlignment.Left
+    HeaderTabSub.Parent = HeaderFrame
 
-    MakeDraggable(MainWindow, TopHeader)
+    MakeDraggable(MainWindow, HeaderFrame)
 
-    -- Content Container (Cards area)
+    -- Content Container (Holds Tab Pages)
     local ContentArea = Instance.new("Frame")
     ContentArea.Name = "ContentArea"
-    ContentArea.Size = UDim2.new(1, -68, 1, -56)
-    ContentArea.Position = UDim2.new(0, 60, 0, 50)
+    ContentArea.Size = UDim2.new(1, -150, 1, -55)
+    ContentArea.Position = UDim2.new(0, 146, 0, 50)
     ContentArea.BackgroundTransparency = 1
     ContentArea.Parent = MainWindow
 
-    -- Mobile Toggle Action
+    -- Mobile Toggle
     local isUIOpen = true
-    local function ToggleUI()
+    MobileBtn.MouseButton1Click:Connect(function()
         isUIOpen = not isUIOpen
         MainWindow.Visible = isUIOpen
-    end
-    MobileBtn.MouseButton1Click:Connect(ToggleUI)
+    end)
 
     local Window = {
         ScreenGui = ScreenGui,
         MainWindow = MainWindow,
         MobileBtn = MobileBtn,
-        Dock = Dock,
-        TopHeader = TopHeader,
+        NavScroll = NavScroll,
         ContentArea = ContentArea,
-        Tabs = {},
-        Widgets = {}
+        Tabs = {}
     }
 
     local FirstTab = true
 
     ----------------------------------------------------------------------------
-    -- 📁 CREATE TAB (Main Dock Icon)
+    -- 📁 ADD CATEGORY (Header in Sidebar)
+    ----------------------------------------------------------------------------
+    function Window:AddCategory(catName)
+        local Cat = Instance.new("TextLabel")
+        Cat.Size = UDim2.new(1, 0, 0, 22)
+        Cat.BackgroundTransparency = 1
+        Cat.Text = "  " .. catName
+        Cat.Font = THEME.FontBold
+        Cat.TextSize = 10
+        Cat.TextColor3 = THEME.TextMuted
+        Cat.TextXAlignment = Enum.TextXAlignment.Left
+        Cat.Parent = NavScroll
+    end
+
+    ----------------------------------------------------------------------------
+    -- 📑 CREATE TAB (Icon + Label in Sidebar)
     ----------------------------------------------------------------------------
     function Window:CreateTab(tabConfig)
         tabConfig = tabConfig or {}
-        local tabName = tabConfig.Name or "Tab"
-        local tabIcon = tabConfig.Icon or "rbxassetid://10734975692"
+        local name = tabConfig.Name or "Tab"
+        local iconId = tabConfig.Icon or "rbxassetid://10734975692"
+        local subText = tabConfig.Subtitle or (name .. " - default hotkeys")
 
-        local DockBtn = Instance.new("TextButton")
-        DockBtn.Size = UDim2.new(0, 38, 0, 38)
-        DockBtn.BackgroundColor3 = THEME.CardBg
-        DockBtn.BackgroundTransparency = 1
-        DockBtn.Text = ""
-        DockBtn.AutoButtonColor = false
-        DockBtn.Parent = DockScroll
+        local TabBtn = Instance.new("TextButton")
+        TabBtn.Size = UDim2.new(1, 0, 0, 30)
+        TabBtn.BackgroundColor3 = AccentColor
+        TabBtn.BackgroundTransparency = 1
+        TabBtn.Text = ""
+        TabBtn.AutoButtonColor = false
+        TabBtn.Parent = NavScroll
 
-        local BtnCorner = Instance.new("UICorner")
-        BtnCorner.CornerRadius = UDim.new(0, 8)
-        BtnCorner.Parent = DockBtn
+        local TabBtnCorner = Instance.new("UICorner")
+        TabBtnCorner.CornerRadius = UDim.new(0, 6)
+        TabBtnCorner.Parent = TabBtn
 
-        local Icon = Instance.new("ImageLabel")
-        Icon.Size = UDim2.new(0, 18, 0, 18)
-        Icon.Position = UDim2.new(0.5, -9, 0.5, -9)
-        Icon.BackgroundTransparency = 1
-        Icon.Image = tabIcon
-        Icon.ImageColor3 = THEME.TextMuted
-        Icon.Parent = DockBtn
+        local TabIcon = Instance.new("ImageLabel")
+        TabIcon.Size = UDim2.new(0, 15, 0, 15)
+        TabIcon.Position = UDim2.new(0, 8, 0.5, -7.5)
+        TabIcon.BackgroundTransparency = 1
+        TabIcon.Image = iconId
+        TabIcon.ImageColor3 = THEME.TextMuted
+        TabIcon.Parent = TabBtn
 
-        -- Sub-Tabs Bar Holder specifically for THIS tab (Solves the overflow bug!)
-        local TabSubBar = Instance.new("Frame")
-        TabSubBar.Name = tabName .. "_SubBar"
-        TabSubBar.Size = UDim2.new(1, -35, 1, 0)
-        TabSubBar.BackgroundTransparency = 1
-        TabSubBar.Visible = false
-        TabSubBar.Parent = TopHeader
+        local TabLabel = Instance.new("TextLabel")
+        TabLabel.Size = UDim2.new(1, -30, 1, 0)
+        TabLabel.Position = UDim2.new(0, 28, 0, 0)
+        TabLabel.BackgroundTransparency = 1
+        TabLabel.Text = name
+        TabLabel.Font = THEME.FontMain
+        TabLabel.TextSize = 11
+        TabLabel.TextColor3 = THEME.TextMuted
+        TabLabel.TextXAlignment = Enum.TextXAlignment.Left
+        TabLabel.Parent = TabBtn
 
-        local SubBarLayout = Instance.new("UIListLayout")
-        SubBarLayout.FillDirection = Enum.FillDirection.Horizontal
-        SubBarLayout.Padding = UDim.new(0, 16)
-        SubBarLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        SubBarLayout.Parent = TabSubBar
-
-        -- Main Content Page for THIS tab
-        local TabPage = Instance.new("Frame")
-        TabPage.Name = tabName .. "_Page"
+        -- Tab Content Scrolling Frame (2 Columns Grid)
+        local TabPage = Instance.new("ScrollingFrame")
+        TabPage.Name = name .. "_Page"
         TabPage.Size = UDim2.new(1, 0, 1, 0)
         TabPage.BackgroundTransparency = 1
+        TabPage.ScrollBarThickness = 3
+        TabPage.ScrollBarImageColor3 = AccentColor
+        TabPage.CanvasSize = UDim2.new(0, 0, 0, 0)
+        TabPage.AutomaticCanvasSize = Enum.AutomaticSize.Y
         TabPage.Visible = false
         TabPage.Parent = ContentArea
 
-        local SubTabs = {}
-        local FirstSubTab = true
+        local ColumnsHolder = Instance.new("Frame")
+        ColumnsHolder.Size = UDim2.new(1, -6, 0, 0)
+        ColumnsHolder.AutomaticSize = Enum.AutomaticSize.Y
+        ColumnsHolder.BackgroundTransparency = 1
+        ColumnsHolder.Parent = TabPage
+
+        local ColumnsLayout = Instance.new("UIListLayout")
+        ColumnsLayout.FillDirection = Enum.FillDirection.Horizontal
+        ColumnsLayout.Padding = UDim.new(0, 8)
+        ColumnsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        ColumnsLayout.Parent = ColumnsHolder
 
         local function ActivateTab()
-            -- Hide all other tabs
             for _, t in pairs(Window.Tabs) do
                 t.Page.Visible = false
-                t.SubBar.Visible = false
                 Tween(t.Button, {BackgroundTransparency = 1}, 0.2)
+                Tween(t.Label, {TextColor3 = THEME.TextMuted}, 0.2)
                 Tween(t.Icon, {ImageColor3 = THEME.TextMuted}, 0.2)
             end
-
-            -- Show this tab
             TabPage.Visible = true
-            TabSubBar.Visible = true
-            Tween(DockBtn, {BackgroundTransparency = 0, BackgroundColor3 = THEME.CardBg}, 0.2)
-            Tween(Icon, {ImageColor3 = AccentColor}, 0.2)
-
-            -- Activate first subtab
-            if SubTabs[1] then
-                SubTabs[1].Activate()
-            end
+            HeaderTabTitle.Text = name
+            HeaderTabSub.Text = subText
+            Tween(TabBtn, {BackgroundTransparency = 0, BackgroundColor3 = AccentColor}, 0.2)
+            Tween(TabLabel, {TextColor3 = Color3.fromRGB(255, 255, 255)}, 0.2)
+            Tween(TabIcon, {ImageColor3 = Color3.fromRGB(255, 255, 255)}, 0.2)
         end
 
-        DockBtn.MouseButton1Click:Connect(ActivateTab)
+        TabBtn.MouseButton1Click:Connect(ActivateTab)
 
         local TabObject = {
-            Button = DockBtn,
-            Icon = Icon,
-            Page = TabPage,
-            SubBar = TabSubBar,
-            SubTabs = SubTabs
+            Button = TabBtn,
+            Label = TabLabel,
+            Icon = TabIcon,
+            Page = TabPage
         }
         table.insert(Window.Tabs, TabObject)
-
-        local TabMethods = {}
-
-        ------------------------------------------------------------------------
-        -- 📑 CREATE SUB-TAB (Inside This Specific Main Tab)
-        ------------------------------------------------------------------------
-        function TabMethods:CreateSubTab(subName)
-            local SubBtn = Instance.new("TextButton")
-            SubBtn.Size = UDim2.new(0, 60, 1, 0)
-            SubBtn.BackgroundTransparency = 1
-            SubBtn.Text = subName
-            SubBtn.Font = THEME.FontBold
-            SubBtn.TextSize = 12
-            SubBtn.TextColor3 = THEME.TextMuted
-            SubBtn.AutoButtonColor = false
-            SubBtn.Parent = TabSubBar
-
-            -- Sub-Tab Content: 2-Column Scrolling View
-            local SubScroll = Instance.new("ScrollingFrame")
-            SubScroll.Size = UDim2.new(1, 0, 1, 0)
-            SubScroll.BackgroundTransparency = 1
-            SubScroll.ScrollBarThickness = 3
-            SubScroll.ScrollBarImageColor3 = AccentColor
-            SubScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-            SubScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-            SubScroll.Visible = false
-            SubScroll.Parent = TabPage
-
-            local ColumnsHolder = Instance.new("Frame")
-            ColumnsHolder.Size = UDim2.new(1, 0, 0, 0)
-            ColumnsHolder.AutomaticSize = Enum.AutomaticSize.Y
-            ColumnsHolder.BackgroundTransparency = 1
-            ColumnsHolder.Parent = SubScroll
-
-            local ColumnsLayout = Instance.new("UIListLayout")
-            ColumnsLayout.FillDirection = Enum.FillDirection.Horizontal
-            ColumnsLayout.Padding = UDim.new(0, 8)
-            ColumnsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-            ColumnsLayout.Parent = ColumnsHolder
-
-            local function ActivateSub()
-                for _, s in pairs(SubTabs) do
-                    s.Scroll.Visible = false
-                    Tween(s.Button, {TextColor3 = THEME.TextMuted}, 0.2)
-                end
-                SubScroll.Visible = true
-                Tween(SubBtn, {TextColor3 = AccentColor}, 0.2)
-
-                -- Move underline smoothly
-                task.spawn(function()
-                    task.wait(0.02)
-                    local xOffset = SubBtn.AbsolutePosition.X - TopHeader.AbsolutePosition.X
-                    local width = SubBtn.AbsoluteSize.X
-                    Tween(ActiveUnderline, {
-                        Position = UDim2.new(0, math.max(0, xOffset), 0, 0),
-                        Size = UDim2.new(0, width, 1, 0)
-                    }, 0.2)
-                end)
-            end
-
-            SubBtn.MouseButton1Click:Connect(ActivateSub)
-
-            local SubTabObject = {
-                Button = SubBtn,
-                Scroll = SubScroll,
-                Activate = ActivateSub
-            }
-            table.insert(SubTabs, SubTabObject)
-
-            if FirstSubTab then
-                FirstSubTab = false
-                ActivateSub()
-            end
-
-            local SubMethods = {}
-
-            --------------------------------------------------------------------
-            -- 🗃️ CREATE CARD (Left or Right Column)
-            --------------------------------------------------------------------
-            function SubMethods:CreateCard(cardTitle)
-                local Card = Instance.new("Frame")
-                Card.Size = UDim2.new(0.5, -4, 0, 0)
-                Card.AutomaticSize = Enum.AutomaticSize.Y
-                Card.BackgroundColor3 = THEME.CardBg
-                Card.BorderSizePixel = 0
-                Card.Parent = ColumnsHolder
-
-                local CardCorner = Instance.new("UICorner")
-                CardCorner.CornerRadius = UDim.new(0, 8)
-                CardCorner.Parent = Card
-
-                local CardStroke = Instance.new("UIStroke")
-                CardStroke.Color = THEME.CardBorder
-                CardStroke.Thickness = 1
-                CardStroke.Parent = Card
-
-                local CardPadding = Instance.new("UIPadding")
-                CardPadding.PaddingTop = UDim.new(0, 8)
-                CardPadding.PaddingBottom = UDim.new(0, 8)
-                CardPadding.PaddingLeft = UDim.new(0, 10)
-                CardPadding.PaddingRight = UDim.new(0, 10)
-                CardPadding.Parent = Card
-
-                local CardLayout = Instance.new("UIListLayout")
-                CardLayout.Padding = UDim.new(0, 6)
-                CardLayout.SortOrder = Enum.SortOrder.LayoutOrder
-                CardLayout.Parent = Card
-
-                if cardTitle then
-                    local CardHeader = Instance.new("TextLabel")
-                    CardHeader.Size = UDim2.new(1, 0, 0, 18)
-                    CardHeader.BackgroundTransparency = 1
-                    CardHeader.Text = cardTitle
-                    CardHeader.Font = THEME.FontBold
-                    CardHeader.TextSize = 11
-                    CardHeader.TextColor3 = THEME.TextMain
-                    CardHeader.TextXAlignment = Enum.TextXAlignment.Left
-                    CardHeader.Parent = Card
-                end
-
-                local Controls = {}
-
-                -- 1. TOGGLE (Neon Capsule Switch)
-                function Controls:AddToggle(cfg)
-                    cfg = cfg or {}
-                    local name = cfg.Name or "Toggle"
-                    local state = cfg.Default or false
-                    local callback = cfg.Callback or function() end
-
-                    local Row = Instance.new("Frame")
-                    Row.Size = UDim2.new(1, 0, 0, 28)
-                    Row.BackgroundTransparency = 1
-                    Row.Parent = Card
-
-                    local Label = Instance.new("TextLabel")
-                    Label.Size = UDim2.new(1, -45, 1, 0)
-                    Label.BackgroundTransparency = 1
-                    Label.Text = name
-                    Label.Font = THEME.FontMain
-                    Label.TextSize = 11
-                    Label.TextColor3 = state and THEME.TextMain or THEME.TextMuted
-                    Label.TextXAlignment = Enum.TextXAlignment.Left
-                    Label.Parent = Row
-
-                    local Switch = Instance.new("TextButton")
-                    Switch.Size = UDim2.new(0, 34, 0, 18)
-                    Switch.Position = UDim2.new(1, -34, 0.5, -9)
-                    Switch.BackgroundColor3 = state and AccentColor or THEME.ToggleOff
-                    Switch.Text = ""
-                    Switch.AutoButtonColor = false
-                    Switch.Parent = Row
-
-                    local SwitchCorner = Instance.new("UICorner")
-                    SwitchCorner.CornerRadius = UDim.new(1, 0)
-                    SwitchCorner.Parent = Switch
-
-                    local Dot = Instance.new("Frame")
-                    Dot.Size = UDim2.new(0, 12, 0, 12)
-                    Dot.Position = state and UDim2.new(1, -15, 0.5, -6) or UDim2.new(0, 3, 0.5, -6)
-                    Dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                    Dot.Parent = Switch
-
-                    local DotCorner = Instance.new("UICorner")
-                    DotCorner.CornerRadius = UDim.new(1, 0)
-                    DotCorner.Parent = Dot
-
-                    local function SetState(newVal)
-                        state = newVal
-                        if state then
-                            Tween(Switch, {BackgroundColor3 = AccentColor}, 0.2)
-                            Tween(Dot, {Position = UDim2.new(1, -15, 0.5, -6)}, 0.2)
-                            Tween(Label, {TextColor3 = THEME.TextMain}, 0.2)
-                        else
-                            Tween(Switch, {BackgroundColor3 = THEME.ToggleOff}, 0.2)
-                            Tween(Dot, {Position = UDim2.new(0, 3, 0.5, -6)}, 0.2)
-                            Tween(Label, {TextColor3 = THEME.TextMuted}, 0.2)
-                        end
-                        callback(state)
-                    end
-
-                    Switch.MouseButton1Click:Connect(function()
-                        SetState(not state)
-                    end)
-
-                    return {Set = SetState}
-                end
-
-                -- 2. SLIDER (Touch & Mouse Drag Supported)
-                function Controls:AddSlider(cfg)
-                    cfg = cfg or {}
-                    local name = cfg.Name or "Slider"
-                    local min = cfg.Min or 0
-                    local max = cfg.Max or 100
-                    local default = cfg.Default or min
-                    local suffix = cfg.Suffix or "%"
-                    local callback = cfg.Callback or function() end
-                    local value = default
-
-                    local Frame = Instance.new("Frame")
-                    Frame.Size = UDim2.new(1, 0, 0, 38)
-                    Frame.BackgroundTransparency = 1
-                    Frame.Parent = Card
-
-                    local Label = Instance.new("TextLabel")
-                    Label.Size = UDim2.new(0.65, 0, 0, 16)
-                    Label.BackgroundTransparency = 1
-                    Label.Text = name
-                    Label.Font = THEME.FontMain
-                    Label.TextSize = 11
-                    Label.TextColor3 = THEME.TextMuted
-                    Label.TextXAlignment = Enum.TextXAlignment.Left
-                    Label.Parent = Frame
-
-                    local ValLabel = Instance.new("TextLabel")
-                    ValLabel.Size = UDim2.new(0.35, 0, 0, 16)
-                    ValLabel.Position = UDim2.new(0.65, 0, 0, 0)
-                    ValLabel.BackgroundTransparency = 1
-                    ValLabel.Text = tostring(value) .. suffix
-                    ValLabel.Font = THEME.FontBold
-                    ValLabel.TextSize = 11
-                    ValLabel.TextColor3 = AccentColor
-                    ValLabel.TextXAlignment = Enum.TextXAlignment.Right
-                    ValLabel.Parent = Frame
-
-                    local Track = Instance.new("Frame")
-                    Track.Size = UDim2.new(1, 0, 0, 5)
-                    Track.Position = UDim2.new(0, 0, 0, 22)
-                    Track.BackgroundColor3 = THEME.ToggleOff
-                    Track.Parent = Frame
-
-                    local TrackCorner = Instance.new("UICorner")
-                    TrackCorner.CornerRadius = UDim.new(1, 0)
-                    TrackCorner.Parent = Track
-
-                    local Fill = Instance.new("Frame")
-                    local initPct = math.clamp((value - min) / (max - min), 0, 1)
-                    Fill.Size = UDim2.new(initPct, 0, 1, 0)
-                    Fill.BackgroundColor3 = AccentColor
-                    Fill.BorderSizePixel = 0
-                    Fill.Parent = Track
-
-                    local FillCorner = Instance.new("UICorner")
-                    FillCorner.CornerRadius = UDim.new(1, 0)
-                    FillCorner.Parent = Fill
-
-                    local Thumb = Instance.new("Frame")
-                    Thumb.Size = UDim2.new(0, 11, 0, 11)
-                    Thumb.Position = UDim2.new(1, -5, 0.5, -5.5)
-                    Thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                    Thumb.Parent = Fill
-
-                    local ThumbCorner = Instance.new("UICorner")
-                    ThumbCorner.CornerRadius = UDim.new(1, 0)
-                    ThumbCorner.Parent = Thumb
-
-                    local dragging = false
-                    local function Update(input)
-                        local absPos = Track.AbsolutePosition.X
-                        local absSize = Track.AbsoluteSize.X
-                        local pct = math.clamp((input.Position.X - absPos) / absSize, 0, 1)
-                        value = math.floor(min + (max - min) * pct)
-                        Fill.Size = UDim2.new(pct, 0, 1, 0)
-                        ValLabel.Text = tostring(value) .. suffix
-                        callback(value)
-                    end
-
-                    Track.InputBegan:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                            dragging = true
-                            Update(input)
-                        end
-                    end)
-
-                    UserInputService.InputEnded:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                            dragging = false
-                        end
-                    end)
-
-                    UserInputService.InputChanged:Connect(function(input)
-                        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                            Update(input)
-                        end
-                    end)
-                end
-
-                -- 3. BUTTON
-                function Controls:AddButton(cfg)
-                    cfg = cfg or {}
-                    local text = cfg.Name or "Button"
-                    local callback = cfg.Callback or function() end
-
-                    local Btn = Instance.new("TextButton")
-                    Btn.Size = UDim2.new(1, 0, 0, 26)
-                    Btn.BackgroundColor3 = THEME.BgDock
-                    Btn.Text = text
-                    Btn.Font = THEME.FontMain
-                    Btn.TextSize = 11
-                    Btn.TextColor3 = THEME.TextMain
-                    Btn.AutoButtonColor = false
-                    Btn.Parent = Card
-
-                    local BtnCorner = Instance.new("UICorner")
-                    BtnCorner.CornerRadius = UDim.new(0, 6)
-                    BtnCorner.Parent = Btn
-
-                    local BtnStroke = Instance.new("UIStroke")
-                    BtnStroke.Color = THEME.CardBorder
-                    BtnStroke.Thickness = 1
-                    BtnStroke.Parent = Btn
-
-                    Btn.MouseButton1Click:Connect(function()
-                        Tween(Btn, {BackgroundColor3 = AccentColor}, 0.1)
-                        task.wait(0.1)
-                        Tween(Btn, {BackgroundColor3 = THEME.BgDock}, 0.2)
-                        callback()
-                    end)
-                end
-
-                -- 4. DROPDOWN
-                function Controls:AddDropdown(cfg)
-                    cfg = cfg or {}
-                    local name = cfg.Name or "Dropdown"
-                    local options = cfg.Options or {}
-                    local default = cfg.Default or options[1] or "Select"
-                    local callback = cfg.Callback or function() end
-                    local selected = default
-                    local open = false
-
-                    local DropFrame = Instance.new("Frame")
-                    DropFrame.Size = UDim2.new(1, 0, 0, 46)
-                    DropFrame.BackgroundTransparency = 1
-                    DropFrame.Parent = Card
-
-                    local Label = Instance.new("TextLabel")
-                    Label.Size = UDim2.new(1, 0, 0, 16)
-                    Label.BackgroundTransparency = 1
-                    Label.Text = name
-                    Label.Font = THEME.FontMain
-                    Label.TextSize = 11
-                    Label.TextColor3 = THEME.TextMuted
-                    Label.TextXAlignment = Enum.TextXAlignment.Left
-                    Label.Parent = DropFrame
-
-                    local DropBtn = Instance.new("TextButton")
-                    DropBtn.Size = UDim2.new(1, 0, 0, 24)
-                    DropBtn.Position = UDim2.new(0, 0, 0, 18)
-                    DropBtn.BackgroundColor3 = THEME.BgDock
-                    DropBtn.Text = "  " .. selected
-                    DropBtn.Font = THEME.FontMain
-                    DropBtn.TextSize = 11
-                    DropBtn.TextColor3 = THEME.TextMain
-                    DropBtn.TextXAlignment = Enum.TextXAlignment.Left
-                    DropBtn.AutoButtonColor = false
-                    DropBtn.Parent = DropFrame
-
-                    local DropCorner = Instance.new("UICorner")
-                    DropCorner.CornerRadius = UDim.new(0, 6)
-                    DropCorner.Parent = DropBtn
-
-                    local Arrow = Instance.new("TextLabel")
-                    Arrow.Size = UDim2.new(0, 20, 1, 0)
-                    Arrow.Position = UDim2.new(1, -22, 0, 0)
-                    Arrow.BackgroundTransparency = 1
-                    Arrow.Text = "▼"
-                    Arrow.Font = THEME.FontBold
-                    Arrow.TextSize = 9
-                    Arrow.TextColor3 = THEME.TextMuted
-                    Arrow.Parent = DropBtn
-
-                    local MenuList = Instance.new("Frame")
-                    MenuList.Size = UDim2.new(1, 0, 0, #options * 22)
-                    MenuList.Position = UDim2.new(0, 0, 1, 3)
-                    MenuList.BackgroundColor3 = THEME.BgMain
-                    MenuList.BorderSizePixel = 0
-                    MenuList.Visible = false
-                    MenuList.ZIndex = 30
-                    MenuList.Parent = DropBtn
-
-                    local MenuCorner = Instance.new("UICorner")
-                    MenuCorner.CornerRadius = UDim.new(0, 6)
-                    MenuCorner.Parent = MenuList
-
-                    local MenuStroke = Instance.new("UIStroke")
-                    MenuStroke.Color = THEME.CardBorder
-                    MenuStroke.Thickness = 1
-                    MenuStroke.Parent = MenuList
-
-                    local MenuLayout = Instance.new("UIListLayout")
-                    MenuLayout.Parent = MenuList
-
-                    for _, opt in ipairs(options) do
-                        local OptItem = Instance.new("TextButton")
-                        OptItem.Size = UDim2.new(1, 0, 0, 22)
-                        OptItem.BackgroundTransparency = 1
-                        OptItem.Text = "  " .. opt
-                        OptItem.Font = THEME.FontMain
-                        OptItem.TextSize = 10
-                        OptItem.TextColor3 = (opt == selected) and AccentColor or THEME.TextMuted
-                        OptItem.TextXAlignment = Enum.TextXAlignment.Left
-                        OptItem.ZIndex = 31
-                        OptItem.Parent = MenuList
-
-                        OptItem.MouseButton1Click:Connect(function()
-                            selected = opt
-                            DropBtn.Text = "  " .. selected
-                            MenuList.Visible = false
-                            Arrow.Text = "▼"
-                            callback(selected)
-                        end)
-                    end
-
-                    DropBtn.MouseButton1Click:Connect(function()
-                        open = not open
-                        MenuList.Visible = open
-                        Arrow.Text = open and "▲" or "▼"
-                    end)
-                end
-
-                -- 5. DIVIDER
-                function Controls:AddDivider(label)
-                    local DivFrame = Instance.new("Frame")
-                    DivFrame.Size = UDim2.new(1, 0, 0, 16)
-                    DivFrame.BackgroundTransparency = 1
-                    DivFrame.Parent = Card
-
-                    local Line = Instance.new("Frame")
-                    Line.Size = UDim2.new(1, 0, 0, 1)
-                    Line.Position = UDim2.new(0, 0, 0.5, 0)
-                    Line.BackgroundColor3 = THEME.CardBorder
-                    Line.BorderSizePixel = 0
-                    Line.Parent = DivFrame
-
-                    if label then
-                        local Text = Instance.new("TextLabel")
-                        Text.Size = UDim2.new(0, 80, 1, 0)
-                        Text.Position = UDim2.new(0.5, -40, 0, 0)
-                        Text.BackgroundColor3 = THEME.CardBg
-                        Text.Text = label
-                        Text.Font = THEME.FontMain
-                        Text.TextSize = 9
-                        Text.TextColor3 = THEME.TextMuted
-                        Text.Parent = DivFrame
-                    end
-                end
-
-                -- 6. KEYBIND
-                function Controls:AddKeybind(cfg)
-                    cfg = cfg or {}
-                    local name = cfg.Name or "Keybind"
-                    local key = cfg.Default or Enum.KeyCode.E
-                    local callback = cfg.Callback or function() end
-
-                    local Row = Instance.new("Frame")
-                    Row.Size = UDim2.new(1, 0, 0, 26)
-                    Row.BackgroundTransparency = 1
-                    Row.Parent = Card
-
-                    local Label = Instance.new("TextLabel")
-                    Label.Size = UDim2.new(1, -65, 1, 0)
-                    Label.BackgroundTransparency = 1
-                    Label.Text = name
-                    Label.Font = THEME.FontMain
-                    Label.TextSize = 11
-                    Label.TextColor3 = THEME.TextMain
-                    Label.TextXAlignment = Enum.TextXAlignment.Left
-                    Label.Parent = Row
-
-                    local KeyBtn = Instance.new("TextButton")
-                    KeyBtn.Size = UDim2.new(0, 55, 0, 18)
-                    KeyBtn.Position = UDim2.new(1, -55, 0.5, -9)
-                    KeyBtn.BackgroundColor3 = THEME.BgDock
-                    KeyBtn.Text = key.Name
-                    KeyBtn.Font = THEME.FontBold
-                    KeyBtn.TextSize = 9
-                    KeyBtn.TextColor3 = AccentColor
-                    KeyBtn.AutoButtonColor = false
-                    KeyBtn.Parent = Row
-
-                    local KeyCorner = Instance.new("UICorner")
-                    KeyCorner.CornerRadius = UDim.new(0, 4)
-                    KeyCorner.Parent = KeyBtn
-
-                    KeyBtn.MouseButton1Click:Connect(function()
-                        KeyBtn.Text = "..."
-                        local conn
-                        conn = UserInputService.InputBegan:Connect(function(inp)
-                            if inp.UserInputType == Enum.UserInputType.Keyboard then
-                                key = inp.KeyCode
-                                KeyBtn.Text = key.Name
-                                conn:Disconnect()
-                                callback(key)
-                            end
-                        end)
-                    end)
-                end
-
-                return Controls
-            end
-
-            return SubMethods
-        end
 
         if FirstTab then
             FirstTab = false
             ActivateTab()
         end
 
+        local TabMethods = {}
+
+        ------------------------------------------------------------------------
+        -- 🗃️ CREATE SECTION / CARD (Left or Right Column)
+        ------------------------------------------------------------------------
+        function TabMethods:CreateSection(secTitle, secIcon)
+            local Card = Instance.new("Frame")
+            Card.Size = UDim2.new(0.5, -4, 0, 0)
+            Card.AutomaticSize = Enum.AutomaticSize.Y
+            Card.BackgroundColor3 = THEME.CardBg
+            Card.BorderSizePixel = 0
+            Card.Parent = ColumnsHolder
+
+            local CardCorner = Instance.new("UICorner")
+            CardCorner.CornerRadius = UDim.new(0, 8)
+            CardCorner.Parent = Card
+
+            local CardStroke = Instance.new("UIStroke")
+            CardStroke.Color = THEME.CardBorder
+            CardStroke.Thickness = 1
+            CardStroke.Parent = Card
+
+            local CardPadding = Instance.new("UIPadding")
+            CardPadding.PaddingTop = UDim.new(0, 8)
+            CardPadding.PaddingBottom = UDim.new(0, 8)
+            CardPadding.PaddingLeft = UDim.new(0, 10)
+            CardPadding.PaddingRight = UDim.new(0, 10)
+            CardPadding.Parent = Card
+
+            local CardLayout = Instance.new("UIListLayout")
+            CardLayout.Padding = UDim.new(0, 6)
+            CardLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            CardLayout.Parent = Card
+
+            -- Card Header
+            local Header = Instance.new("Frame")
+            Header.Size = UDim2.new(1, 0, 0, 20)
+            Header.BackgroundTransparency = 1
+            Header.Parent = Card
+
+            local HeaderIcon = Instance.new("ImageLabel")
+            HeaderIcon.Size = UDim2.new(0, 14, 0, 14)
+            HeaderIcon.Position = UDim2.new(0, 0, 0.5, -7)
+            HeaderIcon.BackgroundTransparency = 1
+            HeaderIcon.Image = secIcon or "rbxassetid://10734975692"
+            HeaderIcon.ImageColor3 = AccentColor
+            HeaderIcon.Parent = Header
+
+            local HeaderLabel = Instance.new("TextLabel")
+            HeaderLabel.Size = UDim2.new(1, -20, 1, 0)
+            HeaderLabel.Position = UDim2.new(0, 20, 0, 0)
+            HeaderLabel.BackgroundTransparency = 1
+            HeaderLabel.Text = secTitle
+            HeaderLabel.Font = THEME.FontBold
+            HeaderLabel.TextSize = 12
+            HeaderLabel.TextColor3 = THEME.TextMain
+            HeaderLabel.TextXAlignment = Enum.TextXAlignment.Left
+            HeaderLabel.Parent = Header
+
+            local Controls = {}
+
+            -- Sub-Header Divider inside Card
+            function Controls:AddSubHeader(title, icon)
+                local SubHeader = Instance.new("Frame")
+                SubHeader.Size = UDim2.new(1, 0, 0, 22)
+                SubHeader.BackgroundTransparency = 1
+                SubHeader.Parent = Card
+
+                local SubIcon = Instance.new("ImageLabel")
+                SubIcon.Size = UDim2.new(0, 12, 0, 12)
+                SubIcon.Position = UDim2.new(0, 0, 0.5, -6)
+                SubIcon.BackgroundTransparency = 1
+                SubIcon.Image = icon or "rbxassetid://10734975692"
+                SubIcon.ImageColor3 = AccentColor
+                SubIcon.Parent = SubHeader
+
+                local SubText = Instance.new("TextLabel")
+                SubText.Size = UDim2.new(1, -18, 1, 0)
+                SubText.Position = UDim2.new(0, 18, 0, 0)
+                SubText.BackgroundTransparency = 1
+                SubText.Text = title
+                SubText.Font = THEME.FontBold
+                SubText.TextSize = 11
+                SubText.TextColor3 = THEME.TextMain
+                SubText.TextXAlignment = Enum.TextXAlignment.Left
+                SubText.Parent = SubHeader
+            end
+
+            -- 1. TOGGLE (Capsule Switch + Optional Keybind Badge)
+            function Controls:AddToggle(cfg)
+                cfg = cfg or {}
+                local name = cfg.Name or "Toggle"
+                local state = cfg.Default or false
+                local keybind = cfg.Keybind
+                local callback = cfg.Callback or function() end
+
+                local Row = Instance.new("Frame")
+                Row.Size = UDim2.new(1, 0, 0, 28)
+                Row.BackgroundTransparency = 1
+                Row.Parent = Card
+
+                local Label = Instance.new("TextLabel")
+                Label.Size = UDim2.new(1, keybind and -70 or -40, 1, 0)
+                Label.BackgroundTransparency = 1
+                Label.Text = name
+                Label.Font = THEME.FontMain
+                Label.TextSize = 11
+                Label.TextColor3 = state and THEME.TextMain or THEME.TextMuted
+                Label.TextXAlignment = Enum.TextXAlignment.Left
+                Label.Parent = Row
+
+                if keybind then
+                    local KeyBadge = Instance.new("TextLabel")
+                    KeyBadge.Size = UDim2.new(0, 20, 0, 16)
+                    KeyBadge.Position = UDim2.new(1, -62, 0.5, -8)
+                    KeyBadge.BackgroundColor3 = THEME.BgSidebar
+                    KeyBadge.Text = keybind
+                    KeyBadge.Font = THEME.FontBold
+                    KeyBadge.TextSize = 9
+                    KeyBadge.TextColor3 = THEME.TextMuted
+                    KeyBadge.Parent = Row
+
+                    local KCorner = Instance.new("UICorner")
+                    KCorner.CornerRadius = UDim.new(0, 3)
+                    KCorner.Parent = KeyBadge
+                end
+
+                local Switch = Instance.new("TextButton")
+                Switch.Size = UDim2.new(0, 34, 0, 18)
+                Switch.Position = UDim2.new(1, -34, 0.5, -9)
+                Switch.BackgroundColor3 = state and AccentColor or THEME.ToggleOff
+                Switch.Text = ""
+                Switch.AutoButtonColor = false
+                Switch.Parent = Row
+
+                local SwitchCorner = Instance.new("UICorner")
+                SwitchCorner.CornerRadius = UDim.new(1, 0)
+                SwitchCorner.Parent = Switch
+
+                local Dot = Instance.new("Frame")
+                Dot.Size = UDim2.new(0, 12, 0, 12)
+                Dot.Position = state and UDim2.new(1, -15, 0.5, -6) or UDim2.new(0, 3, 0.5, -6)
+                Dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                Dot.Parent = Switch
+
+                local DotCorner = Instance.new("UICorner")
+                DotCorner.CornerRadius = UDim.new(1, 0)
+                DotCorner.Parent = Dot
+
+                local function SetState(newVal)
+                    state = newVal
+                    if state then
+                        Tween(Switch, {BackgroundColor3 = AccentColor}, 0.2)
+                        Tween(Dot, {Position = UDim2.new(1, -15, 0.5, -6)}, 0.2)
+                        Tween(Label, {TextColor3 = THEME.TextMain}, 0.2)
+                    else
+                        Tween(Switch, {BackgroundColor3 = THEME.ToggleOff}, 0.2)
+                        Tween(Dot, {Position = UDim2.new(0, 3, 0.5, -6)}, 0.2)
+                        Tween(Label, {TextColor3 = THEME.TextMuted}, 0.2)
+                    end
+                    callback(state)
+                end
+
+                Switch.MouseButton1Click:Connect(function()
+                    SetState(not state)
+                end)
+
+                return {Set = SetState}
+            end
+
+            -- 2. SLIDER (Dual Value Display & Touch Drag)
+            function Controls:AddSlider(cfg)
+                cfg = cfg or {}
+                local name = cfg.Name or "Slider"
+                local min = cfg.Min or 0
+                local max = cfg.Max or 100
+                local default = cfg.Default or min
+                local maxFormat = cfg.MaxFormat or false
+                local suffix = cfg.Suffix or ""
+                local callback = cfg.Callback or function() end
+                local value = default
+
+                local Frame = Instance.new("Frame")
+                Frame.Size = UDim2.new(1, 0, 0, 38)
+                Frame.BackgroundTransparency = 1
+                Frame.Parent = Card
+
+                local Label = Instance.new("TextLabel")
+                Label.Size = UDim2.new(0.6, 0, 0, 16)
+                Label.BackgroundTransparency = 1
+                Label.Text = name
+                Label.Font = THEME.FontMain
+                Label.TextSize = 11
+                Label.TextColor3 = THEME.TextMuted
+                Label.TextXAlignment = Enum.TextXAlignment.Left
+                Label.Parent = Frame
+
+                local ValLabel = Instance.new("TextLabel")
+                ValLabel.Size = UDim2.new(0.4, 0, 0, 16)
+                ValLabel.Position = UDim2.new(0.6, 0, 0, 0)
+                ValLabel.BackgroundTransparency = 1
+                ValLabel.Text = maxFormat and (tostring(value) .. " / " .. tostring(max)) or (tostring(value) .. suffix)
+                ValLabel.Font = THEME.FontBold
+                ValLabel.TextSize = 10
+                ValLabel.TextColor3 = THEME.TextMuted
+                ValLabel.TextXAlignment = Enum.TextXAlignment.Right
+                ValLabel.Parent = Frame
+
+                local Track = Instance.new("Frame")
+                Track.Size = UDim2.new(1, 0, 0, 5)
+                Track.Position = UDim2.new(0, 0, 0, 22)
+                Track.BackgroundColor3 = THEME.ToggleOff
+                Track.Parent = Frame
+
+                local TrackCorner = Instance.new("UICorner")
+                TrackCorner.CornerRadius = UDim.new(1, 0)
+                TrackCorner.Parent = Track
+
+                local Fill = Instance.new("Frame")
+                local initPct = math.clamp((value - min) / (max - min), 0, 1)
+                Fill.Size = UDim2.new(initPct, 0, 1, 0)
+                Fill.BackgroundColor3 = AccentColor
+                Fill.BorderSizePixel = 0
+                Fill.Parent = Track
+
+                local FillCorner = Instance.new("UICorner")
+                FillCorner.CornerRadius = UDim.new(1, 0)
+                FillCorner.Parent = Fill
+
+                local dragging = false
+                local function Update(input)
+                    local absPos = Track.AbsolutePosition.X
+                    local absSize = Track.AbsoluteSize.X
+                    local pct = math.clamp((input.Position.X - absPos) / absSize, 0, 1)
+                    value = math.floor(min + (max - min) * pct)
+                    Fill.Size = UDim2.new(pct, 0, 1, 0)
+                    ValLabel.Text = maxFormat and (tostring(value) .. " / " .. tostring(max)) or (tostring(value) .. suffix)
+                    callback(value)
+                end
+
+                Track.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        dragging = true
+                        Update(input)
+                    end
+                end)
+
+                UserInputService.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        dragging = false
+                    end
+                end)
+
+                UserInputService.InputChanged:Connect(function(input)
+                    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                        Update(input)
+                    end
+                end)
+            end
+
+            -- 3. DROPDOWN (Sleek Inline Box)
+            function Controls:AddDropdown(cfg)
+                cfg = cfg or {}
+                local name = cfg.Name or "Dropdown"
+                local options = cfg.Options or {}
+                local default = cfg.Default or options[1] or "None"
+                local callback = cfg.Callback or function() end
+                local selected = default
+                local open = false
+
+                local DropFrame = Instance.new("Frame")
+                DropFrame.Size = UDim2.new(1, 0, 0, 30)
+                DropFrame.BackgroundTransparency = 1
+                DropFrame.Parent = Card
+
+                local Label = Instance.new("TextLabel")
+                Label.Size = UDim2.new(0.5, 0, 1, 0)
+                Label.BackgroundTransparency = 1
+                Label.Text = name
+                Label.Font = THEME.FontMain
+                Label.TextSize = 11
+                Label.TextColor3 = THEME.TextMuted
+                Label.TextXAlignment = Enum.TextXAlignment.Left
+                Label.Parent = DropFrame
+
+                local DropBtn = Instance.new("TextButton")
+                DropBtn.Size = UDim2.new(0.48, 0, 0, 22)
+                DropBtn.Position = UDim2.new(0.52, 0, 0.5, -11)
+                DropBtn.BackgroundColor3 = THEME.BgSidebar
+                DropBtn.Text = selected .. " ▾"
+                DropBtn.Font = THEME.FontMain
+                DropBtn.TextSize = 10
+                DropBtn.TextColor3 = THEME.TextMain
+                DropBtn.AutoButtonColor = false
+                DropBtn.Parent = DropFrame
+
+                local DropCorner = Instance.new("UICorner")
+                DropCorner.CornerRadius = UDim.new(0, 4)
+                DropCorner.Parent = DropBtn
+
+                local MenuList = Instance.new("Frame")
+                MenuList.Size = UDim2.new(1, 0, 0, #options * 22)
+                MenuList.Position = UDim2.new(0, 0, 1, 3)
+                MenuList.BackgroundColor3 = THEME.BgMain
+                MenuList.BorderSizePixel = 0
+                MenuList.Visible = false
+                MenuList.ZIndex = 30
+                MenuList.Parent = DropBtn
+
+                local MenuCorner = Instance.new("UICorner")
+                MenuCorner.CornerRadius = UDim.new(0, 4)
+                MenuCorner.Parent = MenuList
+
+                local MenuStroke = Instance.new("UIStroke")
+                MenuStroke.Color = THEME.CardBorder
+                MenuStroke.Thickness = 1
+                MenuStroke.Parent = MenuList
+
+                local MenuLayout = Instance.new("UIListLayout")
+                MenuLayout.Parent = MenuList
+
+                for _, opt in ipairs(options) do
+                    local OptItem = Instance.new("TextButton")
+                    OptItem.Size = UDim2.new(1, 0, 0, 22)
+                    OptItem.BackgroundTransparency = 1
+                    OptItem.Text = "  " .. opt
+                    OptItem.Font = THEME.FontMain
+                    OptItem.TextSize = 10
+                    OptItem.TextColor3 = (opt == selected) and AccentColor or THEME.TextMuted
+                    OptItem.TextXAlignment = Enum.TextXAlignment.Left
+                    OptItem.ZIndex = 31
+                    OptItem.Parent = MenuList
+
+                    OptItem.MouseButton1Click:Connect(function()
+                        selected = opt
+                        DropBtn.Text = selected .. " ▾"
+                        MenuList.Visible = false
+                        callback(selected)
+                    end)
+                end
+
+                DropBtn.MouseButton1Click:Connect(function()
+                    open = not open
+                    MenuList.Visible = open
+                end)
+            end
+
+            -- 4. BUTTON
+            function Controls:AddButton(cfg)
+                cfg = cfg or {}
+                local text = cfg.Name or "Button"
+                local callback = cfg.Callback or function() end
+
+                local Btn = Instance.new("TextButton")
+                Btn.Size = UDim2.new(1, 0, 0, 26)
+                Btn.BackgroundColor3 = THEME.BgSidebar
+                Btn.Text = text
+                Btn.Font = THEME.FontMain
+                Btn.TextSize = 11
+                Btn.TextColor3 = THEME.TextMain
+                Btn.AutoButtonColor = false
+                Btn.Parent = Card
+
+                local BtnCorner = Instance.new("UICorner")
+                BtnCorner.CornerRadius = UDim.new(0, 4)
+                BtnCorner.Parent = Btn
+
+                local BtnStroke = Instance.new("UIStroke")
+                BtnStroke.Color = THEME.CardBorder
+                BtnStroke.Thickness = 1
+                BtnStroke.Parent = Btn
+
+                Btn.MouseButton1Click:Connect(function()
+                    Tween(Btn, {BackgroundColor3 = AccentColor}, 0.1)
+                    task.wait(0.1)
+                    Tween(Btn, {BackgroundColor3 = THEME.BgSidebar}, 0.2)
+                    callback()
+                end)
+            end
+
+            return Controls
+        end
+
         return TabMethods
-    end
-
-    ----------------------------------------------------------------------------
-    -- 🎵 CREATE MEDIA PLAYER WIDGET (Spotify / Passion Style)
-    ----------------------------------------------------------------------------
-    function Window:CreateMediaPlayer(cfg)
-        cfg = cfg or {}
-        local trackTitle = cfg.Title or "JOHNNY CAGE"
-        local artist = cfg.Artist or "HXG"
-
-        local MediaFrame = Instance.new("Frame")
-        MediaFrame.Name = "NamelessMediaPlayer"
-        MediaFrame.Size = UDim2.new(0, 150, 0, 165)
-        MediaFrame.Position = UDim2.new(0.5, 290, 0.5, 20)
-        MediaFrame.BackgroundColor3 = THEME.BgMain
-        MediaFrame.Parent = ScreenGui
-
-        local Corner = Instance.new("UICorner")
-        Corner.CornerRadius = UDim.new(0, 10)
-        Corner.Parent = MediaFrame
-
-        local Stroke = Instance.new("UIStroke")
-        Stroke.Color = THEME.CardBorder
-        Stroke.Thickness = 1.2
-        Stroke.Parent = MediaFrame
-
-        -- Sleek Vinyl / Album Visual
-        local Album = Instance.new("Frame")
-        Album.Size = UDim2.new(0, 126, 0, 95)
-        Album.Position = UDim2.new(0.5, -63, 0, 10)
-        Album.BackgroundColor3 = THEME.CardBg
-        Album.Parent = MediaFrame
-
-        local AlbumCorner = Instance.new("UICorner")
-        AlbumCorner.CornerRadius = UDim.new(0, 8)
-        AlbumCorner.Parent = Album
-
-        local AlbumIcon = Instance.new("ImageLabel")
-        AlbumIcon.Size = UDim2.new(0, 48, 0, 48)
-        AlbumIcon.Position = UDim2.new(0.5, -24, 0.5, -24)
-        AlbumIcon.BackgroundTransparency = 1
-        AlbumIcon.Image = "rbxassetid://10734975692" -- Music / Vinyl icon
-        AlbumIcon.ImageColor3 = AccentColor
-        AlbumIcon.Parent = Album
-
-        local TitleLbl = Instance.new("TextLabel")
-        TitleLbl.Size = UDim2.new(1, -35, 0, 15)
-        TitleLbl.Position = UDim2.new(0, 12, 0, 112)
-        TitleLbl.BackgroundTransparency = 1
-        TitleLbl.Text = trackTitle
-        TitleLbl.Font = THEME.FontBold
-        TitleLbl.TextSize = 11
-        TitleLbl.TextColor3 = THEME.TextMain
-        TitleLbl.TextXAlignment = Enum.TextXAlignment.Left
-        TitleLbl.Parent = MediaFrame
-
-        local ArtistLbl = Instance.new("TextLabel")
-        ArtistLbl.Size = UDim2.new(1, -35, 0, 13)
-        ArtistLbl.Position = UDim2.new(0, 12, 0, 127)
-        ArtistLbl.BackgroundTransparency = 1
-        ArtistLbl.Text = artist
-        ArtistLbl.Font = THEME.FontMain
-        ArtistLbl.TextSize = 9
-        ArtistLbl.TextColor3 = THEME.TextMuted
-        ArtistLbl.TextXAlignment = Enum.TextXAlignment.Left
-        ArtistLbl.Parent = MediaFrame
-
-        local Progress = Instance.new("Frame")
-        Progress.Size = UDim2.new(1, -24, 0, 3)
-        Progress.Position = UDim2.new(0, 12, 1, -12)
-        Progress.BackgroundColor3 = THEME.ToggleOff
-        Progress.Parent = MediaFrame
-
-        local ProgressFill = Instance.new("Frame")
-        ProgressFill.Size = UDim2.new(0.65, 0, 1, 0)
-        ProgressFill.BackgroundColor3 = AccentColor
-        ProgressFill.BorderSizePixel = 0
-        ProgressFill.Parent = Progress
-
-        local ActionBtn = Instance.new("TextButton")
-        ActionBtn.Size = UDim2.new(0, 20, 0, 20)
-        ActionBtn.Position = UDim2.new(1, -28, 0, 116)
-        ActionBtn.BackgroundTransparency = 1
-        ActionBtn.Text = "⊕"
-        ActionBtn.Font = THEME.FontBold
-        ActionBtn.TextSize = 15
-        ActionBtn.TextColor3 = AccentColor
-        ActionBtn.Parent = MediaFrame
-
-        MakeDraggable(MediaFrame)
-        table.insert(Window.Widgets, MediaFrame)
-        return MediaFrame
-    end
-
-    ----------------------------------------------------------------------------
-    -- 📋 CREATE DATA LIST WIDGET (epstien list from Passion)
-    ----------------------------------------------------------------------------
-    function Window:CreateDataList(cfg)
-        cfg = cfg or {}
-        local listTitle = cfg.Title or "epstien list"
-        local items = cfg.Items or {}
-
-        local ListFrame = Instance.new("Frame")
-        ListFrame.Name = "NamelessDataList"
-        ListFrame.Size = UDim2.new(0, 160, 0, 185)
-        ListFrame.Position = UDim2.new(0.5, -450, 0.5, 0)
-        ListFrame.BackgroundColor3 = THEME.BgMain
-        ListFrame.Parent = ScreenGui
-
-        local Corner = Instance.new("UICorner")
-        Corner.CornerRadius = UDim.new(0, 8)
-        Corner.Parent = ListFrame
-
-        local Stroke = Instance.new("UIStroke")
-        Stroke.Color = THEME.CardBorder
-        Stroke.Thickness = 1
-        Stroke.Parent = ListFrame
-
-        local Header = Instance.new("TextLabel")
-        Header.Size = UDim2.new(1, -16, 0, 20)
-        Header.Position = UDim2.new(0, 8, 0, 3)
-        Header.BackgroundTransparency = 1
-        Header.Text = listTitle
-        Header.Font = THEME.FontMain
-        Header.TextSize = 10
-        Header.TextColor3 = THEME.TextMuted
-        Header.TextXAlignment = Enum.TextXAlignment.Left
-        Header.Parent = ListFrame
-
-        local Scroll = Instance.new("ScrollingFrame")
-        Scroll.Size = UDim2.new(1, -12, 1, -40)
-        Scroll.Position = UDim2.new(0, 6, 0, 22)
-        Scroll.BackgroundTransparency = 1
-        Scroll.ScrollBarThickness = 0
-        Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-        Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-        Scroll.Parent = ListFrame
-
-        local Layout = Instance.new("UIListLayout")
-        Layout.Padding = UDim.new(0, 2)
-        Layout.Parent = Scroll
-
-        for i, item in ipairs(items) do
-            local Row = Instance.new("Frame")
-            Row.Size = UDim2.new(1, 0, 0, 16)
-            Row.BackgroundTransparency = 1
-            Row.Parent = Scroll
-
-            local Num = Instance.new("TextLabel")
-            Num.Size = UDim2.new(0, 14, 1, 0)
-            Num.BackgroundTransparency = 1
-            Num.Text = tostring(i)
-            Num.Font = THEME.FontMain
-            Num.TextSize = 9
-            Num.TextColor3 = THEME.TextMuted
-            Num.Parent = Row
-
-            local Name = Instance.new("TextLabel")
-            Name.Size = UDim2.new(0, 42, 1, 0)
-            Name.Position = UDim2.new(0, 16, 0, 0)
-            Name.BackgroundTransparency = 1
-            Name.Text = item.Name or ("item " .. i)
-            Name.Font = THEME.FontMain
-            Name.TextSize = 9
-            Name.TextColor3 = THEME.TextMuted
-            Name.TextXAlignment = Enum.TextXAlignment.Left
-            Name.Parent = Row
-
-            local Val = Instance.new("TextLabel")
-            Val.Size = UDim2.new(1, -60, 1, 0)
-            Val.Position = UDim2.new(0, 60, 0, 0)
-            Val.BackgroundTransparency = 1
-            Val.Text = item.Value or "50k dolar 50k lira"
-            Val.Font = THEME.FontMain
-            Val.TextSize = 8
-            Val.TextColor3 = THEME.GreenSuccess
-            Val.TextXAlignment = Enum.TextXAlignment.Right
-            Val.Parent = Row
-        end
-
-        local BottomBar = Instance.new("Frame")
-        BottomBar.Size = UDim2.new(1, -12, 0, 11)
-        BottomBar.Position = UDim2.new(0, 6, 1, -14)
-        BottomBar.BackgroundColor3 = AccentColor
-        BottomBar.BorderSizePixel = 0
-        BottomBar.Parent = ListFrame
-
-        local BottomCorner = Instance.new("UICorner")
-        BottomCorner.CornerRadius = UDim.new(0, 3)
-        BottomCorner.Parent = BottomBar
-
-        local BottomText = Instance.new("TextLabel")
-        BottomText.Size = UDim2.new(1, 0, 1, 0)
-        BottomText.BackgroundTransparency = 1
-        BottomText.Text = "100%"
-        BottomText.Font = THEME.FontBold
-        BottomText.TextSize = 8
-        BottomText.TextColor3 = Color3.fromRGB(255, 255, 255)
-        BottomText.Parent = BottomBar
-
-        MakeDraggable(ListFrame)
-        table.insert(Window.Widgets, ListFrame)
-        return ListFrame
-    end
-
-    ----------------------------------------------------------------------------
-    -- 🏷️ CREATE WATERMARK CARD
-    ----------------------------------------------------------------------------
-    function Window:CreateWatermark(cfg)
-        cfg = cfg or {}
-        local wmTitle = cfg.Title or "passion - watermark"
-        local items = cfg.Items or {"item 1", "item 2", "notsamet_53"}
-
-        local WmFrame = Instance.new("Frame")
-        WmFrame.Name = "NamelessWatermark"
-        WmFrame.Size = UDim2.new(0, 120, 0, 20 + (#items * 15))
-        WmFrame.Position = UDim2.new(1, -135, 0, 15)
-        WmFrame.BackgroundColor3 = THEME.BgMain
-        WmFrame.Parent = ScreenGui
-
-        local Corner = Instance.new("UICorner")
-        Corner.CornerRadius = UDim.new(0, 6)
-        Corner.Parent = WmFrame
-
-        local Stroke = Instance.new("UIStroke")
-        Stroke.Color = THEME.CardBorder
-        Stroke.Thickness = 1
-        Stroke.Parent = WmFrame
-
-        local Padding = Instance.new("UIPadding")
-        Padding.PaddingLeft = UDim.new(0, 8)
-        Padding.PaddingTop = UDim.new(0, 4)
-        Padding.Parent = WmFrame
-
-        local Layout = Instance.new("UIListLayout")
-        Layout.Padding = UDim.new(0, 2)
-        Layout.Parent = WmFrame
-
-        local Header = Instance.new("TextLabel")
-        Header.Size = UDim2.new(1, 0, 0, 14)
-        Header.BackgroundTransparency = 1
-        Header.Text = wmTitle
-        Header.Font = THEME.FontBold
-        Header.TextSize = 9
-        Header.TextColor3 = THEME.TextMain
-        Header.TextXAlignment = Enum.TextXAlignment.Left
-        Header.Parent = WmFrame
-
-        for _, it in ipairs(items) do
-            local ItmLbl = Instance.new("TextLabel")
-            ItmLbl.Size = UDim2.new(1, 0, 0, 13)
-            ItmLbl.BackgroundTransparency = 1
-            ItmLbl.Text = "• " .. it
-            ItmLbl.Font = THEME.FontMain
-            ItmLbl.TextSize = 9
-            ItmLbl.TextColor3 = THEME.TextMuted
-            ItmLbl.TextXAlignment = Enum.TextXAlignment.Left
-            ItmLbl.Parent = WmFrame
-        end
-
-        MakeDraggable(WmFrame)
-        table.insert(Window.Widgets, WmFrame)
-        return WmFrame
     end
 
     return Window
