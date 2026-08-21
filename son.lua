@@ -434,6 +434,9 @@ function NamelessWare:CreateWindow(config)
             MainWindow.Position = UDim2.new(0.5, -300, 0.5, -190)
             Tween(MainWindow, {Position = UDim2.new(0.5, -300, 0.5, -222)}, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
         else
+            if ActiveDropdown then
+                ActiveDropdown()
+            end
             Tween(MainWindow, {Position = UDim2.new(0.5, -300, 0.5, -190)}, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
             task.wait(0.2)
             if not isUIOpen then
@@ -543,6 +546,9 @@ function NamelessWare:CreateWindow(config)
         local isCurrentTab = false
 
         local function ActivateTab()
+            if ActiveDropdown then
+                ActiveDropdown()
+            end
             for _, t in pairs(Window.Tabs) do
                 t.Page.Visible = false
                 t.IsActive = false
@@ -761,7 +767,7 @@ function NamelessWare:CreateWindow(config)
                 BoxCorner.Parent = BoxFrame
 
                 local BoxStroke = Instance.new("UIStroke")
-                BoxStrokea.Color = state and THEME.AccentGradient or THEME.CircleOffBorder
+                BoxStroke.Color = state and THEME.AccentGradient or THEME.CircleOffBorder
                 BoxStroke.Thickness = 1.2
                 BoxStroke.Parent = BoxFrame
 
@@ -951,8 +957,10 @@ function NamelessWare:CreateWindow(config)
                 local open = false
 
                 local DropFrame = Instance.new("Frame")
+                DropFrame.Name = "Dropdown_" .. name
                 DropFrame.Size = UDim2.new(1, 0, 0, 32)
                 DropFrame.BackgroundTransparency = 1
+                DropFrame.ClipsDescendants = false
                 DropFrame.ZIndex = 1
                 DropFrame.Parent = Card
                 table.insert(RegisteredItems, {Name = name, Element = DropFrame, Card = Card})
@@ -965,6 +973,7 @@ function NamelessWare:CreateWindow(config)
                 Label.TextSize = 11
                 Label.TextColor3 = THEME.TextMuted
                 Label.TextXAlignment = Enum.TextXAlignment.Left
+                Label.ZIndex = 1
                 Label.Parent = DropFrame
 
                 local DropBtn = Instance.new("TextButton")
@@ -973,7 +982,7 @@ function NamelessWare:CreateWindow(config)
                 DropBtn.BackgroundColor3 = THEME.BgSidebar
                 DropBtn.Text = ""
                 DropBtn.AutoButtonColor = false
-                DropBtn.ZIndex = 1
+                DropBtn.ZIndex = 2
                 DropBtn.Parent = DropFrame
 
                 local DropCorner = Instance.new("UICorner")
@@ -986,7 +995,7 @@ function NamelessWare:CreateWindow(config)
                 DropStroke.Parent = DropBtn
 
                 local BtnText = Instance.new("TextLabel")
-                BtnText.Size = UDim2.new(1, -22, 1, 0)
+                BtnText.Size = UDim2.new(1, -24, 1, 0)
                 BtnText.Position = UDim2.new(0, 8, 0, 0)
                 BtnText.BackgroundTransparency = 1
                 BtnText.Text = selected
@@ -994,7 +1003,7 @@ function NamelessWare:CreateWindow(config)
                 BtnText.TextSize = 10
                 BtnText.TextColor3 = THEME.TextMain
                 BtnText.TextXAlignment = Enum.TextXAlignment.Left
-                BtnText.ZIndex = 2
+                BtnText.ZIndex = 3
                 BtnText.Parent = DropBtn
 
                 local Arrow = Instance.new("TextLabel")
@@ -1005,18 +1014,25 @@ function NamelessWare:CreateWindow(config)
                 Arrow.Font = THEME.FontBold
                 Arrow.TextSize = 9
                 Arrow.TextColor3 = THEME.TextMuted
-                Arrow.ZIndex = 2
+                Arrow.ZIndex = 3
                 Arrow.Parent = DropBtn
 
+                -- MenuList is parented directly to DropFrame (and NOT DropBtn) to prevent click bubbling / double toggle
+                local maxVisibleItems = 5
+                local totalItemsHeight = #options * 26
+                local targetHeight = math.min(totalItemsHeight + 6, maxVisibleItems * 26 + 6)
+
                 local MenuList = Instance.new("Frame")
-                MenuList.Size = UDim2.new(1, 0, 0, #options * 26)
-                MenuList.Position = UDim2.new(0, 0, 1, 4)
+                MenuList.Name = "MenuList"
+                MenuList.Size = UDim2.new(0.5, 0, 0, 0)
+                MenuList.Position = UDim2.new(0.5, 0, 0, 30)
                 MenuList.BackgroundColor3 = THEME.BgMain
                 MenuList.BorderSizePixel = 0
                 MenuList.Visible = false
                 MenuList.ClipsDescendants = false
-                MenuList.ZIndex = 10
-                MenuList.Parent = DropBtn
+                MenuList.Active = true -- Sinks mouse clicks so nothing underneath receives clicks!
+                MenuList.ZIndex = 100
+                MenuList.Parent = DropFrame
 
                 local MenuShadow = Instance.new("ImageLabel")
                 MenuShadow.Size = UDim2.new(1, 24, 1, 24)
@@ -1027,7 +1043,8 @@ function NamelessWare:CreateWindow(config)
                 MenuShadow.ImageTransparency = 0.35
                 MenuShadow.ScaleType = Enum.ScaleType.Slice
                 MenuShadow.SliceCenter = Rect.new(24, 24, 276, 276)
-                MenuShadow.ZIndex = 9
+                MenuShadow.Active = false
+                MenuShadow.ZIndex = 99
                 MenuShadow.Parent = MenuList
 
                 local MenuCorner = Instance.new("UICorner")
@@ -1039,50 +1056,101 @@ function NamelessWare:CreateWindow(config)
                 MenuStroke.Thickness = 1
                 MenuStroke.Parent = MenuList
 
-                local MenuScroll = Instance.new("Frame")
-                MenuScroll.Size = UDim2.new(1, 0, 1, 0)
+                local MenuScroll = Instance.new("ScrollingFrame")
+                MenuScroll.Size = UDim2.new(1, -2, 1, -4)
+                MenuScroll.Position = UDim2.new(0, 1, 0, 2)
                 MenuScroll.BackgroundTransparency = 1
+                MenuScroll.BorderSizePixel = 0
+                MenuScroll.ScrollBarThickness = (#options > maxVisibleItems) and 3 or 0
+                MenuScroll.ScrollBarImageColor3 = AccentColor
+                MenuScroll.CanvasSize = UDim2.new(0, 0, 0, totalItemsHeight)
+                MenuScroll.AutomaticCanvasSize = Enum.AutomaticSize.None
                 MenuScroll.ClipsDescendants = true
-                MenuScroll.ZIndex = 10
+                MenuScroll.Active = true
+                MenuScroll.ZIndex = 100
                 MenuScroll.Parent = MenuList
 
-                local MenuScrollCorner = Instance.new("UICorner")
-                MenuScrollCorner.CornerRadius = UDim.new(0, 8)
-                MenuScrollCorner.Parent = MenuScroll
-
                 local MenuLayout = Instance.new("UIListLayout")
+                MenuLayout.Padding = UDim.new(0, 0)
+                MenuLayout.SortOrder = Enum.SortOrder.LayoutOrder
                 MenuLayout.Parent = MenuScroll
 
                 local CloseThisDropdown = nil
+                local outsideConnection = nil
+                local optionItems = {}
 
                 local function SetOpen(v)
+                    if open == v then return end
                     open = v
+
                     if open then
                         if ActiveDropdown and ActiveDropdown ~= CloseThisDropdown then
                             ActiveDropdown()
                         end
                         ActiveDropdown = CloseThisDropdown
-                        DropFrame.ZIndex = 50
-                        DropBtn.ZIndex = 51
-                        Card.ZIndex = 25
+
+                        -- Elevate ZIndex of the Card and Dropdown so it sits above all other toggles & cards
+                        Card.ZIndex = 100
+                        DropFrame.ZIndex = 100
+                        DropBtn.ZIndex = 101
+                        MenuList.ZIndex = 102
+                        MenuScroll.ZIndex = 102
+
                         MenuList.Visible = true
                         Arrow.Text = "^"
                         Tween(DropStroke, {Color = AccentColor}, 0.2)
-                        MenuList.Size = UDim2.new(1, 0, 0, 0)
-                        Tween(MenuList, {Size = UDim2.new(1, 0, 0, #options * 26)}, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+                        Tween(Arrow, {TextColor3 = AccentColor}, 0.2)
+
+                        MenuList.Size = UDim2.new(0.5, 0, 0, 0)
+                        Tween(MenuList, {Size = UDim2.new(0.5, 0, 0, targetHeight)}, 0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+                        -- Close if user clicks outside the dropdown
+                        if outsideConnection then outsideConnection:Disconnect() end
+                        outsideConnection = UserInputService.InputBegan:Connect(function(input)
+                            if not open then
+                                if outsideConnection then
+                                    outsideConnection:Disconnect()
+                                    outsideConnection = nil
+                                end
+                                return
+                            end
+                            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                                local mousePos = input.Position
+                                local bPos = DropBtn.AbsolutePosition
+                                local bSize = DropBtn.AbsoluteSize
+                                local mPos = MenuList.AbsolutePosition
+                                local mSize = MenuList.AbsoluteSize
+
+                                local inBtn = (mousePos.X >= bPos.X and mousePos.X <= bPos.X + bSize.X and mousePos.Y >= bPos.Y and mousePos.Y <= bPos.Y + bSize.Y)
+                                local inMenu = (mousePos.X >= mPos.X and mousePos.X <= mPos.X + mSize.X and mousePos.Y >= mPos.Y and mousePos.Y <= mPos.Y + mSize.Y)
+
+                                if not inBtn and not inMenu then
+                                    SetOpen(false)
+                                end
+                            end
+                        end)
                     else
                         if ActiveDropdown == CloseThisDropdown then
                             ActiveDropdown = nil
                         end
+                        if outsideConnection then
+                            outsideConnection:Disconnect()
+                            outsideConnection = nil
+                        end
+
                         Arrow.Text = "v"
                         Tween(DropStroke, {Color = THEME.CardBorder}, 0.2)
-                        local tw = Tween(MenuList, {Size = UDim2.new(1, 0, 0, 0)}, 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+                        Tween(Arrow, {TextColor3 = THEME.TextMuted}, 0.2)
+
+                        local tw = Tween(MenuList, {Size = UDim2.new(0.5, 0, 0, 0)}, 0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
                         tw.Completed:Connect(function()
                             if not open then
                                 MenuList.Visible = false
                                 DropFrame.ZIndex = 1
-                                DropBtn.ZIndex = 1
-                                Card.ZIndex = 1
+                                DropBtn.ZIndex = 2
+                                if ActiveDropdown == nil then
+                                    Card.ZIndex = 1
+                                end
                             end
                         end)
                     end
@@ -1094,38 +1162,106 @@ function NamelessWare:CreateWindow(config)
                     end
                 end
 
-                for _, opt in ipairs(options) do
+                for i, opt in ipairs(options) do
+                    local isSelected = (opt == selected)
+
                     local OptItem = Instance.new("TextButton")
+                    OptItem.Name = "Option_" .. opt
                     OptItem.Size = UDim2.new(1, 0, 0, 26)
+                    OptItem.BackgroundColor3 = THEME.CardBg
                     OptItem.BackgroundTransparency = 1
-                    OptItem.Text = "  " .. opt
-                    OptItem.Font = THEME.FontMain
-                    OptItem.TextSize = 10
-                    OptItem.TextColor3 = (opt == selected) and AccentColor or THEME.TextMuted
-                    OptItem.TextXAlignment = Enum.TextXAlignment.Left
-                    OptItem.ZIndex = 11
+                    OptItem.Text = ""
                     OptItem.AutoButtonColor = false
+                    OptItem.Active = true
+                    OptItem.ZIndex = 103
+                    OptItem.LayoutOrder = i
                     OptItem.Parent = MenuScroll
 
+                    local OptCorner = Instance.new("UICorner")
+                    OptCorner.CornerRadius = UDim.new(0, 5)
+                    OptCorner.Parent = OptItem
+
+                    local OptLabel = Instance.new("TextLabel")
+                    OptLabel.Size = UDim2.new(1, -24, 1, 0)
+                    OptLabel.Position = UDim2.new(0, 8, 0, 0)
+                    OptLabel.BackgroundTransparency = 1
+                    OptLabel.Text = opt
+                    OptLabel.Font = THEME.FontMain
+                    OptLabel.TextSize = 10
+                    OptLabel.TextColor3 = isSelected and AccentColor or THEME.TextMuted
+                    OptLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    OptLabel.ZIndex = 104
+                    OptLabel.Parent = OptItem
+
+                    local OptCheck = Instance.new("ImageLabel")
+                    OptCheck.Size = UDim2.new(0, 10, 0, 10)
+                    OptCheck.Position = UDim2.new(1, -16, 0.5, -5)
+                    OptCheck.BackgroundTransparency = 1
+                    OptCheck.Image = "rbxassetid://10709790948"
+                    OptCheck.ImageColor3 = AccentColor
+                    OptCheck.ImageTransparency = isSelected and 0 or 1
+                    OptCheck.ScaleType = Enum.ScaleType.Fit
+                    OptCheck.ZIndex = 104
+                    OptCheck.Parent = OptItem
+
+                    table.insert(optionItems, {
+                        Option = opt,
+                        Button = OptItem,
+                        Label = OptLabel,
+                        Check = OptCheck
+                    })
+
                     OptItem.MouseEnter:Connect(function()
-                        Tween(OptItem, {BackgroundTransparency = 0.8, TextColor3 = THEME.TextMain}, 0.15)
+                        Tween(OptItem, {BackgroundTransparency = 0.5}, 0.12)
+                        Tween(OptLabel, {TextColor3 = THEME.TextMain}, 0.12)
                     end)
 
                     OptItem.MouseLeave:Connect(function()
-                        Tween(OptItem, {BackgroundTransparency = 1, TextColor3 = (opt == selected) and AccentColor or THEME.TextMuted}, 0.15)
+                        Tween(OptItem, {BackgroundTransparency = 1}, 0.12)
+                        local isSel = (opt == selected)
+                        Tween(OptLabel, {TextColor3 = isSel and AccentColor or THEME.TextMuted}, 0.12)
                     end)
 
                     OptItem.MouseButton1Click:Connect(function()
+                        if not open then return end
                         selected = opt
                         BtnText.Text = selected
+
+                        for _, item in ipairs(optionItems) do
+                            local isSel = (item.Option == selected)
+                            item.Label.TextColor3 = isSel and AccentColor or THEME.TextMuted
+                            item.Check.ImageTransparency = isSel and 0 or 1
+                        end
+
                         SetOpen(false)
-                        callback(selected)
+
+                        task.spawn(function()
+                            callback(selected)
+                        end)
                     end)
                 end
 
                 DropBtn.MouseButton1Click:Connect(function()
                     SetOpen(not open)
                 end)
+
+                return {
+                    Set = function(newOpt)
+                        if table.find(options, newOpt) then
+                            selected = newOpt
+                            BtnText.Text = selected
+                            for _, item in ipairs(optionItems) do
+                                local isSel = (item.Option == selected)
+                                item.Label.TextColor3 = isSel and AccentColor or THEME.TextMuted
+                                item.Check.ImageTransparency = isSel and 0 or 1
+                            end
+                            callback(selected)
+                        end
+                    end,
+                    Get = function()
+                        return selected
+                    end
+                }
             end
 
             function Controls:AddButton(cfg)
