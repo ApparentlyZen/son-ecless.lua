@@ -2670,11 +2670,12 @@ function NamelessWare:CreateWindow(config)
                 PreviewHex.Parent = PreviewBar
 
                 local function UpdateDotPosition()
-                    local r = currentSat * 37
+                    local r = currentSat * ((Wheel.AbsoluteSize.X > 0 and Wheel.AbsoluteSize.X or 82) / 2)
                     local angle = currentHue * math.pi * 2
-                    local x = 41 + math.cos(angle) * r - 4
-                    local y = 41 + math.sin(angle) * r - 4
-                    WheelDot.Position = UDim2.new(0, math.clamp(x, 0, 74), 0, math.clamp(y, 0, 74))
+                    local center = (Wheel.AbsoluteSize.X > 0 and Wheel.AbsoluteSize.X or 82) / 2
+                    local x = center + math.cos(angle) * r - 5
+                    local y = center + math.sin(angle) * r - 5
+                    WheelDot.Position = UDim2.new(0, math.clamp(x, 0, 72), 0, math.clamp(y, 0, 72))
                 end
 
                 local function UpdateColor(col, triggerCallback)
@@ -2721,66 +2722,83 @@ function NamelessWare:CreateWindow(config)
                 end
 
                 local wheelDragging = false
-                local function UpdateFromWheel(input)
-                    local center = Wheel.AbsolutePosition + Wheel.AbsoluteSize / 2
-                    local delta = Vector2.new(input.Position.X, input.Position.Y) - center
+                local valDragging = false
+
+                local function UpdateFromWheelPos(posX, posY)
+                    local wheelCenter = Wheel.AbsolutePosition + (Wheel.AbsoluteSize / 2)
+                    local delta = Vector2.new(posX, posY) - wheelCenter
                     local maxRadius = Wheel.AbsoluteSize.X / 2
                     local dist = delta.Magnitude
                     local clampedDist = math.clamp(dist, 0, maxRadius)
                     local angle = math.atan2(delta.Y, delta.X)
-                    if angle < 0 then angle = angle + math.pi * 2 end
-                    local hue = (angle / (math.pi * 2)) % 1
-                    local sat = math.clamp(clampedDist / maxRadius, 0, 1)
+                    if angle < 0 then angle = angle + (math.pi * 2) end
 
-                    currentHue = hue
-                    currentSat = sat
-                    local newCol = Color3.fromHSV(currentHue, currentSat, currentVal)
-                    UpdateColor(newCol, true)
+                    currentHue = (angle / (math.pi * 2)) % 1
+                    currentSat = math.clamp(clampedDist / maxRadius, 0, 1)
+
+                    local dotRadius = currentSat * (Wheel.AbsoluteSize.X / 2)
+                    local dotX = (Wheel.AbsoluteSize.X / 2) + math.cos(angle) * dotRadius - 5
+                    local dotY = (Wheel.AbsoluteSize.Y / 2) + math.sin(angle) * dotRadius - 5
+                    WheelDot.Position = UDim2.new(0, dotX, 0, dotY)
+
+                    currentColor = Color3.fromHSV(currentHue, currentSat, currentVal)
+                    SwatchBtn.BackgroundColor3 = currentColor
+                    HexLabel.Text = "#" .. currentColor:ToHex():upper()
+                    PreviewBar.BackgroundColor3 = currentColor
+                    PreviewHex.Text = "#" .. currentColor:ToHex():upper()
+                    PreviewHex.TextColor3 = (currentVal > 0.5) and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(255, 255, 255)
+
+                    ValGrad.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
+                        ColorSequenceKeypoint.new(1, Color3.fromHSV(currentHue, currentSat, 1))
+                    })
+
+                    callback(currentColor)
+                end
+
+                local function UpdateFromValPos(posX)
+                    local percent = math.clamp((posX - ValTrack.AbsolutePosition.X) / ValTrack.AbsoluteSize.X, 0, 1)
+                    currentVal = percent
+                    ValThumb.Position = UDim2.new(currentVal, -5, 0.5, -5)
+
+                    currentColor = Color3.fromHSV(currentHue, currentSat, currentVal)
+                    SwatchBtn.BackgroundColor3 = currentColor
+                    HexLabel.Text = "#" .. currentColor:ToHex():upper()
+                    PreviewBar.BackgroundColor3 = currentColor
+                    PreviewHex.Text = "#" .. currentColor:ToHex():upper()
+                    PreviewHex.TextColor3 = (currentVal > 0.5) and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(255, 255, 255)
+
+                    callback(currentColor)
                 end
 
                 Wheel.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         wheelDragging = true
-                        UpdateFromWheel(input)
+                        UpdateFromWheelPos(input.Position.X, input.Position.Y)
                     end
                 end)
-
-                Wheel.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        wheelDragging = false
-                    end
-                end)
-
-                UserInputService.InputChanged:Connect(function(input)
-                    if wheelDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                        UpdateFromWheel(input)
-                    end
-                end)
-
-                local valDragging = false
-                local function UpdateFromValTrack(input)
-                    local percent = math.clamp((input.Position.X - ValTrack.AbsolutePosition.X) / ValTrack.AbsoluteSize.X, 0, 1)
-                    currentVal = percent
-                    local newCol = Color3.fromHSV(currentHue, currentSat, currentVal)
-                    UpdateColor(newCol, true)
-                end
 
                 ValTrack.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         valDragging = true
-                        UpdateFromValTrack(input)
-                    end
-                end)
-
-                ValTrack.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        valDragging = false
+                        UpdateFromValPos(input.Position.X)
                     end
                 end)
 
                 UserInputService.InputChanged:Connect(function(input)
-                    if valDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                        UpdateFromValTrack(input)
+                    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                        if wheelDragging then
+                            UpdateFromWheelPos(input.Position.X, input.Position.Y)
+                        elseif valDragging then
+                            UpdateFromValPos(input.Position.X)
+                        end
+                    end
+                end)
+
+                UserInputService.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        wheelDragging = false
+                        valDragging = false
                     end
                 end)
 
