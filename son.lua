@@ -748,24 +748,11 @@ function NamelessWare:CreateWindow(config)
                     KeyBadge.Parent = RowBtn
                 end
 
-                local BoxGlow = Instance.new("ImageLabel")
-                BoxGlow.Size = UDim2.new(0, 30, 0, 30)
-                BoxGlow.Position = UDim2.new(1, -24, 0.5, -15)
-                BoxGlow.BackgroundTransparency = 1
-                BoxGlow.Image = "rbxassetid://5028857472"
-                BoxGlow.ImageColor3 = AccentColor
-                BoxGlow.ImageTransparency = state and 0.45 or 1
-                BoxGlow.ScaleType = Enum.ScaleType.Slice
-                BoxGlow.SliceCenter = Rect.new(24, 24, 276, 276)
-                BoxGlow.ZIndex = 1
-                BoxGlow.Parent = RowBtn
-
                 local BoxFrame = Instance.new("Frame")
                 BoxFrame.Size = UDim2.new(0, 18, 0, 18)
                 BoxFrame.Position = UDim2.new(1, -18, 0.5, -9)
                 BoxFrame.BackgroundColor3 = state and AccentColor or THEME.CircleOff
                 BoxFrame.BorderSizePixel = 0
-                BoxFrame.ZIndex = 2
                 BoxFrame.Parent = RowBtn
 
                 local BoxCorner = Instance.new("UICorner")
@@ -785,7 +772,6 @@ function NamelessWare:CreateWindow(config)
                 CheckIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
                 CheckIcon.ImageTransparency = state and 0 or 1
                 CheckIcon.ScaleType = Enum.ScaleType.Fit
-                CheckIcon.ZIndex = 3
                 CheckIcon.Parent = BoxFrame
 
                 local function SetState(newVal)
@@ -793,13 +779,11 @@ function NamelessWare:CreateWindow(config)
                     if state then
                         Tween(BoxFrame, {BackgroundColor3 = AccentColor}, 0.18)
                         Tween(BoxStroke, {Color = THEME.AccentGradient}, 0.18)
-                        Tween(BoxGlow, {ImageTransparency = 0.45}, 0.18)
                         Tween(CheckIcon, {ImageTransparency = 0}, 0.18)
                         Tween(Label, {TextColor3 = THEME.TextMain}, 0.18)
                     else
                         Tween(BoxFrame, {BackgroundColor3 = THEME.CircleOff}, 0.18)
                         Tween(BoxStroke, {Color = THEME.CircleOffBorder}, 0.18)
-                        Tween(BoxGlow, {ImageTransparency = 1}, 0.18)
                         Tween(CheckIcon, {ImageTransparency = 1}, 0.18)
                         Tween(Label, {TextColor3 = THEME.TextMuted}, 0.18)
                     end
