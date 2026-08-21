@@ -29,30 +29,30 @@ local Library = {
     Folder = "NamelessConfigs",
     IgnoreIndexes = {},
     Fonts = {
-        Bold = Enum.Font.UbuntuBold,
-        Medium = Enum.Font.UbuntuMedium,
-        Regular = Enum.Font.Ubuntu
+        Bold = Enum.Font.GothamBold,
+        Medium = Enum.Font.GothamMedium,
+        Regular = Enum.Font.Gotham
     },
     Themes = {
         Nameless = {
-            Background = Color3.fromRGB(11, 9, 20),
-            Sidebar = Color3.fromRGB(7, 6, 14),
-            CardBackground = Color3.fromRGB(17, 13, 30),
-            CardBorder = Color3.fromRGB(42, 29, 74),
-            CardBorderHover = Color3.fromRGB(139, 92, 246),
-            Accent = Color3.fromRGB(176, 38, 255),
-            AccentSecondary = Color3.fromRGB(205, 95, 255),
-            AccentDark = Color3.fromRGB(98, 28, 168),
-            Text = Color3.fromRGB(245, 243, 255),
-            TextDim = Color3.fromRGB(162, 152, 198),
-            TextDark = Color3.fromRGB(101, 92, 138),
-            ItemBg = Color3.fromRGB(24, 17, 44),
-            ItemBgHover = Color3.fromRGB(38, 26, 68),
-            ItemBorder = Color3.fromRGB(56, 38, 98),
-            SliderTrack = Color3.fromRGB(20, 14, 38),
-            SliderFill = Color3.fromRGB(176, 38, 255),
-            ToggleOff = Color3.fromRGB(24, 17, 46),
-            ToggleOn = Color3.fromRGB(176, 38, 255)
+            Background = Color3.fromRGB(13, 11, 20),
+            Sidebar = Color3.fromRGB(9, 8, 15),
+            CardBackground = Color3.fromRGB(18, 15, 28),
+            CardBorder = Color3.fromRGB(38, 30, 58),
+            CardBorderHover = Color3.fromRGB(78, 56, 118),
+            Accent = Color3.fromRGB(168, 85, 247),
+            AccentSecondary = Color3.fromRGB(192, 132, 252),
+            AccentDark = Color3.fromRGB(126, 34, 206),
+            Text = Color3.fromRGB(248, 246, 255),
+            TextDim = Color3.fromRGB(165, 155, 190),
+            TextDark = Color3.fromRGB(105, 95, 130),
+            ItemBg = Color3.fromRGB(24, 20, 36),
+            ItemBgHover = Color3.fromRGB(36, 28, 54),
+            ItemBorder = Color3.fromRGB(46, 38, 70),
+            SliderTrack = Color3.fromRGB(20, 16, 30),
+            SliderFill = Color3.fromRGB(168, 85, 247),
+            ToggleOff = Color3.fromRGB(26, 22, 38),
+            ToggleOn = Color3.fromRGB(168, 85, 247)
         },
         Midnight = {
             Background = Color3.fromRGB(8, 10, 15),
@@ -1492,7 +1492,7 @@ function Library:CreateWindow(config)
 
                 local CheckBox = Instance.new("TextButton")
                 CheckBox.Name = "ToggleSwitch"
-                CheckBox.Size = UDim2.new(0, 38, 0, 20)
+                CheckBox.Size = UDim2.new(0, 36, 0, 18)
                 CheckBox.LayoutOrder = 100
                 CheckBox.BackgroundColor3 = default and Library.Theme.Accent or Library.Theme.ToggleOff
                 CheckBox.BorderSizePixel = 0
@@ -1512,10 +1512,10 @@ function Library:CreateWindow(config)
 
                 local SwitchKnob = Instance.new("Frame")
                 SwitchKnob.Name = "Knob"
-                SwitchKnob.Size = UDim2.new(0, 14, 0, 14)
+                SwitchKnob.Size = UDim2.new(0, 12, 0, 12)
                 SwitchKnob.AnchorPoint = Vector2.new(0, 0.5)
-                SwitchKnob.Position = default and UDim2.new(1, -17, 0.5, 0) or UDim2.new(0, 3, 0.5, 0)
-                SwitchKnob.BackgroundColor3 = default and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(220, 220, 230)
+                SwitchKnob.Position = default and UDim2.new(1, -15, 0.5, 0) or UDim2.new(0, 3, 0.5, 0)
+                SwitchKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 SwitchKnob.BorderSizePixel = 0
                 SwitchKnob.ZIndex = 12
                 SwitchKnob.Parent = CheckBox
@@ -1550,15 +1550,15 @@ function Library:CreateWindow(config)
                     if flag then Library.Flags[flag] = state end
                     
                     if state then
-                        createTween(CheckBox, { BackgroundColor3 = Library.Theme.Accent }, 0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        createTween(CheckStroke, { Color = Library.Theme.AccentSecondary }, 0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        createTween(SwitchKnob, { Position = UDim2.new(1, -17, 0.5, 0), Size = UDim2.new(0, 14, 0, 14), BackgroundColor3 = Color3.fromRGB(255, 255, 255) }, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-                        createTween(Label, { TextColor3 = Library.Theme.Text }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(CheckBox, { BackgroundColor3 = Library.Theme.Accent }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(CheckStroke, { Color = Library.Theme.Accent }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(SwitchKnob, { Position = UDim2.new(1, -15, 0.5, 0), Size = UDim2.new(0, 12, 0, 12) }, 0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                        createTween(Label, { TextColor3 = Library.Theme.Text }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                     else
                         createTween(CheckBox, { BackgroundColor3 = Library.Theme.ToggleOff }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                         createTween(CheckStroke, { Color = Library.Theme.CardBorder }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        createTween(SwitchKnob, { Position = UDim2.new(0, 3, 0.5, 0), Size = UDim2.new(0, 14, 0, 14), BackgroundColor3 = Color3.fromRGB(220, 220, 230) }, 0.24, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        createTween(Label, { TextColor3 = Library.Theme.TextDim }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(SwitchKnob, { Position = UDim2.new(0, 3, 0.5, 0), Size = UDim2.new(0, 12, 0, 12) }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(Label, { TextColor3 = Library.Theme.TextDim }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                     end
                     
                     if not ignoreCallback then
@@ -1585,11 +1585,11 @@ function Library:CreateWindow(config)
                 end
 
                 CheckBox.MouseButton1Down:Connect(function()
-                    createTween(SwitchKnob, { Size = UDim2.new(0, 18, 0, 14) }, 0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+                    createTween(SwitchKnob, { Size = UDim2.new(0, 15, 0, 12) }, 0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
                 end)
 
                 CheckBox.MouseButton1Up:Connect(function()
-                    createTween(SwitchKnob, { Size = UDim2.new(0, 14, 0, 14) }, 0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                    createTween(SwitchKnob, { Size = UDim2.new(0, 12, 0, 12) }, 0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
                 end)
 
                 CheckBox.MouseButton1Click:Connect(function()
@@ -2189,7 +2189,7 @@ function Library:CreateWindow(config)
 
                 local Selector = Instance.new("TextButton")
                 Selector.Name = "Selector"
-                Selector.Size = UDim2.new(1, 0, 0, 30)
+                Selector.Size = UDim2.new(1, 0, 0, 28)
                 Selector.Position = UDim2.new(0, 0, 0, 20)
                 Selector.BackgroundColor3 = Library.Theme.ItemBg
                 Selector.BorderSizePixel = 0
@@ -2209,8 +2209,8 @@ function Library:CreateWindow(config)
                 SelStroke.Parent = Selector
 
                 local SelectedText = Instance.new("TextLabel")
-                SelectedText.Size = UDim2.new(1, -34, 1, 0)
-                SelectedText.Position = UDim2.new(0, 12, 0, 0)
+                SelectedText.Size = UDim2.new(1, -30, 1, 0)
+                SelectedText.Position = UDim2.new(0, 10, 0, 0)
                 SelectedText.BackgroundTransparency = 1
                 SelectedText.Text = type(default) == "table" and table.concat(default, ", ") or tostring(default)
                 SelectedText.TextColor3 = Library.Theme.Text
@@ -2222,25 +2222,12 @@ function Library:CreateWindow(config)
 
                 local Arrow = Instance.new("ImageLabel")
                 Arrow.Size = UDim2.new(0, 14, 0, 14)
-                Arrow.AnchorPoint = Vector2.new(0.5, 0.5)
-                Arrow.Position = UDim2.new(1, -16, 0.5, 0)
+                Arrow.Position = UDim2.new(1, -22, 0.5, -7)
                 Arrow.BackgroundTransparency = 1
                 Arrow.Image = "rbxassetid://6031091004"
                 Arrow.ImageColor3 = Library.Theme.TextDark
                 Arrow.ZIndex = 12
                 Arrow.Parent = Selector
-
-                Selector.MouseEnter:Connect(function()
-                    createTween(Selector, { BackgroundColor3 = Library.Theme.ItemBgHover }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                    createTween(SelStroke, { Color = Library.Theme.Accent }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                end)
-
-                Selector.MouseLeave:Connect(function()
-                    createTween(Selector, { BackgroundColor3 = Library.Theme.ItemBg }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                    if not (DropdownList and DropdownList.Visible) then
-                        createTween(SelStroke, { Color = Library.Theme.ItemBorder }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                    end
-                end)
 
                 local currentSelected = default
                 if flag then Library.Flags[flag] = currentSelected end
@@ -2254,14 +2241,13 @@ function Library:CreateWindow(config)
                 DropdownList.ScrollBarImageColor3 = Library.Theme.CardBorder
                 DropdownList.CanvasSize = UDim2.new(0, 0, 0, 0)
                 DropdownList.AutomaticCanvasSize = Enum.AutomaticSize.Y
-                DropdownList.ClipsDescendants = true
                 DropdownList.Visible = false
                 DropdownList.ZIndex = 60
                 DropdownList.Parent = Overlay
                 Library:RegisterThemeObject(DropdownList, "BackgroundColor3", "CardBackground")
 
                 local ListCorner = Instance.new("UICorner")
-                ListCorner.CornerRadius = UDim.new(0, 14)
+                ListCorner.CornerRadius = UDim.new(0, 12)
                 ListCorner.Parent = DropdownList
 
                 local ListStroke = Instance.new("UIStroke")
@@ -2301,11 +2287,9 @@ function Library:CreateWindow(config)
                             else
                                 isSel = (tostring(currentSelected) == optName)
                             end
-                            createTween(child, {
-                                BackgroundColor3 = isSel and Library.Theme.ItemBgHover or Color3.fromRGB(0,0,0),
-                                BackgroundTransparency = isSel and 0.4 or 1,
-                                TextColor3 = isSel and Library.Theme.Accent or Library.Theme.TextDim
-                            }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                            child.BackgroundColor3 = isSel and Library.Theme.ItemBgHover or Color3.fromRGB(0,0,0)
+                            child.BackgroundTransparency = isSel and 0.4 or 1
+                            child.TextColor3 = isSel and Library.Theme.Accent or Library.Theme.TextDim
                             child.Font = isSel and Library.Fonts.Bold or Library.Fonts.Medium
                         end
                     end
@@ -2327,7 +2311,7 @@ function Library:CreateWindow(config)
 
                         local OptBtn = Instance.new("TextButton")
                         OptBtn.Name = optStr
-                        OptBtn.Size = UDim2.new(1, 0, 0, 26)
+                        OptBtn.Size = UDim2.new(1, 0, 0, 24)
                         OptBtn.BackgroundColor3 = isSel and Library.Theme.ItemBgHover or Color3.fromRGB(0,0,0)
                         OptBtn.BackgroundTransparency = isSel and 0.4 or 1
                         OptBtn.Text = "  " .. optStr
@@ -2340,18 +2324,8 @@ function Library:CreateWindow(config)
                         OptBtn.Parent = DropdownList
 
                         local OptCorner = Instance.new("UICorner")
-                        OptCorner.CornerRadius = UDim.new(0, 8)
+                        OptCorner.CornerRadius = UDim.new(0, 6)
                         OptCorner.Parent = OptBtn
-
-                        OptBtn.MouseEnter:Connect(function()
-                            local isCurrentSel = (multi and type(currentSelected) == "table" and (currentSelected[opt] or currentSelected[optStr])) or (currentSelected == opt or tostring(currentSelected) == optStr)
-                            createTween(OptBtn, { BackgroundTransparency = isCurrentSel and 0.25 or 0.6, BackgroundColor3 = Library.Theme.ItemBgHover }, 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        end)
-
-                        OptBtn.MouseLeave:Connect(function()
-                            local isCurrentSel = (multi and type(currentSelected) == "table" and (currentSelected[opt] or currentSelected[optStr])) or (currentSelected == opt or tostring(currentSelected) == optStr)
-                            createTween(OptBtn, { BackgroundTransparency = isCurrentSel and 0.4 or 1 }, 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        end)
 
                         OptBtn.MouseButton1Click:Connect(function()
                             if multi then
@@ -2443,38 +2417,24 @@ function Library:CreateWindow(config)
 
                 Selector.MouseButton1Click:Connect(function()
                     if DropdownList.Visible then
-                        createTween(Arrow, { Rotation = 0, ImageColor3 = Library.Theme.TextDark }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        createTween(SelStroke, { Color = Library.Theme.ItemBorder }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        local tw = createTween(DropdownList, { Size = UDim2.new(0, Selector.AbsoluteSize.X, 0, 0) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
-                        tw.Completed:Connect(function()
-                            DropdownList.Visible = false
-                            if CurrentPopup and CurrentPopup.Menu == DropdownList then
-                                CurrentPopup = nil
-                            end
-                        end)
+                        DropdownList.Visible = false
+                        if CurrentPopup and CurrentPopup.Menu == DropdownList then
+                            CurrentPopup = nil
+                        end
                     else
                         CloseCurrentPopup()
                         local absPos = Selector.AbsolutePosition
                         local mainPos = MainFrame.AbsolutePosition
-                        local targetHeight = math.min(math.max(#options * 30 + 14, 40), 175)
-                        DropdownList.Position = UDim2.new(0, absPos.X - mainPos.X, 0, absPos.Y - mainPos.Y + 34)
-                        DropdownList.Size = UDim2.new(0, Selector.AbsoluteSize.X, 0, 0)
+                        DropdownList.Position = UDim2.new(0, absPos.X - mainPos.X, 0, absPos.Y - mainPos.Y + 32)
+                        DropdownList.Size = UDim2.new(0, Selector.AbsoluteSize.X, 0, math.min(math.max(#options * 28 + 12, 36), 160))
                         DropdownList.Visible = true
-                        createTween(DropdownList, { Size = UDim2.new(0, Selector.AbsoluteSize.X, 0, targetHeight) }, 0.24, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        createTween(Arrow, { Rotation = 180, ImageColor3 = Library.Theme.Accent }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        createTween(SelStroke, { Color = Library.Theme.Accent }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                         refreshOptions()
 
                         CurrentPopup = {
                             Menu = DropdownList,
                             Holder = Selector,
                             Close = function()
-                                createTween(Arrow, { Rotation = 0, ImageColor3 = Library.Theme.TextDark }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                                createTween(SelStroke, { Color = Library.Theme.ItemBorder }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                                local tw = createTween(DropdownList, { Size = UDim2.new(0, Selector.AbsoluteSize.X, 0, 0) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
-                                tw.Completed:Connect(function()
-                                    DropdownList.Visible = false
-                                end)
+                                DropdownList.Visible = false
                             end
                         }
                     end
