@@ -955,9 +955,18 @@ function SettingsManager:BuildSettingsSection(Section)
     })
 end
 
+NamelessWare.THEME = THEME
 NamelessWare.ThemeManager = ThemeManager
 NamelessWare.SaveManager = SaveManager
 NamelessWare.SettingsManager = SettingsManager
+
+ThemeManager:SetLibrary(NamelessWare)
+SaveManager:SetLibrary(NamelessWare)
+SettingsManager:SetLibrary(NamelessWare)
+
+if getgenv then
+    getgenv().NamelessWare = NamelessWare
+end
 
 -- =========================================================
 -- NOTIFICATION TOAST COMPONENT
@@ -2606,6 +2615,39 @@ function NamelessWare:CreateWindow(config)
         end
 
         return TabMethods
+    end
+
+    function Window:CreateSettingsTab(customConfig)
+        customConfig = customConfig or {}
+        local categoryName = customConfig.Category or "Misc"
+        local tabName = customConfig.Name or "Settings"
+        local tabIcon = customConfig.Icon or "rbxassetid://10709791437"
+        local tabSubtitle = customConfig.Subtitle or "Profiles, Themes & Menu Controls"
+
+        self:AddCategory(categoryName)
+
+        local SettingsTab = self:CreateTab({
+            Name = tabName,
+            Icon = tabIcon,
+            Subtitle = tabSubtitle
+        })
+
+        -- 1. Profile Manager Section (SaveManager)
+        local ConfigSec = SettingsTab:CreateSection("Profile Manager", "rbxassetid://10709791437")
+        NamelessWare.SaveManager:BuildConfigSection(ConfigSec)
+
+        -- 2. Theme Customizer Section (ThemeManager)
+        local ThemeSec = SettingsTab:CreateSection("Theme Customizer", "rbxassetid://10709791437")
+        NamelessWare.ThemeManager:BuildThemeSection(ThemeSec)
+
+        -- 3. Menu Settings Section (SettingsManager)
+        local MenuSec = SettingsTab:CreateSection("Menu Controls", "rbxassetid://10734950309")
+        NamelessWare.SettingsManager:BuildSettingsSection(MenuSec)
+
+        -- Automatically run autoload if configured
+        NamelessWare.SaveManager:AutoLoad()
+
+        return SettingsTab
     end
 
     return Window
