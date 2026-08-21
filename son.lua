@@ -255,12 +255,24 @@ local RAW_LOGO_URL = "https://raw.githubusercontent.com/ApparentlyZen/image-name
 local NamelessWare = {
     Flags = {},
     ThemeSubscribers = {},
+    KeybindRegistry = {},
     CurrentTheme = "Nameless Violet",
     ToggleKey = Enum.KeyCode.RightShift,
     ActiveWindow = nil,
     Notifications = nil,
 }
 NamelessWare.__index = NamelessWare
+
+function NamelessWare:RegisterKeybind(info)
+    if not info or not info.Name then return end
+    for i, item in ipairs(self.KeybindRegistry) do
+        if item.Name == info.Name and item.Tab == info.Tab then
+            self.KeybindRegistry[i] = info
+            return
+        end
+    end
+    table.insert(self.KeybindRegistry, info)
+end
 
 -- =========================================================
 -- THEME MANAGER
@@ -960,6 +972,131 @@ function SettingsManager:BuildSettingsSection(Section)
         })
     end
 
+    Section:AddSubHeader("Active Keybinds Tracker", "rbxassetid://10734975692")
+
+    local KeybindListContainer = Instance.new("Frame")
+    KeybindListContainer.Size = UDim2.new(1, 0, 0, 0)
+    KeybindListContainer.AutomaticSize = Enum.AutomaticSize.Y
+    KeybindListContainer.BackgroundTransparency = 1
+    KeybindListContainer.Parent = Section.Card
+
+    local ListLay = Instance.new("UIListLayout")
+    ListLay.Padding = UDim.new(0, 6)
+    ListLay.SortOrder = Enum.SortOrder.LayoutOrder
+    ListLay.Parent = KeybindListContainer
+
+    local function RefreshKeybindDisplay()
+        for _, child in ipairs(KeybindListContainer:GetChildren()) do
+            if child:IsA("Frame") or child:IsA("TextLabel") then
+                child:Destroy()
+            end
+        end
+
+        local total = 0
+        local registry = NamelessWare.KeybindRegistry or {}
+
+        for _, kb in ipairs(registry) do
+            total = total + 1
+            local Row = Instance.new("Frame")
+            Row.Size = UDim2.new(1, 0, 0, 26)
+            Row.BackgroundColor3 = THEME.BgSidebar
+            Row.BorderSizePixel = 0
+            Row.Parent = KeybindListContainer
+
+            local RowCorner = Instance.new("UICorner")
+            RowCorner.CornerRadius = UDim.new(0, 6)
+            RowCorner.Parent = Row
+
+            local RowStroke = Instance.new("UIStroke")
+            RowStroke.Color = THEME.CardBorder
+            RowStroke.Thickness = 1
+            RowStroke.Parent = Row
+
+            local TabBadge = Instance.new("TextLabel")
+            TabBadge.Size = UDim2.new(0, 64, 0, 16)
+            TabBadge.Position = UDim2.new(0, 5, 0.5, -8)
+            TabBadge.BackgroundColor3 = THEME.CardBg
+            TabBadge.Text = "[" .. (kb.Tab or "General") .. "]"
+            TabBadge.Font = THEME.FontBold
+            TabBadge.TextSize = 8
+            TabBadge.TextColor3 = THEME.Accent
+            TabBadge.Parent = Row
+
+            local BadgeCorner = Instance.new("UICorner")
+            BadgeCorner.CornerRadius = UDim.new(0, 4)
+            BadgeCorner.Parent = TabBadge
+
+            local FeatLabel = Instance.new("TextLabel")
+            FeatLabel.Size = UDim2.new(1, -140, 1, 0)
+            FeatLabel.Position = UDim2.new(0, 74, 0, 0)
+            FeatLabel.BackgroundTransparency = 1
+            FeatLabel.Text = kb.Name or "Feature"
+            FeatLabel.Font = THEME.FontMain
+            FeatLabel.TextSize = 9
+            FeatLabel.TextColor3 = THEME.TextMain
+            FeatLabel.TextXAlignment = Enum.TextXAlignment.Left
+            FeatLabel.Parent = Row
+
+            local KeyBadge = Instance.new("TextLabel")
+            KeyBadge.Size = UDim2.new(0, 55, 0, 16)
+            KeyBadge.Position = UDim2.new(1, -60, 0.5, -8)
+            KeyBadge.BackgroundColor3 = THEME.CardBg
+            KeyBadge.Text = tostring(kb.Key or "None")
+            KeyBadge.Font = THEME.FontBold
+            KeyBadge.TextSize = 8
+            KeyBadge.TextColor3 = THEME.TextMuted
+            KeyBadge.Parent = Row
+
+            local KeyCorner = Instance.new("UICorner")
+            KeyCorner.CornerRadius = UDim.new(0, 4)
+            KeyCorner.Parent = KeyBadge
+
+            local KeyStroke = Instance.new("UIStroke")
+            KeyStroke.Color = THEME.CardBorder
+            KeyStroke.Thickness = 1
+            KeyStroke.Parent = KeyBadge
+
+            table.insert(NamelessWare.ThemeSubscribers, function(theme)
+                Row.BackgroundColor3 = theme.BgSidebar
+                RowStroke.Color = theme.CardBorder
+                TabBadge.BackgroundColor3 = theme.CardBg
+                TabBadge.TextColor3 = theme.Accent
+                FeatLabel.TextColor3 = theme.TextMain
+                KeyBadge.BackgroundColor3 = theme.CardBg
+                KeyBadge.TextColor3 = theme.TextMuted
+                KeyStroke.Color = theme.CardBorder
+            end)
+        end
+
+        if total == 0 then
+            local EmptyLabel = Instance.new("TextLabel")
+            EmptyLabel.Size = UDim2.new(1, 0, 0, 24)
+            EmptyLabel.BackgroundTransparency = 1
+            EmptyLabel.Text = "No active keybinds registered."
+            EmptyLabel.Font = THEME.FontMain
+            EmptyLabel.TextSize = 9
+            EmptyLabel.TextColor3 = THEME.TextMuted
+            EmptyLabel.Parent = KeybindListContainer
+        end
+    end
+
+    RefreshKeybindDisplay()
+
+    Section:AddButton({
+        Name = "Refresh Keybinds Tracker",
+        Callback = function()
+            RefreshKeybindDisplay()
+            NamelessWare:Notify({
+                Title = "Keybinds Refreshed",
+                Content = "Updated list of active feature keybinds.",
+                Duration = 1.5,
+                Type = "Info"
+            })
+        end
+    })
+
+    Section:AddSubHeader("Actions", "rbxassetid://10734950309")
+
     Section:AddButton({
         Name = "Unload NamelessWare",
         Callback = function()
@@ -1259,7 +1396,7 @@ function NamelessWare:CreateWindow(config)
     MakeDraggable(MainWindow, BrandFrame)
 
     local NavScroll = Instance.new("ScrollingFrame")
-    NavScroll.Size = UDim2.new(1, -14, 1, -58)
+    NavScroll.Size = UDim2.new(1, -14, 1, -116)
     NavScroll.Position = UDim2.new(0, 7, 0, 52)
     NavScroll.BackgroundTransparency = 1
     NavScroll.ScrollBarThickness = 0
@@ -1271,6 +1408,103 @@ function NamelessWare:CreateWindow(config)
     NavLayout.Padding = UDim.new(0, 4)
     NavLayout.SortOrder = Enum.SortOrder.LayoutOrder
     NavLayout.Parent = NavScroll
+
+    -- =====================================================
+    -- USER PROFILE & USAGE TRACKER (FOOTER)
+    -- =====================================================
+    local UserCard = Instance.new("Frame")
+    UserCard.Name = "UserProfileTracker"
+    UserCard.Size = UDim2.new(1, -14, 0, 50)
+    UserCard.Position = UDim2.new(0, 7, 1, -56)
+    UserCard.BackgroundColor3 = THEME.CardBg
+    UserCard.BorderSizePixel = 0
+    UserCard.Parent = Sidebar
+
+    local UserCardCorner = Instance.new("UICorner")
+    UserCardCorner.CornerRadius = UDim.new(0, 8)
+    UserCardCorner.Parent = UserCard
+
+    local UserCardStroke = Instance.new("UIStroke")
+    UserCardStroke.Color = THEME.CardBorder
+    UserCardStroke.Thickness = 1
+    UserCardStroke.Parent = UserCard
+
+    local AvatarBox = Instance.new("Frame")
+    AvatarBox.Size = UDim2.new(0, 32, 0, 32)
+    AvatarBox.Position = UDim2.new(0, 8, 0.5, -16)
+    AvatarBox.BackgroundColor3 = THEME.BgSidebar
+    AvatarBox.BorderSizePixel = 0
+    AvatarBox.Parent = UserCard
+
+    local AvatarBoxCorner = Instance.new("UICorner")
+    AvatarBoxCorner.CornerRadius = UDim.new(1, 0)
+    AvatarBoxCorner.Parent = AvatarBox
+
+    local AvatarImg = Instance.new("ImageLabel")
+    AvatarImg.Size = UDim2.new(1, 0, 1, 0)
+    AvatarImg.BackgroundTransparency = 1
+    AvatarImg.Image = "rbxthumb://type=AvatarHeadShot&id=" .. tostring(LocalPlayer and LocalPlayer.UserId or 1) .. "&w=100&h=100"
+    AvatarImg.Parent = AvatarBox
+
+    local AvatarImgCorner = Instance.new("UICorner")
+    AvatarImgCorner.CornerRadius = UDim.new(1, 0)
+    AvatarImgCorner.Parent = AvatarImg
+
+    local AvatarStroke = Instance.new("UIStroke")
+    AvatarStroke.Color = AccentColor
+    AvatarStroke.Thickness = 1.2
+    AvatarStroke.Parent = AvatarBox
+
+    local StatusDot = Instance.new("Frame")
+    StatusDot.Size = UDim2.new(0, 8, 0, 8)
+    StatusDot.Position = UDim2.new(1, -7, 1, -7)
+    StatusDot.BackgroundColor3 = Color3.fromRGB(0, 230, 130)
+    StatusDot.BorderSizePixel = 0
+    StatusDot.Parent = AvatarBox
+
+    local StatusDotCorner = Instance.new("UICorner")
+    StatusDotCorner.CornerRadius = UDim.new(1, 0)
+    StatusDotCorner.Parent = StatusDot
+
+    local StatusDotStroke = Instance.new("UIStroke")
+    StatusDotStroke.Color = THEME.BgSidebar
+    StatusDotStroke.Thickness = 1
+    StatusDotStroke.Parent = StatusDot
+
+    local UserNameLabel = Instance.new("TextLabel")
+    UserNameLabel.Size = UDim2.new(1, -48, 0, 14)
+    UserNameLabel.Position = UDim2.new(0, 46, 0, 9)
+    UserNameLabel.BackgroundTransparency = 1
+    UserNameLabel.Text = LocalPlayer and LocalPlayer.DisplayName or "Player"
+    UserNameLabel.Font = THEME.FontBold
+    UserNameLabel.TextSize = 10
+    UserNameLabel.TextColor3 = THEME.TextMain
+    UserNameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    UserNameLabel.TextTruncate = Enum.TextTruncate.AtEnd
+    UserNameLabel.Parent = UserCard
+
+    local UserTimerLabel = Instance.new("TextLabel")
+    UserTimerLabel.Size = UDim2.new(1, -48, 0, 12)
+    UserTimerLabel.Position = UDim2.new(0, 46, 0, 25)
+    UserTimerLabel.BackgroundTransparency = 1
+    UserTimerLabel.Text = "⏱ 00:00:00"
+    UserTimerLabel.Font = THEME.FontMain
+    UserTimerLabel.TextSize = 9
+    UserTimerLabel.TextColor3 = THEME.Accent
+    UserTimerLabel.TextXAlignment = Enum.TextXAlignment.Left
+    UserTimerLabel.Parent = UserCard
+
+    local sessionStart = tick()
+    task.spawn(function()
+        while ScreenGui and ScreenGui.Parent do
+            local elapsed = math.floor(tick() - sessionStart)
+            local hrs = math.floor(elapsed / 3600)
+            local mins = math.floor((elapsed % 3600) / 60)
+            local secs = elapsed % 60
+            UserTimerLabel.Text = string.format("⏱ %02d:%02d:%02d", hrs, mins, secs)
+            task.wait(1)
+        end
+    end)
 
     local HeaderFrame = Instance.new("Frame")
     HeaderFrame.Name = "HeaderFrame"
@@ -1481,6 +1715,13 @@ function NamelessWare:CreateWindow(config)
         SearchIcon.ImageColor3 = theme.TextMuted
         SearchInput.TextColor3 = theme.TextMain
         SearchInput.PlaceholderColor3 = theme.TextMuted
+        UserCard.BackgroundColor3 = theme.CardBg
+        UserCardStroke.Color = theme.CardBorder
+        AvatarBox.BackgroundColor3 = theme.BgSidebar
+        AvatarStroke.Color = theme.Accent
+        StatusDotStroke.Color = theme.BgSidebar
+        UserNameLabel.TextColor3 = theme.TextMain
+        UserTimerLabel.TextColor3 = theme.Accent
     end)
 
     function Window:AddCategory(catName)
@@ -1499,7 +1740,8 @@ function NamelessWare:CreateWindow(config)
 
     function Window:CreateTab(tabConfig)
         tabConfig = tabConfig or {}
-        local name = tabConfig.Name or "Tab"
+        local currentTabName = tabConfig.Name or "Tab"
+        local name = currentTabName
         local icon = tabConfig.Icon or "rbxassetid://10734975692"
         local subText = tabConfig.Subtitle or SubTitle
 
@@ -1810,6 +2052,13 @@ function NamelessWare:CreateWindow(config)
                     local KeyCorner = Instance.new("UICorner")
                     KeyCorner.CornerRadius = UDim.new(0, 3)
                     KeyCorner.Parent = KeyLabel
+
+                    NamelessWare:RegisterKeybind({
+                        Name = name,
+                        Tab = currentTabName,
+                        Key = tostring(keybindKey),
+                        GetState = function() return state end
+                    })
                 end
 
                 local ColorBox
@@ -2392,6 +2641,13 @@ function NamelessWare:CreateWindow(config)
                 KeyStroke.Thickness = 1
                 KeyStroke.Parent = KeyBtn
 
+                NamelessWare:RegisterKeybind({
+                    Name = name,
+                    Tab = currentTabName,
+                    Key = tostring(typeof(key) == "EnumItem" and key.Name or key),
+                    GetState = function() return true end
+                })
+
                 KeyBtn.MouseButton1Click:Connect(function()
                     if isBinding then return end
                     isBinding = true
@@ -2408,6 +2664,12 @@ function NamelessWare:CreateWindow(config)
                             KeyBtn.Text = key.Name
                             Tween(KeyStroke, {Color = THEME.CardBorder}, 0.15)
                             Tween(KeyBtn, {TextColor3 = THEME.TextMuted}, 0.15)
+                            NamelessWare:RegisterKeybind({
+                                Name = name,
+                                Tab = currentTabName,
+                                Key = key.Name,
+                                GetState = function() return true end
+                            })
                             callback(key)
                         end
                     end)
@@ -2428,6 +2690,12 @@ function NamelessWare:CreateWindow(config)
                             key = Enum.KeyCode[newKey]
                         end
                         KeyBtn.Text = tostring(typeof(key) == "EnumItem" and key.Name or key)
+                        NamelessWare:RegisterKeybind({
+                            Name = name,
+                            Tab = currentTabName,
+                            Key = tostring(typeof(key) == "EnumItem" and key.Name or key),
+                            GetState = function() return true end
+                        })
                         callback(key)
                     end,
                     Get = function() return key end,
