@@ -337,6 +337,7 @@ end
 
 function ThemeManager:SetColor(key, color3)
     if not color3 or typeof(color3) ~= "Color3" then return end
+    if THEME[key] == color3 then return end
     THEME[key] = color3
     for _, sub in ipairs(NamelessWare.ThemeSubscribers) do
         pcall(function() sub(THEME) end)
@@ -2850,7 +2851,7 @@ function NamelessWare:CreateWindow(config)
                 local controller = {
                     Set = function(newCol)
                         if typeof(newCol) == "Color3" then
-                            UpdateColor(newCol, true)
+                            UpdateColor(newCol, false)
                         end
                     end,
                     Get = function() return currentColor end,
