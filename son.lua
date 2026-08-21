@@ -5,15 +5,25 @@ local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local HttpService = game:GetService("HttpService")
 
-local LocalPlayer = Players.LocalPlayer
+local LocalPlayer = Players.LocalPlayer or Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
 
-local function GetSafeParent()
-    local success, result = pcall(function()
-        if gethui then return gethui() end
-        return CoreGui
+local function SafeParentGui(gui)
+    local parented = false
+    if gethui then
+        local s = pcall(function() gui.Parent = gethui(); parented = true end)
+        if s and parented then return end
+    end
+    if syn and syn.protect_gui then
+        pcall(function() syn.protect_gui(gui) end)
+    end
+    local s = pcall(function() gui.Parent = CoreGui; parented = true end)
+    if s and parented then return end
+    pcall(function()
+        local playerGui = LocalPlayer and (LocalPlayer:FindFirstChildOfClass("PlayerGui") or LocalPlayer:WaitForChild("PlayerGui", 3))
+        if playerGui then
+            gui.Parent = playerGui
+        end
     end)
-    if success and result then return result end
-    return LocalPlayer:WaitForChild("PlayerGui")
 end
 
 local function FetchCustomAsset(url, fileName)
@@ -1086,10 +1096,7 @@ function NamelessWare:CreateWindow(config)
     ScreenGui.Name = "NamelessWare_UI"
     ScreenGui.ResetOnSpawn = false
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    if syn and syn.protect_gui then
-        pcall(function() syn.protect_gui(ScreenGui) end)
-    end
-    ScreenGui.Parent = GetSafeParent()
+    SafeParentGui(ScreenGui)
     _G.NamelessWareInstance = ScreenGui
 
     local customLogoAsset = FetchCustomAsset(LogoUrl, "NamelessWare_Logo.webp")
