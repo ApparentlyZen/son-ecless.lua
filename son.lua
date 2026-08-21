@@ -118,14 +118,23 @@ local Library = {
         ["info"] = "rbxassetid://10723415903",
         ["help"] = "rbxassetid://10723415903"
     },
-    GetIcon = function(self, icon, fallbackName)
+    GetIcon = function(selfOrIcon, maybeIcon, maybeFallback)
+        local icon, fallbackName
+        if type(selfOrIcon) == "table" and (selfOrIcon.Icons or selfOrIcon == Library) then
+            icon = maybeIcon
+            fallbackName = maybeFallback
+        else
+            icon = selfOrIcon
+            fallbackName = maybeIcon
+        end
+        local iconsTable = Library.Icons or {}
         if not icon and fallbackName then
             local lowerName = tostring(fallbackName):lower():gsub("%s+", "")
-            if self.Icons[lowerName] then
-                return self.Icons[lowerName]
+            if iconsTable[lowerName] then
+                return iconsTable[lowerName]
             end
-            for key, val in pairs(self.Icons) do
-                if lowerName:find(key) then
+            for key, val in pairs(iconsTable) do
+                if lowerName:find(key) or key:find(lowerName) then
                     return val
                 end
             end
@@ -138,11 +147,11 @@ local Library = {
                 return icon
             end
             local lowerKey = icon:lower():gsub("%s+", "")
-            if self.Icons[lowerKey] then
-                return self.Icons[lowerKey]
+            if iconsTable[lowerKey] then
+                return iconsTable[lowerKey]
             end
-            for key, val in pairs(self.Icons) do
-                if lowerKey:find(key) then
+            for key, val in pairs(iconsTable) do
+                if lowerKey:find(key) or key:find(lowerKey) then
                     return val
                 end
             end
@@ -723,32 +732,35 @@ function Library:CreateWindow(config)
     -- Sidebar Tabs List
     local TabsContainer = Instance.new("ScrollingFrame")
     TabsContainer.Name = "TabsContainer"
-    TabsContainer.Size = UDim2.new(1, 0, 1, -182)
+    TabsContainer.Size = UDim2.new(1, 0, 1, -146)
     TabsContainer.Position = UDim2.new(0, 0, 0, 56)
     TabsContainer.BackgroundTransparency = 1
     TabsContainer.BorderSizePixel = 0
-    TabsContainer.ScrollBarThickness = 0
+    TabsContainer.ScrollBarThickness = 2
+    TabsContainer.ScrollBarImageColor3 = Library.Theme.CardBorder
     TabsContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
     TabsContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    TabsContainer.ClipsDescendants = true
     TabsContainer.ZIndex = 6
     TabsContainer.Parent = Sidebar
+    Library:RegisterThemeObject(TabsContainer, "ScrollBarImageColor3", "CardBorder")
 
     local TabsListLayout = Instance.new("UIListLayout")
     TabsListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    TabsListLayout.Padding = UDim.new(0, 6)
+    TabsListLayout.Padding = UDim.new(0, 3)
     TabsListLayout.Parent = TabsContainer
 
     local TabsPadding = Instance.new("UIPadding")
-    TabsPadding.PaddingLeft = UDim.new(0, 10)
-    TabsPadding.PaddingRight = UDim.new(0, 10)
-    TabsPadding.PaddingTop = UDim.new(0, 8)
+    TabsPadding.PaddingLeft = UDim.new(0, 8)
+    TabsPadding.PaddingRight = UDim.new(0, 8)
+    TabsPadding.PaddingTop = UDim.new(0, 6)
     TabsPadding.Parent = TabsContainer
 
     -- ==================== USER PROFILE & LIVE TRACKER ====================
     local SidebarFooter = Instance.new("Frame")
     SidebarFooter.Name = "SidebarFooter"
-    SidebarFooter.Size = UDim2.new(1, 0, 0, 120)
-    SidebarFooter.Position = UDim2.new(0, 0, 1, -120)
+    SidebarFooter.Size = UDim2.new(1, 0, 0, 84)
+    SidebarFooter.Position = UDim2.new(0, 0, 1, -84)
     SidebarFooter.BackgroundColor3 = Color3.fromRGB(8, 8, 11)
     SidebarFooter.BorderSizePixel = 0
     SidebarFooter.ZIndex = 6
@@ -776,8 +788,8 @@ function Library:CreateWindow(config)
 
     local ProfileCard = Instance.new("Frame")
     ProfileCard.Name = "ProfileCard"
-    ProfileCard.Size = UDim2.new(1, -14, 1, -12)
-    ProfileCard.Position = UDim2.new(0, 7, 0, 6)
+    ProfileCard.Size = UDim2.new(1, -14, 1, -10)
+    ProfileCard.Position = UDim2.new(0, 7, 0, 5)
     ProfileCard.BackgroundColor3 = Library.Theme.CardBackground
     ProfileCard.BorderSizePixel = 0
     ProfileCard.ZIndex = 7
@@ -797,7 +809,7 @@ function Library:CreateWindow(config)
     local AvatarWrapper = Instance.new("Frame")
     AvatarWrapper.Name = "AvatarWrapper"
     AvatarWrapper.Size = UDim2.new(0, 32, 0, 32)
-    AvatarWrapper.Position = UDim2.new(0, 7, 0, 7)
+    AvatarWrapper.Position = UDim2.new(0, 7, 0, 6)
     AvatarWrapper.BackgroundColor3 = Library.Theme.ItemBg
     AvatarWrapper.BorderSizePixel = 0
     AvatarWrapper.ZIndex = 8
@@ -860,7 +872,7 @@ function Library:CreateWindow(config)
     local DisplayNameLabel = Instance.new("TextLabel")
     DisplayNameLabel.Name = "DisplayName"
     DisplayNameLabel.Size = UDim2.new(1, -46, 0, 14)
-    DisplayNameLabel.Position = UDim2.new(0, 44, 0, 6)
+    DisplayNameLabel.Position = UDim2.new(0, 44, 0, 5)
     DisplayNameLabel.BackgroundTransparency = 1
     DisplayNameLabel.Text = LocalPlayer and LocalPlayer.DisplayName or footerUser
     DisplayNameLabel.TextColor3 = Library.Theme.Text
@@ -875,7 +887,7 @@ function Library:CreateWindow(config)
     local RankPill = Instance.new("Frame")
     RankPill.Name = "RankPill"
     RankPill.Size = UDim2.new(0, 56, 0, 13)
-    RankPill.Position = UDim2.new(0, 44, 0, 22)
+    RankPill.Position = UDim2.new(0, 44, 0, 20)
     RankPill.BackgroundColor3 = Library.Theme.Accent
     RankPill.BackgroundTransparency = 0.85
     RankPill.BorderSizePixel = 0
@@ -907,7 +919,7 @@ function Library:CreateWindow(config)
     local CardDivider = Instance.new("Frame")
     CardDivider.Name = "Divider"
     CardDivider.Size = UDim2.new(1, -12, 0, 1)
-    CardDivider.Position = UDim2.new(0, 6, 0, 44)
+    CardDivider.Position = UDim2.new(0, 6, 0, 42)
     CardDivider.BackgroundColor3 = Library.Theme.CardBorder
     CardDivider.BorderSizePixel = 0
     CardDivider.ZIndex = 8
@@ -916,8 +928,8 @@ function Library:CreateWindow(config)
 
     local UptimePill = Instance.new("Frame")
     UptimePill.Name = "UptimePill"
-    UptimePill.Size = UDim2.new(1, -12, 0, 24)
-    UptimePill.Position = UDim2.new(0, 6, 0, 50)
+    UptimePill.Size = UDim2.new(1, -12, 0, 22)
+    UptimePill.Position = UDim2.new(0, 6, 0, 48)
     UptimePill.BackgroundColor3 = Library.Theme.ItemBg
     UptimePill.BorderSizePixel = 0
     UptimePill.ZIndex = 8
@@ -936,109 +948,25 @@ function Library:CreateWindow(config)
 
     local UptimeLabel = Instance.new("TextLabel")
     UptimeLabel.Name = "UptimeLabel"
-    UptimeLabel.Size = UDim2.new(1, -8, 1, 0)
-    UptimeLabel.Position = UDim2.new(0, 6, 0, 0)
+    UptimeLabel.Size = UDim2.new(1, 0, 1, 0)
+    UptimeLabel.Position = UDim2.new(0, 0, 0, 0)
     UptimeLabel.BackgroundTransparency = 1
     UptimeLabel.Text = "⏱ Uptime: 00:00:00"
     UptimeLabel.TextColor3 = Library.Theme.TextDim
     UptimeLabel.Font = Library.Fonts.Bold
     UptimeLabel.TextSize = 9
-    UptimeLabel.TextXAlignment = Enum.TextXAlignment.Left
+    UptimeLabel.TextXAlignment = Enum.TextXAlignment.Center
     UptimeLabel.ZIndex = 9
     UptimeLabel.Parent = UptimePill
 
-    local PerfRow = Instance.new("Frame")
-    PerfRow.Name = "PerfRow"
-    PerfRow.Size = UDim2.new(1, -12, 0, 24)
-    PerfRow.Position = UDim2.new(0, 6, 0, 78)
-    PerfRow.BackgroundTransparency = 1
-    PerfRow.ZIndex = 8
-    PerfRow.Parent = ProfileCard
-
-    local FpsBadge = Instance.new("Frame")
-    FpsBadge.Name = "FpsBadge"
-    FpsBadge.Size = UDim2.new(0.5, -3, 1, 0)
-    FpsBadge.Position = UDim2.new(0, 0, 0, 0)
-    FpsBadge.BackgroundColor3 = Library.Theme.ItemBg
-    FpsBadge.BorderSizePixel = 0
-    FpsBadge.ZIndex = 8
-    FpsBadge.Parent = PerfRow
-    Library:RegisterThemeObject(FpsBadge, "BackgroundColor3", "ItemBg")
-
-    local FpsCorner = Instance.new("UICorner")
-    FpsCorner.CornerRadius = UDim.new(0, 6)
-    FpsCorner.Parent = FpsBadge
-
-    local FpsStroke = Instance.new("UIStroke")
-    FpsStroke.Color = Library.Theme.ItemBorder
-    FpsStroke.Thickness = 0.8
-    FpsStroke.Parent = FpsBadge
-    Library:RegisterThemeObject(FpsStroke, "Color", "ItemBorder")
-
-    local FpsLabel = Instance.new("TextLabel")
-    FpsLabel.Name = "FpsLabel"
-    FpsLabel.Size = UDim2.new(1, 0, 1, 0)
-    FpsLabel.BackgroundTransparency = 1
-    FpsLabel.Text = "⚡ 60 FPS"
-    FpsLabel.TextColor3 = Color3.fromRGB(105, 215, 120)
-    FpsLabel.Font = Library.Fonts.Bold
-    FpsLabel.TextSize = 9
-    FpsLabel.ZIndex = 9
-    FpsLabel.Parent = FpsBadge
-
-    local PingBadge = Instance.new("Frame")
-    PingBadge.Name = "PingBadge"
-    PingBadge.Size = UDim2.new(0.5, -3, 1, 0)
-    PingBadge.Position = UDim2.new(0.5, 3, 0, 0)
-    PingBadge.BackgroundColor3 = Library.Theme.ItemBg
-    PingBadge.BorderSizePixel = 0
-    PingBadge.ZIndex = 8
-    PingBadge.Parent = PerfRow
-    Library:RegisterThemeObject(PingBadge, "BackgroundColor3", "ItemBg")
-
-    local PingCorner = Instance.new("UICorner")
-    PingCorner.CornerRadius = UDim.new(0, 6)
-    PingCorner.Parent = PingBadge
-
-    local PingStroke = Instance.new("UIStroke")
-    PingStroke.Color = Library.Theme.ItemBorder
-    PingStroke.Thickness = 0.8
-    PingStroke.Parent = PingBadge
-    Library:RegisterThemeObject(PingStroke, "Color", "ItemBorder")
-
-    local PingLabel = Instance.new("TextLabel")
-    PingLabel.Name = "PingLabel"
-    PingLabel.Size = UDim2.new(1, 0, 1, 0)
-    PingLabel.BackgroundTransparency = 1
-    PingLabel.Text = "📶 0 MS"
-    PingLabel.TextColor3 = Color3.fromRGB(93, 197, 216)
-    PingLabel.Font = Library.Fonts.Bold
-    PingLabel.TextSize = 9
-    PingLabel.ZIndex = 9
-    PingLabel.Parent = PingBadge
-
-    local frameCount = 0
     local lastFpsTime = tick()
-    local currentFps = 60
 
     RunService.RenderStepped:Connect(function()
-        frameCount = frameCount + 1
         local now = tick()
         if now - lastFpsTime >= 0.5 then
-            currentFps = math.floor(frameCount / (now - lastFpsTime))
-            frameCount = 0
             lastFpsTime = now
-            
             local elapsed = tick() - StartExecutionTime
             UptimeLabel.Text = "⏱ Uptime: " .. formatUptime(elapsed)
-            
-            FpsLabel.Text = "⚡ " .. tostring(currentFps) .. " FPS"
-            if currentFps >= 50 then
-                FpsLabel.TextColor3 = Color3.fromRGB(105, 215, 120)
-            elseif currentFps >= 30 then
-                FpsLabel.TextColor3 = Color3.fromRGB(240, 180, 70)
-            else
-                FpsLabel.TextColor3 = Color3.fromRGB(245, 90, 90)
             end
 
             local pingMs = 0
@@ -1450,7 +1378,7 @@ function Library:CreateWindow(config)
 
         local TabBtn = Instance.new("TextButton")
         TabBtn.Name = name .. "_Tab"
-        TabBtn.Size = UDim2.new(1, 0, 0, 36)
+        TabBtn.Size = UDim2.new(1, 0, 0, 31)
         TabBtn.BackgroundColor3 = Library.Theme.ItemBg
         TabBtn.BackgroundTransparency = 1
         TabBtn.BorderSizePixel = 0
@@ -1460,13 +1388,13 @@ function Library:CreateWindow(config)
         TabBtn.Parent = TabsContainer
 
         local TabCorner = Instance.new("UICorner")
-        TabCorner.CornerRadius = UDim.new(0, 10)
+        TabCorner.CornerRadius = UDim.new(0, 8)
         TabCorner.Parent = TabBtn
 
         local TabIndicator = Instance.new("Frame")
         TabIndicator.Name = "Indicator"
-        TabIndicator.Size = UDim2.new(0, 4, 0, 0)
-        TabIndicator.Position = UDim2.new(0, 5, 0.5, -10)
+        TabIndicator.Size = UDim2.new(0, 3, 0, 0)
+        TabIndicator.Position = UDim2.new(0, 4, 0.5, -9)
         TabIndicator.BackgroundColor3 = Library.Theme.Accent
         TabIndicator.BackgroundTransparency = 1
         TabIndicator.BorderSizePixel = 0
@@ -1482,8 +1410,8 @@ function Library:CreateWindow(config)
         if resolvedIcon and resolvedIcon ~= "" then
             TabIcon = Instance.new("ImageLabel")
             TabIcon.Name = "TabIcon"
-            TabIcon.Size = UDim2.new(0, 16, 0, 16)
-            TabIcon.Position = UDim2.new(0, 15, 0.5, -8)
+            TabIcon.Size = UDim2.new(0, 15, 0, 15)
+            TabIcon.Position = UDim2.new(0, 12, 0.5, -7)
             TabIcon.BackgroundTransparency = 1
             TabIcon.Image = resolvedIcon
             TabIcon.ImageColor3 = Library.Theme.TextDark
@@ -1491,19 +1419,19 @@ function Library:CreateWindow(config)
             TabIcon.Parent = TabBtn
         end
 
-        local textBaseX = TabIcon and 38 or 16
-        local textActiveX = TabIcon and 42 or 20
-        local textHoverX = TabIcon and 40 or 18
+        local textBaseX = TabIcon and 33 or 14
+        local textActiveX = TabIcon and 37 or 18
+        local textHoverX = TabIcon and 35 or 16
 
         local TabText = Instance.new("TextLabel")
         TabText.Name = "TabText"
-        TabText.Size = UDim2.new(1, -(textBaseX + 8), 1, 0)
+        TabText.Size = UDim2.new(1, -(textBaseX + 6), 1, 0)
         TabText.Position = UDim2.new(0, textBaseX, 0, 0)
         TabText.BackgroundTransparency = 1
         TabText.Text = name
         TabText.TextColor3 = Library.Theme.TextDark
         TabText.Font = Library.Fonts.Bold
-        TabText.TextSize = 12
+        TabText.TextSize = 11
         TabText.TextXAlignment = Enum.TextXAlignment.Left
         TabText.ZIndex = 8
         TabText.Parent = TabBtn
@@ -1575,12 +1503,12 @@ function Library:CreateWindow(config)
             for _, tab in pairs(WindowObj.Tabs) do
                 if tab ~= TabObj then
                     tab.Page.Visible = false
-                    local baseInactiveX = tab.Icon and 38 or 16
+                    local baseInactiveX = tab.Icon and 33 or 14
                     createTween(tab.Button, { BackgroundTransparency = 1, BackgroundColor3 = Library.Theme.Sidebar }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                     createTween(tab.Button.TabText, { TextColor3 = Library.Theme.TextDark, Position = UDim2.new(0, baseInactiveX, 0, 0) }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                    createTween(tab.Button.Indicator, { BackgroundTransparency = 1, Size = UDim2.new(0, 4, 0, 0) }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    createTween(tab.Button.Indicator, { BackgroundTransparency = 1, Size = UDim2.new(0, 3, 0, 0) }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                     if tab.Icon then
-                        createTween(tab.Icon, { ImageColor3 = Library.Theme.TextDark, Position = UDim2.new(0, 15, 0.5, -8) }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                        createTween(tab.Icon, { ImageColor3 = Library.Theme.TextDark, Position = UDim2.new(0, 12, 0.5, -7) }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                     end
                 end
             end
@@ -1621,9 +1549,9 @@ function Library:CreateWindow(config)
             -- Active Tab Button Spring & Text Slide
             createTween(TabBtn, { BackgroundTransparency = 0.35, BackgroundColor3 = Library.Theme.ItemBgHover }, 0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
             createTween(TabText, { TextColor3 = Library.Theme.Text, Position = UDim2.new(0, textActiveX, 0, 0) }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-            createTween(TabIndicator, { BackgroundTransparency = 0, Size = UDim2.new(0, 4, 0, 22) }, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            createTween(TabIndicator, { BackgroundTransparency = 0, Size = UDim2.new(0, 3, 0, 18) }, 0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
             if TabIcon then
-                createTween(TabIcon, { ImageColor3 = Library.Theme.Accent, Position = UDim2.new(0, 17, 0.5, -8) }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                createTween(TabIcon, { ImageColor3 = Library.Theme.Accent, Position = UDim2.new(0, 14, 0.5, -7) }, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
             end
 
             WindowObj.CurrentTab = TabObj
@@ -1636,7 +1564,7 @@ function Library:CreateWindow(config)
                 createTween(TabBtn, { BackgroundTransparency = 0.70, BackgroundColor3 = Library.Theme.ItemBgHover }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                 createTween(TabText, { TextColor3 = Library.Theme.TextDim, Position = UDim2.new(0, textHoverX, 0, 0) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                 if TabIcon then
-                    createTween(TabIcon, { ImageColor3 = Library.Theme.TextDim, Position = UDim2.new(0, 16, 0.5, -8) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    createTween(TabIcon, { ImageColor3 = Library.Theme.TextDim, Position = UDim2.new(0, 13, 0.5, -7) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                 end
             end
         end)
@@ -1646,7 +1574,7 @@ function Library:CreateWindow(config)
                 createTween(TabBtn, { BackgroundTransparency = 1 }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                 createTween(TabText, { TextColor3 = Library.Theme.TextDark, Position = UDim2.new(0, textBaseX, 0, 0) }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                 if TabIcon then
-                    createTween(TabIcon, { ImageColor3 = Library.Theme.TextDark, Position = UDim2.new(0, 15, 0.5, -8) }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    createTween(TabIcon, { ImageColor3 = Library.Theme.TextDark, Position = UDim2.new(0, 12, 0.5, -7) }, 0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                 end
             end
         end)
@@ -2432,26 +2360,6 @@ function Library:CreateWindow(config)
                 FillCorner.CornerRadius = UDim.new(1, 0)
                 FillCorner.Parent = SliderFill
 
-                local SliderKnob = Instance.new("Frame")
-                SliderKnob.Name = "Knob"
-                SliderKnob.Size = UDim2.new(0, 10, 0, 10)
-                SliderKnob.AnchorPoint = Vector2.new(0.5, 0.5)
-                SliderKnob.Position = UDim2.new(1, 0, 0.5, 0)
-                SliderKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                SliderKnob.BorderSizePixel = 0
-                SliderKnob.ZIndex = 13
-                SliderKnob.Parent = SliderFill
-
-                local SliderKnobCorner = Instance.new("UICorner")
-                SliderKnobCorner.CornerRadius = UDim.new(1, 0)
-                SliderKnobCorner.Parent = SliderKnob
-
-                local SliderKnobStroke = Instance.new("UIStroke")
-                SliderKnobStroke.Color = Library.Theme.Accent
-                SliderKnobStroke.Thickness = 1.5
-                SliderKnobStroke.Parent = SliderKnob
-                Library:RegisterThemeObject(SliderKnobStroke, "Color", "Accent")
-
                 local currentVal = default
                 if flag then Library.Flags[flag] = currentVal end
 
@@ -2521,7 +2429,6 @@ function Library:CreateWindow(config)
 
                 SliderTrack.MouseEnter:Connect(function()
                     createTween(SliderTrack, { Size = UDim2.new(1, 0, 0, 8), Position = UDim2.new(0, 0, 0, 23) }, 0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                    createTween(SliderKnob, { Size = UDim2.new(0, 14, 0, 14) }, 0.16, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
                     createTween(ValueLabel, { TextColor3 = Library.Theme.Accent }, 0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                     createTween(Label, { TextColor3 = Library.Theme.Text }, 0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                 end)
@@ -2529,7 +2436,6 @@ function Library:CreateWindow(config)
                 SliderTrack.MouseLeave:Connect(function()
                     if not dragging then
                         createTween(SliderTrack, { Size = UDim2.new(1, 0, 0, 6), Position = UDim2.new(0, 0, 0, 24) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        createTween(SliderKnob, { Size = UDim2.new(0, 10, 0, 10) }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                         createTween(ValueLabel, { TextColor3 = Library.Theme.Text }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                         createTween(Label, { TextColor3 = Library.Theme.TextDim }, 0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                     end
@@ -2539,7 +2445,6 @@ function Library:CreateWindow(config)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         dragging = true
                         createTween(SliderTrack, { Size = UDim2.new(1, 0, 0, 8), Position = UDim2.new(0, 0, 0, 23) }, 0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                        createTween(SliderKnob, { Size = UDim2.new(0, 14, 0, 14) }, 0.16, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
                         createTween(ValueLabel, { TextColor3 = Library.Theme.Accent }, 0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                         createTween(Label, { TextColor3 = Library.Theme.Text }, 0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
                         updateDrag(input)
