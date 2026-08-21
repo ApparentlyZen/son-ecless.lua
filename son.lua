@@ -2376,7 +2376,7 @@ function NamelessWare:CreateWindow(config)
                 KeyBtn.Size = UDim2.new(0, 75, 0, 20)
                 KeyBtn.Position = UDim2.new(1, -75, 0.5, -10)
                 KeyBtn.BackgroundColor3 = THEME.BgSidebar
-                KeyBtn.Text = "[ " .. tostring(typeof(key) == "EnumItem" and key.Name or key) .. " ]"
+                KeyBtn.Text = tostring(typeof(key) == "EnumItem" and key.Name or key)
                 KeyBtn.Font = THEME.FontBold
                 KeyBtn.TextSize = 9
                 KeyBtn.TextColor3 = THEME.TextMuted
@@ -2395,7 +2395,7 @@ function NamelessWare:CreateWindow(config)
                 KeyBtn.MouseButton1Click:Connect(function()
                     if isBinding then return end
                     isBinding = true
-                    KeyBtn.Text = "[ ... ]"
+                    KeyBtn.Text = "..."
                     Tween(KeyStroke, {Color = THEME.Accent}, 0.15)
                     Tween(KeyBtn, {TextColor3 = THEME.Accent}, 0.15)
 
@@ -2405,7 +2405,7 @@ function NamelessWare:CreateWindow(config)
                             conn:Disconnect()
                             isBinding = false
                             key = input.KeyCode
-                            KeyBtn.Text = "[ " .. key.Name .. " ]"
+                            KeyBtn.Text = key.Name
                             Tween(KeyStroke, {Color = THEME.CardBorder}, 0.15)
                             Tween(KeyBtn, {TextColor3 = THEME.TextMuted}, 0.15)
                             callback(key)
@@ -2427,7 +2427,7 @@ function NamelessWare:CreateWindow(config)
                         elseif typeof(newKey) == "string" and Enum.KeyCode[newKey] then
                             key = Enum.KeyCode[newKey]
                         end
-                        KeyBtn.Text = "[ " .. tostring(typeof(key) == "EnumItem" and key.Name or key) .. " ]"
+                        KeyBtn.Text = tostring(typeof(key) == "EnumItem" and key.Name or key)
                         callback(key)
                     end,
                     Get = function() return key end,
