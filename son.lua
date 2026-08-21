@@ -1,15 +1,14 @@
 --[[
     ╔═══════════════════════════════════════════════════════════════════════╗
-    ║                        NAMELESS WARE UI LIBRARY                       ║
-    ║             Dutty / Passion Inspired Layout • Electric Purple         ║
-    ║             100% Mobile Friendly • Touch Drag • Widgets Engine        ║
+    ║                 NAMELESS WARE UI LIBRARY - V2 ULTIMATE                ║
+    ║        Exact Passion / Dutty Layout • Pixel Perfect • No Overflow     ║
+    ║        Scoped Sub-Tabs • Dual Column Cards • Mobile Touch Friendly    ║
     ╚═══════════════════════════════════════════════════════════════════════╝
 ]]
 
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
-local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 
@@ -62,7 +61,7 @@ end
 
 -- Helper: Tweening
 local function Tween(obj, props, time, style, dir)
-    time = time or 0.22
+    time = time or 0.2
     style = style or Enum.EasingStyle.Quad
     dir = dir or Enum.EasingDirection.Out
     local tw = TweenService:Create(obj, TweenInfo.new(time, style, dir), props)
@@ -119,18 +118,17 @@ end
 local NamelessWare = {}
 NamelessWare.__index = NamelessWare
 
--- Default Theme Colors (Nameless Ware Electric Purple Neon)
+-- Visual Theme Matching Passion / Dutty Style + Nameless Ware Neon
 local THEME = {
-    Accent = Color3.fromRGB(168, 85, 247),       -- Electric Neon Purple
-    AccentLight = Color3.fromRGB(192, 132, 252),
-    AccentDark = Color3.fromRGB(126, 34, 206),
-    Background = Color3.fromRGB(16, 16, 22),     -- Obsidian
-    DockBg = Color3.fromRGB(11, 11, 16),         -- Deep Dark Dock
-    CardBg = Color3.fromRGB(22, 22, 29),         -- Surface
-    CardBorder = Color3.fromRGB(36, 36, 48),     -- Sleek Outline
+    Accent = Color3.fromRGB(175, 95, 255),       -- Electric Purple
+    AccentGlow = Color3.fromRGB(200, 140, 255),
+    BgMain = Color3.fromRGB(15, 15, 20),         -- Deep obsidian
+    BgDock = Color3.fromRGB(10, 10, 14),         -- Dark Dock
+    CardBg = Color3.fromRGB(20, 20, 27),         -- Card surface
+    CardBorder = Color3.fromRGB(34, 34, 46),     -- Subtle 1px stroke
     TextMain = Color3.fromRGB(245, 245, 250),
-    TextMuted = Color3.fromRGB(135, 135, 155),
-    ToggleOff = Color3.fromRGB(30, 30, 40),
+    TextMuted = Color3.fromRGB(130, 130, 150),
+    ToggleOff = Color3.fromRGB(30, 30, 42),
     GreenSuccess = Color3.fromRGB(34, 197, 94),
     FontMain = Enum.Font.GothamMedium,
     FontBold = Enum.Font.GothamBold,
@@ -145,7 +143,7 @@ function NamelessWare:CreateWindow(config)
     local AccentColor = config.Accent or THEME.Accent
     local LogoUrl = config.LogoUrl or RAW_LOGO_URL
 
-    -- Clean any existing instance
+    -- Clean old instance
     if _G.NamelessWareInstance then
         pcall(function() _G.NamelessWareInstance:Destroy() end)
     end
@@ -157,17 +155,16 @@ function NamelessWare:CreateWindow(config)
     ScreenGui.Parent = GetSafeParent()
     _G.NamelessWareInstance = ScreenGui
 
-    -- Try resolving custom asset
     local customLogoAsset = FetchCustomAsset(LogoUrl, "NamelessWare_Logo.webp")
 
     ----------------------------------------------------------------------------
-    -- 📱 MOBILE FLOATING TOGGLE BUTTON (Custom Logo Image)
+    -- 📱 MOBILE FLOATING BUTTON
     ----------------------------------------------------------------------------
     local MobileBtn = Instance.new("ImageButton")
     MobileBtn.Name = "NamelessMobileBtn"
-    MobileBtn.Size = UDim2.new(0, 52, 0, 52)
-    MobileBtn.Position = UDim2.new(0, 15, 0.5, -26)
-    MobileBtn.BackgroundColor3 = THEME.DockBg
+    MobileBtn.Size = UDim2.new(0, 48, 0, 48)
+    MobileBtn.Position = UDim2.new(0, 15, 0.5, -24)
+    MobileBtn.BackgroundColor3 = THEME.BgDock
     MobileBtn.AutoButtonColor = false
     MobileBtn.Parent = ScreenGui
 
@@ -183,13 +180,12 @@ function NamelessWare:CreateWindow(config)
     if customLogoAsset then
         MobileBtn.Image = customLogoAsset
     else
-        -- Fallback badge
         local FallbackText = Instance.new("TextLabel")
         FallbackText.Size = UDim2.new(1, 0, 1, 0)
         FallbackText.BackgroundTransparency = 1
         FallbackText.Text = "NW"
         FallbackText.Font = THEME.FontBold
-        FallbackText.TextSize = 16
+        FallbackText.TextSize = 15
         FallbackText.TextColor3 = AccentColor
         FallbackText.Parent = MobileBtn
     end
@@ -197,19 +193,19 @@ function NamelessWare:CreateWindow(config)
     MakeDraggable(MobileBtn)
 
     ----------------------------------------------------------------------------
-    -- 🖥️ MAIN WINDOW (Dutty / Passion Layout)
+    -- 🖥️ MAIN WINDOW (Exact Passion / Dutty Sizing & Proportions)
     ----------------------------------------------------------------------------
     local MainWindow = Instance.new("Frame")
     MainWindow.Name = "MainWindow"
-    MainWindow.Size = UDim2.new(0, 540, 0, 390)
-    MainWindow.Position = UDim2.new(0.5, -270, 0.5, -195)
-    MainWindow.BackgroundColor3 = THEME.Background
+    MainWindow.Size = UDim2.new(0, 560, 0, 390)
+    MainWindow.Position = UDim2.new(0.5, -280, 0.5, -195)
+    MainWindow.BackgroundColor3 = THEME.BgMain
     MainWindow.BorderSizePixel = 0
     MainWindow.ClipsDescendants = false
     MainWindow.Parent = ScreenGui
 
     local MainCorner = Instance.new("UICorner")
-    MainCorner.CornerRadius = UDim.new(0, 12)
+    MainCorner.CornerRadius = UDim.new(0, 10)
     MainCorner.Parent = MainWindow
 
     local MainStroke = Instance.new("UIStroke")
@@ -220,13 +216,13 @@ function NamelessWare:CreateWindow(config)
     -- Left Icon Dock
     local Dock = Instance.new("Frame")
     Dock.Name = "Dock"
-    Dock.Size = UDim2.new(0, 54, 1, 0)
-    Dock.BackgroundColor3 = THEME.DockBg
+    Dock.Size = UDim2.new(0, 52, 1, 0)
+    Dock.BackgroundColor3 = THEME.BgDock
     Dock.BorderSizePixel = 0
     Dock.Parent = MainWindow
 
     local DockCorner = Instance.new("UICorner")
-    DockCorner.CornerRadius = UDim.new(0, 12)
+    DockCorner.CornerRadius = UDim.new(0, 10)
     DockCorner.Parent = Dock
 
     local DockStroke = Instance.new("UIStroke")
@@ -235,24 +231,29 @@ function NamelessWare:CreateWindow(config)
     DockStroke.Parent = Dock
 
     -- Top Brand Logo in Dock
-    local LogoBtn = Instance.new("ImageButton")
-    LogoBtn.Size = UDim2.new(0, 38, 0, 38)
-    LogoBtn.Position = UDim2.new(0.5, -19, 0, 8)
-    LogoBtn.BackgroundColor3 = THEME.CardBg
-    LogoBtn.AutoButtonColor = false
-    LogoBtn.Parent = Dock
+    local LogoContainer = Instance.new("Frame")
+    LogoContainer.Size = UDim2.new(0, 36, 0, 36)
+    LogoContainer.Position = UDim2.new(0.5, -18, 0, 8)
+    LogoContainer.BackgroundColor3 = THEME.CardBg
+    LogoContainer.Parent = Dock
 
     local LogoCorner = Instance.new("UICorner")
-    LogoCorner.CornerRadius = UDim.new(0, 10)
-    LogoCorner.Parent = LogoBtn
+    LogoCorner.CornerRadius = UDim.new(0, 8)
+    LogoCorner.Parent = LogoContainer
 
     local LogoGlow = Instance.new("UIStroke")
     LogoGlow.Color = AccentColor
     LogoGlow.Thickness = 1.5
-    LogoGlow.Parent = LogoBtn
+    LogoGlow.Parent = LogoContainer
 
     if customLogoAsset then
-        LogoBtn.Image = customLogoAsset
+        local LogoImg = Instance.new("ImageLabel")
+        LogoImg.Size = UDim2.new(1, -4, 1, -4)
+        LogoImg.Position = UDim2.new(0, 2, 0, 2)
+        LogoImg.BackgroundTransparency = 1
+        LogoImg.Image = customLogoAsset
+        LogoImg.ScaleType = Enum.ScaleType.Fit
+        LogoImg.Parent = LogoContainer
     else
         local LogoText = Instance.new("TextLabel")
         LogoText.Size = UDim2.new(1, 0, 1, 0)
@@ -261,15 +262,15 @@ function NamelessWare:CreateWindow(config)
         LogoText.Font = THEME.FontBold
         LogoText.TextSize = 14
         LogoText.TextColor3 = AccentColor
-        LogoText.Parent = LogoBtn
+        LogoText.Parent = LogoContainer
     end
 
     MakeDraggable(MainWindow, Dock)
 
-    -- Dock Icons Scroll / List
+    -- Dock Scroll List for Main Icons
     local DockScroll = Instance.new("ScrollingFrame")
     DockScroll.Size = UDim2.new(1, 0, 1, -55)
-    DockScroll.Position = UDim2.new(0, 0, 0, 52)
+    DockScroll.Position = UDim2.new(0, 0, 0, 50)
     DockScroll.BackgroundTransparency = 1
     DockScroll.ScrollBarThickness = 0
     DockScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
@@ -277,61 +278,51 @@ function NamelessWare:CreateWindow(config)
     DockScroll.Parent = Dock
 
     local DockLayout = Instance.new("UIListLayout")
-    DockLayout.Padding = UDim.new(0, 8)
+    DockLayout.Padding = UDim.new(0, 6)
     DockLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     DockLayout.SortOrder = Enum.SortOrder.LayoutOrder
     DockLayout.Parent = DockScroll
 
-    -- Top Sub-Navigation Bar
-    local TopNavBar = Instance.new("Frame")
-    TopNavBar.Name = "TopNavBar"
-    TopNavBar.Size = UDim2.new(1, -70, 0, 42)
-    TopNavBar.Position = UDim2.new(0, 62, 0, 6)
-    TopNavBar.BackgroundTransparency = 1
-    TopNavBar.Parent = MainWindow
+    -- Top Header Container (Holds the Sub-Tabs bar per active tab)
+    local TopHeader = Instance.new("Frame")
+    TopHeader.Name = "TopHeader"
+    TopHeader.Size = UDim2.new(1, -62, 0, 42)
+    TopHeader.Position = UDim2.new(0, 58, 0, 4)
+    TopHeader.BackgroundTransparency = 1
+    TopHeader.Parent = MainWindow
 
-    local SubTabsHolder = Instance.new("Frame")
-    SubTabsHolder.Size = UDim2.new(1, -40, 1, 0)
-    SubTabsHolder.BackgroundTransparency = 1
-    SubTabsHolder.Parent = TopNavBar
+    -- Search / Status Icon in Top Right
+    local SearchBtn = Instance.new("ImageButton")
+    SearchBtn.Size = UDim2.new(0, 18, 0, 18)
+    SearchBtn.Position = UDim2.new(1, -26, 0.5, -9)
+    SearchBtn.BackgroundTransparency = 1
+    SearchBtn.Image = "rbxassetid://10734975692"
+    SearchBtn.ImageColor3 = THEME.TextMuted
+    SearchBtn.AutoButtonColor = false
+    SearchBtn.Parent = TopHeader
 
-    local SubTabsLayout = Instance.new("UIListLayout")
-    SubTabsLayout.FillDirection = Enum.FillDirection.Horizontal
-    SubTabsLayout.Padding = UDim.new(0, 18)
-    SubTabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    SubTabsLayout.Parent = SubTabsHolder
+    -- Pink/Purple Active Underline Track
+    local UnderlineTrack = Instance.new("Frame")
+    UnderlineTrack.Size = UDim2.new(1, -62, 0, 2)
+    UnderlineTrack.Position = UDim2.new(0, 58, 0, 44)
+    UnderlineTrack.BackgroundColor3 = THEME.CardBorder
+    UnderlineTrack.BorderSizePixel = 0
+    UnderlineTrack.Parent = MainWindow
 
-    -- Search / Info Icon on Top Right
-    local SearchIcon = Instance.new("ImageLabel")
-    SearchIcon.Size = UDim2.new(0, 16, 0, 16)
-    SearchIcon.Position = UDim2.new(1, -24, 0.5, -8)
-    SearchIcon.BackgroundTransparency = 1
-    SearchIcon.Image = "rbxassetid://10734975692"
-    SearchIcon.ImageColor3 = THEME.TextMuted
-    SearchIcon.Parent = TopNavBar
+    local ActiveUnderline = Instance.new("Frame")
+    ActiveUnderline.Size = UDim2.new(0, 50, 1, 0)
+    ActiveUnderline.Position = UDim2.new(0, 0, 0, 0)
+    ActiveUnderline.BackgroundColor3 = AccentColor
+    ActiveUnderline.BorderSizePixel = 0
+    ActiveUnderline.Parent = UnderlineTrack
 
-    -- Neon Purple Active Tab Underline
-    local TabUnderlineTrack = Instance.new("Frame")
-    TabUnderlineTrack.Size = UDim2.new(1, -70, 0, 2)
-    TabUnderlineTrack.Position = UDim2.new(0, 62, 0, 48)
-    TabUnderlineTrack.BackgroundColor3 = THEME.CardBorder
-    TabUnderlineTrack.BorderSizePixel = 0
-    TabUnderlineTrack.Parent = MainWindow
+    MakeDraggable(MainWindow, TopHeader)
 
-    local ActiveUnderlineGlow = Instance.new("Frame")
-    ActiveUnderlineGlow.Size = UDim2.new(0, 60, 1, 0)
-    ActiveUnderlineGlow.Position = UDim2.new(0, 0, 0, 0)
-    ActiveUnderlineGlow.BackgroundColor3 = AccentColor
-    ActiveUnderlineGlow.BorderSizePixel = 0
-    ActiveUnderlineGlow.Parent = TabUnderlineTrack
-
-    MakeDraggable(MainWindow, TopNavBar)
-
-    -- Content Area
+    -- Content Container (Cards area)
     local ContentArea = Instance.new("Frame")
     ContentArea.Name = "ContentArea"
-    ContentArea.Size = UDim2.new(1, -70, 1, -58)
-    ContentArea.Position = UDim2.new(0, 62, 0, 54)
+    ContentArea.Size = UDim2.new(1, -68, 1, -56)
+    ContentArea.Position = UDim2.new(0, 60, 0, 50)
     ContentArea.BackgroundTransparency = 1
     ContentArea.Parent = MainWindow
 
@@ -339,27 +330,16 @@ function NamelessWare:CreateWindow(config)
     local isUIOpen = true
     local function ToggleUI()
         isUIOpen = not isUIOpen
-        if isUIOpen then
-            MainWindow.Visible = true
-            Tween(MainWindow, {Position = UDim2.new(0.5, -270, 0.5, -195)}, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-        else
-            Tween(MainWindow, {Position = UDim2.new(0.5, -270, 0.5, -160)}, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
-            wait(0.2)
-            if not isUIOpen then
-                MainWindow.Visible = false
-            end
-        end
+        MainWindow.Visible = isUIOpen
     end
-
     MobileBtn.MouseButton1Click:Connect(ToggleUI)
 
-    -- Window Object
     local Window = {
         ScreenGui = ScreenGui,
         MainWindow = MainWindow,
         MobileBtn = MobileBtn,
         Dock = Dock,
-        TopNavBar = TopNavBar,
+        TopHeader = TopHeader,
         ContentArea = ContentArea,
         Tabs = {},
         Widgets = {}
@@ -368,7 +348,7 @@ function NamelessWare:CreateWindow(config)
     local FirstTab = true
 
     ----------------------------------------------------------------------------
-    -- 📁 CREATE DOCK TAB (Left Icon Dock)
+    -- 📁 CREATE TAB (Main Dock Icon)
     ----------------------------------------------------------------------------
     function Window:CreateTab(tabConfig)
         tabConfig = tabConfig or {}
@@ -384,17 +364,32 @@ function NamelessWare:CreateWindow(config)
         DockBtn.Parent = DockScroll
 
         local BtnCorner = Instance.new("UICorner")
-        BtnCorner.CornerRadius = UDim.new(0, 10)
+        BtnCorner.CornerRadius = UDim.new(0, 8)
         BtnCorner.Parent = DockBtn
 
         local Icon = Instance.new("ImageLabel")
-        Icon.Size = UDim2.new(0, 20, 0, 20)
-        Icon.Position = UDim2.new(0.5, -10, 0.5, -10)
+        Icon.Size = UDim2.new(0, 18, 0, 18)
+        Icon.Position = UDim2.new(0.5, -9, 0.5, -9)
         Icon.BackgroundTransparency = 1
         Icon.Image = tabIcon
         Icon.ImageColor3 = THEME.TextMuted
         Icon.Parent = DockBtn
 
+        -- Sub-Tabs Bar Holder specifically for THIS tab (Solves the overflow bug!)
+        local TabSubBar = Instance.new("Frame")
+        TabSubBar.Name = tabName .. "_SubBar"
+        TabSubBar.Size = UDim2.new(1, -35, 1, 0)
+        TabSubBar.BackgroundTransparency = 1
+        TabSubBar.Visible = false
+        TabSubBar.Parent = TopHeader
+
+        local SubBarLayout = Instance.new("UIListLayout")
+        SubBarLayout.FillDirection = Enum.FillDirection.Horizontal
+        SubBarLayout.Padding = UDim.new(0, 16)
+        SubBarLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        SubBarLayout.Parent = TabSubBar
+
+        -- Main Content Page for THIS tab
         local TabPage = Instance.new("Frame")
         TabPage.Name = tabName .. "_Page"
         TabPage.Size = UDim2.new(1, 0, 1, 0)
@@ -406,16 +401,21 @@ function NamelessWare:CreateWindow(config)
         local FirstSubTab = true
 
         local function ActivateTab()
+            -- Hide all other tabs
             for _, t in pairs(Window.Tabs) do
                 t.Page.Visible = false
+                t.SubBar.Visible = false
                 Tween(t.Button, {BackgroundTransparency = 1}, 0.2)
                 Tween(t.Icon, {ImageColor3 = THEME.TextMuted}, 0.2)
             end
+
+            -- Show this tab
             TabPage.Visible = true
+            TabSubBar.Visible = true
             Tween(DockBtn, {BackgroundTransparency = 0, BackgroundColor3 = THEME.CardBg}, 0.2)
             Tween(Icon, {ImageColor3 = AccentColor}, 0.2)
 
-            -- Activate first subtab of this tab if available
+            -- Activate first subtab
             if SubTabs[1] then
                 SubTabs[1].Activate()
             end
@@ -427,6 +427,7 @@ function NamelessWare:CreateWindow(config)
             Button = DockBtn,
             Icon = Icon,
             Page = TabPage,
+            SubBar = TabSubBar,
             SubTabs = SubTabs
         }
         table.insert(Window.Tabs, TabObject)
@@ -434,53 +435,67 @@ function NamelessWare:CreateWindow(config)
         local TabMethods = {}
 
         ------------------------------------------------------------------------
-        -- 📑 CREATE SUB-TAB (Top Navigation Bar)
+        -- 📑 CREATE SUB-TAB (Inside This Specific Main Tab)
         ------------------------------------------------------------------------
         function TabMethods:CreateSubTab(subName)
             local SubBtn = Instance.new("TextButton")
-            SubBtn.Size = UDim2.new(0, 65, 1, 0)
+            SubBtn.Size = UDim2.new(0, 60, 1, 0)
             SubBtn.BackgroundTransparency = 1
             SubBtn.Text = subName
             SubBtn.Font = THEME.FontBold
             SubBtn.TextSize = 12
             SubBtn.TextColor3 = THEME.TextMuted
             SubBtn.AutoButtonColor = false
-            SubBtn.Parent = SubTabsHolder
+            SubBtn.Parent = TabSubBar
 
-            local SubContent = Instance.new("ScrollingFrame")
-            SubContent.Size = UDim2.new(1, 0, 1, 0)
-            SubContent.BackgroundTransparency = 1
-            SubContent.ScrollBarThickness = 3
-            SubContent.ScrollBarImageColor3 = AccentColor
-            SubContent.CanvasSize = UDim2.new(0, 0, 0, 0)
-            SubContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
-            SubContent.Visible = false
-            SubContent.Parent = TabPage
+            -- Sub-Tab Content: 2-Column Scrolling View
+            local SubScroll = Instance.new("ScrollingFrame")
+            SubScroll.Size = UDim2.new(1, 0, 1, 0)
+            SubScroll.BackgroundTransparency = 1
+            SubScroll.ScrollBarThickness = 3
+            SubScroll.ScrollBarImageColor3 = AccentColor
+            SubScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+            SubScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+            SubScroll.Visible = false
+            SubScroll.Parent = TabPage
 
-            local SubLayout = Instance.new("UIListLayout")
-            SubLayout.Padding = UDim.new(0, 8)
-            SubLayout.FillDirection = Enum.FillDirection.Horizontal
-            SubLayout.SortOrder = Enum.SortOrder.LayoutOrder
-            SubLayout.Parent = SubContent
+            local ColumnsHolder = Instance.new("Frame")
+            ColumnsHolder.Size = UDim2.new(1, 0, 0, 0)
+            ColumnsHolder.AutomaticSize = Enum.AutomaticSize.Y
+            ColumnsHolder.BackgroundTransparency = 1
+            ColumnsHolder.Parent = SubScroll
+
+            local ColumnsLayout = Instance.new("UIListLayout")
+            ColumnsLayout.FillDirection = Enum.FillDirection.Horizontal
+            ColumnsLayout.Padding = UDim.new(0, 8)
+            ColumnsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            ColumnsLayout.Parent = ColumnsHolder
 
             local function ActivateSub()
                 for _, s in pairs(SubTabs) do
-                    s.Content.Visible = false
+                    s.Scroll.Visible = false
                     Tween(s.Button, {TextColor3 = THEME.TextMuted}, 0.2)
                 end
-                SubContent.Visible = true
+                SubScroll.Visible = true
                 Tween(SubBtn, {TextColor3 = AccentColor}, 0.2)
-                Tween(ActiveUnderlineGlow, {
-                    Position = UDim2.new(0, SubBtn.Position.X.Offset, 0, 0),
-                    Size = UDim2.new(0, SubBtn.AbsoluteSize.X, 1, 0)
-                }, 0.2)
+
+                -- Move underline smoothly
+                task.spawn(function()
+                    task.wait(0.02)
+                    local xOffset = SubBtn.AbsolutePosition.X - TopHeader.AbsolutePosition.X
+                    local width = SubBtn.AbsoluteSize.X
+                    Tween(ActiveUnderline, {
+                        Position = UDim2.new(0, math.max(0, xOffset), 0, 0),
+                        Size = UDim2.new(0, width, 1, 0)
+                    }, 0.2)
+                end)
             end
 
             SubBtn.MouseButton1Click:Connect(ActivateSub)
 
             local SubTabObject = {
                 Button = SubBtn,
-                Content = SubContent,
+                Scroll = SubScroll,
                 Activate = ActivateSub
             }
             table.insert(SubTabs, SubTabObject)
@@ -493,7 +508,7 @@ function NamelessWare:CreateWindow(config)
             local SubMethods = {}
 
             --------------------------------------------------------------------
-            -- 🗃️ CREATE CARD / COLUMN (Within Sub-Tab)
+            -- 🗃️ CREATE CARD (Left or Right Column)
             --------------------------------------------------------------------
             function SubMethods:CreateCard(cardTitle)
                 local Card = Instance.new("Frame")
@@ -501,10 +516,10 @@ function NamelessWare:CreateWindow(config)
                 Card.AutomaticSize = Enum.AutomaticSize.Y
                 Card.BackgroundColor3 = THEME.CardBg
                 Card.BorderSizePixel = 0
-                Card.Parent = SubContent
+                Card.Parent = ColumnsHolder
 
                 local CardCorner = Instance.new("UICorner")
-                CardCorner.CornerRadius = UDim.new(0, 10)
+                CardCorner.CornerRadius = UDim.new(0, 8)
                 CardCorner.Parent = Card
 
                 local CardStroke = Instance.new("UIStroke")
@@ -526,7 +541,7 @@ function NamelessWare:CreateWindow(config)
 
                 if cardTitle then
                     local CardHeader = Instance.new("TextLabel")
-                    CardHeader.Size = UDim2.new(1, 0, 0, 20)
+                    CardHeader.Size = UDim2.new(1, 0, 0, 18)
                     CardHeader.BackgroundTransparency = 1
                     CardHeader.Text = cardTitle
                     CardHeader.Font = THEME.FontBold
@@ -536,17 +551,17 @@ function NamelessWare:CreateWindow(config)
                     CardHeader.Parent = Card
                 end
 
-                local CardControls = {}
+                local Controls = {}
 
                 -- 1. TOGGLE (Neon Capsule Switch)
-                function CardControls:AddToggle(cfg)
+                function Controls:AddToggle(cfg)
                     cfg = cfg or {}
                     local name = cfg.Name or "Toggle"
                     local state = cfg.Default or false
                     local callback = cfg.Callback or function() end
 
                     local Row = Instance.new("Frame")
-                    Row.Size = UDim2.new(1, 0, 0, 30)
+                    Row.Size = UDim2.new(1, 0, 0, 28)
                     Row.BackgroundTransparency = 1
                     Row.Parent = Card
 
@@ -561,8 +576,8 @@ function NamelessWare:CreateWindow(config)
                     Label.Parent = Row
 
                     local Switch = Instance.new("TextButton")
-                    Switch.Size = UDim2.new(0, 36, 0, 20)
-                    Switch.Position = UDim2.new(1, -36, 0.5, -10)
+                    Switch.Size = UDim2.new(0, 34, 0, 18)
+                    Switch.Position = UDim2.new(1, -34, 0.5, -9)
                     Switch.BackgroundColor3 = state and AccentColor or THEME.ToggleOff
                     Switch.Text = ""
                     Switch.AutoButtonColor = false
@@ -573,8 +588,8 @@ function NamelessWare:CreateWindow(config)
                     SwitchCorner.Parent = Switch
 
                     local Dot = Instance.new("Frame")
-                    Dot.Size = UDim2.new(0, 14, 0, 14)
-                    Dot.Position = state and UDim2.new(1, -17, 0.5, -7) or UDim2.new(0, 3, 0.5, -7)
+                    Dot.Size = UDim2.new(0, 12, 0, 12)
+                    Dot.Position = state and UDim2.new(1, -15, 0.5, -6) or UDim2.new(0, 3, 0.5, -6)
                     Dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                     Dot.Parent = Switch
 
@@ -586,11 +601,11 @@ function NamelessWare:CreateWindow(config)
                         state = newVal
                         if state then
                             Tween(Switch, {BackgroundColor3 = AccentColor}, 0.2)
-                            Tween(Dot, {Position = UDim2.new(1, -17, 0.5, -7)}, 0.2)
+                            Tween(Dot, {Position = UDim2.new(1, -15, 0.5, -6)}, 0.2)
                             Tween(Label, {TextColor3 = THEME.TextMain}, 0.2)
                         else
                             Tween(Switch, {BackgroundColor3 = THEME.ToggleOff}, 0.2)
-                            Tween(Dot, {Position = UDim2.new(0, 3, 0.5, -7)}, 0.2)
+                            Tween(Dot, {Position = UDim2.new(0, 3, 0.5, -6)}, 0.2)
                             Tween(Label, {TextColor3 = THEME.TextMuted}, 0.2)
                         end
                         callback(state)
@@ -604,7 +619,7 @@ function NamelessWare:CreateWindow(config)
                 end
 
                 -- 2. SLIDER (Touch & Mouse Drag Supported)
-                function CardControls:AddSlider(cfg)
+                function Controls:AddSlider(cfg)
                     cfg = cfg or {}
                     local name = cfg.Name or "Slider"
                     local min = cfg.Min or 0
@@ -615,7 +630,7 @@ function NamelessWare:CreateWindow(config)
                     local value = default
 
                     local Frame = Instance.new("Frame")
-                    Frame.Size = UDim2.new(1, 0, 0, 42)
+                    Frame.Size = UDim2.new(1, 0, 0, 38)
                     Frame.BackgroundTransparency = 1
                     Frame.Parent = Card
 
@@ -641,8 +656,8 @@ function NamelessWare:CreateWindow(config)
                     ValLabel.Parent = Frame
 
                     local Track = Instance.new("Frame")
-                    Track.Size = UDim2.new(1, 0, 0, 6)
-                    Track.Position = UDim2.new(0, 0, 0, 24)
+                    Track.Size = UDim2.new(1, 0, 0, 5)
+                    Track.Position = UDim2.new(0, 0, 0, 22)
                     Track.BackgroundColor3 = THEME.ToggleOff
                     Track.Parent = Frame
 
@@ -662,8 +677,8 @@ function NamelessWare:CreateWindow(config)
                     FillCorner.Parent = Fill
 
                     local Thumb = Instance.new("Frame")
-                    Thumb.Size = UDim2.new(0, 12, 0, 12)
-                    Thumb.Position = UDim2.new(1, -6, 0.5, -6)
+                    Thumb.Size = UDim2.new(0, 11, 0, 11)
+                    Thumb.Position = UDim2.new(1, -5, 0.5, -5.5)
                     Thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                     Thumb.Parent = Fill
 
@@ -703,14 +718,14 @@ function NamelessWare:CreateWindow(config)
                 end
 
                 -- 3. BUTTON
-                function CardControls:AddButton(cfg)
+                function Controls:AddButton(cfg)
                     cfg = cfg or {}
                     local text = cfg.Name or "Button"
                     local callback = cfg.Callback or function() end
 
                     local Btn = Instance.new("TextButton")
-                    Btn.Size = UDim2.new(1, 0, 0, 28)
-                    Btn.BackgroundColor3 = THEME.DockBg
+                    Btn.Size = UDim2.new(1, 0, 0, 26)
+                    Btn.BackgroundColor3 = THEME.BgDock
                     Btn.Text = text
                     Btn.Font = THEME.FontMain
                     Btn.TextSize = 11
@@ -729,14 +744,14 @@ function NamelessWare:CreateWindow(config)
 
                     Btn.MouseButton1Click:Connect(function()
                         Tween(Btn, {BackgroundColor3 = AccentColor}, 0.1)
-                        wait(0.1)
-                        Tween(Btn, {BackgroundColor3 = THEME.DockBg}, 0.2)
+                        task.wait(0.1)
+                        Tween(Btn, {BackgroundColor3 = THEME.BgDock}, 0.2)
                         callback()
                     end)
                 end
 
                 -- 4. DROPDOWN
-                function CardControls:AddDropdown(cfg)
+                function Controls:AddDropdown(cfg)
                     cfg = cfg or {}
                     local name = cfg.Name or "Dropdown"
                     local options = cfg.Options or {}
@@ -746,7 +761,7 @@ function NamelessWare:CreateWindow(config)
                     local open = false
 
                     local DropFrame = Instance.new("Frame")
-                    DropFrame.Size = UDim2.new(1, 0, 0, 48)
+                    DropFrame.Size = UDim2.new(1, 0, 0, 46)
                     DropFrame.BackgroundTransparency = 1
                     DropFrame.Parent = Card
 
@@ -761,9 +776,9 @@ function NamelessWare:CreateWindow(config)
                     Label.Parent = DropFrame
 
                     local DropBtn = Instance.new("TextButton")
-                    DropBtn.Size = UDim2.new(1, 0, 0, 26)
+                    DropBtn.Size = UDim2.new(1, 0, 0, 24)
                     DropBtn.Position = UDim2.new(0, 0, 0, 18)
-                    DropBtn.BackgroundColor3 = THEME.DockBg
+                    DropBtn.BackgroundColor3 = THEME.BgDock
                     DropBtn.Text = "  " .. selected
                     DropBtn.Font = THEME.FontMain
                     DropBtn.TextSize = 11
@@ -787,12 +802,12 @@ function NamelessWare:CreateWindow(config)
                     Arrow.Parent = DropBtn
 
                     local MenuList = Instance.new("Frame")
-                    MenuList.Size = UDim2.new(1, 0, 0, #options * 24)
+                    MenuList.Size = UDim2.new(1, 0, 0, #options * 22)
                     MenuList.Position = UDim2.new(0, 0, 1, 3)
-                    MenuList.BackgroundColor3 = THEME.Background
+                    MenuList.BackgroundColor3 = THEME.BgMain
                     MenuList.BorderSizePixel = 0
                     MenuList.Visible = false
-                    MenuList.ZIndex = 25
+                    MenuList.ZIndex = 30
                     MenuList.Parent = DropBtn
 
                     local MenuCorner = Instance.new("UICorner")
@@ -809,14 +824,14 @@ function NamelessWare:CreateWindow(config)
 
                     for _, opt in ipairs(options) do
                         local OptItem = Instance.new("TextButton")
-                        OptItem.Size = UDim2.new(1, 0, 0, 24)
+                        OptItem.Size = UDim2.new(1, 0, 0, 22)
                         OptItem.BackgroundTransparency = 1
                         OptItem.Text = "  " .. opt
                         OptItem.Font = THEME.FontMain
                         OptItem.TextSize = 10
                         OptItem.TextColor3 = (opt == selected) and AccentColor or THEME.TextMuted
                         OptItem.TextXAlignment = Enum.TextXAlignment.Left
-                        OptItem.ZIndex = 26
+                        OptItem.ZIndex = 31
                         OptItem.Parent = MenuList
 
                         OptItem.MouseButton1Click:Connect(function()
@@ -836,9 +851,9 @@ function NamelessWare:CreateWindow(config)
                 end
 
                 -- 5. DIVIDER
-                function CardControls:AddDivider(label)
+                function Controls:AddDivider(label)
                     local DivFrame = Instance.new("Frame")
-                    DivFrame.Size = UDim2.new(1, 0, 0, 18)
+                    DivFrame.Size = UDim2.new(1, 0, 0, 16)
                     DivFrame.BackgroundTransparency = 1
                     DivFrame.Parent = Card
 
@@ -863,15 +878,14 @@ function NamelessWare:CreateWindow(config)
                 end
 
                 -- 6. KEYBIND
-                function CardControls:AddKeybind(cfg)
+                function Controls:AddKeybind(cfg)
                     cfg = cfg or {}
                     local name = cfg.Name or "Keybind"
                     local key = cfg.Default or Enum.KeyCode.E
                     local callback = cfg.Callback or function() end
-                    local listening = false
 
                     local Row = Instance.new("Frame")
-                    Row.Size = UDim2.new(1, 0, 0, 28)
+                    Row.Size = UDim2.new(1, 0, 0, 26)
                     Row.BackgroundTransparency = 1
                     Row.Parent = Card
 
@@ -886,12 +900,12 @@ function NamelessWare:CreateWindow(config)
                     Label.Parent = Row
 
                     local KeyBtn = Instance.new("TextButton")
-                    KeyBtn.Size = UDim2.new(0, 60, 0, 20)
-                    KeyBtn.Position = UDim2.new(1, -60, 0.5, -10)
-                    KeyBtn.BackgroundColor3 = THEME.DockBg
+                    KeyBtn.Size = UDim2.new(0, 55, 0, 18)
+                    KeyBtn.Position = UDim2.new(1, -55, 0.5, -9)
+                    KeyBtn.BackgroundColor3 = THEME.BgDock
                     KeyBtn.Text = key.Name
                     KeyBtn.Font = THEME.FontBold
-                    KeyBtn.TextSize = 10
+                    KeyBtn.TextSize = 9
                     KeyBtn.TextColor3 = AccentColor
                     KeyBtn.AutoButtonColor = false
                     KeyBtn.Parent = Row
@@ -901,14 +915,12 @@ function NamelessWare:CreateWindow(config)
                     KeyCorner.Parent = KeyBtn
 
                     KeyBtn.MouseButton1Click:Connect(function()
-                        listening = true
                         KeyBtn.Text = "..."
                         local conn
                         conn = UserInputService.InputBegan:Connect(function(inp)
                             if inp.UserInputType == Enum.UserInputType.Keyboard then
                                 key = inp.KeyCode
                                 KeyBtn.Text = key.Name
-                                listening = false
                                 conn:Disconnect()
                                 callback(key)
                             end
@@ -916,7 +928,7 @@ function NamelessWare:CreateWindow(config)
                     end)
                 end
 
-                return CardControls
+                return Controls
             end
 
             return SubMethods
@@ -931,23 +943,22 @@ function NamelessWare:CreateWindow(config)
     end
 
     ----------------------------------------------------------------------------
-    -- 🎵 CREATE MEDIA PLAYER WIDGET (Spotify Style from Passion/Dutty)
+    -- 🎵 CREATE MEDIA PLAYER WIDGET (Spotify / Passion Style)
     ----------------------------------------------------------------------------
     function Window:CreateMediaPlayer(cfg)
         cfg = cfg or {}
         local trackTitle = cfg.Title or "JOHNNY CAGE"
         local artist = cfg.Artist or "HXG"
-        local coverImage = cfg.Cover or "rbxassetid://10723346959"
 
         local MediaFrame = Instance.new("Frame")
         MediaFrame.Name = "NamelessMediaPlayer"
-        MediaFrame.Size = UDim2.new(0, 160, 0, 180)
-        MediaFrame.Position = UDim2.new(0.5, 280, 0.5, 10)
-        MediaFrame.BackgroundColor3 = THEME.Background
+        MediaFrame.Size = UDim2.new(0, 150, 0, 165)
+        MediaFrame.Position = UDim2.new(0.5, 290, 0.5, 20)
+        MediaFrame.BackgroundColor3 = THEME.BgMain
         MediaFrame.Parent = ScreenGui
 
         local Corner = Instance.new("UICorner")
-        Corner.CornerRadius = UDim.new(0, 12)
+        Corner.CornerRadius = UDim.new(0, 10)
         Corner.Parent = MediaFrame
 
         local Stroke = Instance.new("UIStroke")
@@ -955,21 +966,28 @@ function NamelessWare:CreateWindow(config)
         Stroke.Thickness = 1.2
         Stroke.Parent = MediaFrame
 
-        local Album = Instance.new("ImageLabel")
-        Album.Size = UDim2.new(0, 136, 0, 105)
-        Album.Position = UDim2.new(0.5, -68, 0, 10)
+        -- Sleek Vinyl / Album Visual
+        local Album = Instance.new("Frame")
+        Album.Size = UDim2.new(0, 126, 0, 95)
+        Album.Position = UDim2.new(0.5, -63, 0, 10)
         Album.BackgroundColor3 = THEME.CardBg
-        Album.Image = coverImage
-        Album.ScaleType = Enum.ScaleType.Crop
         Album.Parent = MediaFrame
 
         local AlbumCorner = Instance.new("UICorner")
         AlbumCorner.CornerRadius = UDim.new(0, 8)
         AlbumCorner.Parent = Album
 
+        local AlbumIcon = Instance.new("ImageLabel")
+        AlbumIcon.Size = UDim2.new(0, 48, 0, 48)
+        AlbumIcon.Position = UDim2.new(0.5, -24, 0.5, -24)
+        AlbumIcon.BackgroundTransparency = 1
+        AlbumIcon.Image = "rbxassetid://10734975692" -- Music / Vinyl icon
+        AlbumIcon.ImageColor3 = AccentColor
+        AlbumIcon.Parent = Album
+
         local TitleLbl = Instance.new("TextLabel")
-        TitleLbl.Size = UDim2.new(1, -35, 0, 16)
-        TitleLbl.Position = UDim2.new(0, 12, 0, 122)
+        TitleLbl.Size = UDim2.new(1, -35, 0, 15)
+        TitleLbl.Position = UDim2.new(0, 12, 0, 112)
         TitleLbl.BackgroundTransparency = 1
         TitleLbl.Text = trackTitle
         TitleLbl.Font = THEME.FontBold
@@ -979,17 +997,16 @@ function NamelessWare:CreateWindow(config)
         TitleLbl.Parent = MediaFrame
 
         local ArtistLbl = Instance.new("TextLabel")
-        ArtistLbl.Size = UDim2.new(1, -35, 0, 14)
-        ArtistLbl.Position = UDim2.new(0, 12, 0, 138)
+        ArtistLbl.Size = UDim2.new(1, -35, 0, 13)
+        ArtistLbl.Position = UDim2.new(0, 12, 0, 127)
         ArtistLbl.BackgroundTransparency = 1
         ArtistLbl.Text = artist
         ArtistLbl.Font = THEME.FontMain
-        ArtistLbl.TextSize = 10
+        ArtistLbl.TextSize = 9
         ArtistLbl.TextColor3 = THEME.TextMuted
         ArtistLbl.TextXAlignment = Enum.TextXAlignment.Left
         ArtistLbl.Parent = MediaFrame
 
-        -- Mini Progress Bar
         local Progress = Instance.new("Frame")
         Progress.Size = UDim2.new(1, -24, 0, 3)
         Progress.Position = UDim2.new(0, 12, 1, -12)
@@ -997,18 +1014,18 @@ function NamelessWare:CreateWindow(config)
         Progress.Parent = MediaFrame
 
         local ProgressFill = Instance.new("Frame")
-        ProgressFill.Size = UDim2.new(0.45, 0, 1, 0)
+        ProgressFill.Size = UDim2.new(0.65, 0, 1, 0)
         ProgressFill.BackgroundColor3 = AccentColor
         ProgressFill.BorderSizePixel = 0
         ProgressFill.Parent = Progress
 
         local ActionBtn = Instance.new("TextButton")
-        ActionBtn.Size = UDim2.new(0, 22, 0, 22)
-        ActionBtn.Position = UDim2.new(1, -30, 0, 125)
+        ActionBtn.Size = UDim2.new(0, 20, 0, 20)
+        ActionBtn.Position = UDim2.new(1, -28, 0, 116)
         ActionBtn.BackgroundTransparency = 1
         ActionBtn.Text = "⊕"
         ActionBtn.Font = THEME.FontBold
-        ActionBtn.TextSize = 16
+        ActionBtn.TextSize = 15
         ActionBtn.TextColor3 = AccentColor
         ActionBtn.Parent = MediaFrame
 
@@ -1022,18 +1039,18 @@ function NamelessWare:CreateWindow(config)
     ----------------------------------------------------------------------------
     function Window:CreateDataList(cfg)
         cfg = cfg or {}
-        local listTitle = cfg.Title or "nameless list"
+        local listTitle = cfg.Title or "epstien list"
         local items = cfg.Items or {}
 
         local ListFrame = Instance.new("Frame")
         ListFrame.Name = "NamelessDataList"
-        ListFrame.Size = UDim2.new(0, 175, 0, 205)
-        ListFrame.Position = UDim2.new(0.5, -455, 0.5, -10)
-        ListFrame.BackgroundColor3 = THEME.Background
+        ListFrame.Size = UDim2.new(0, 160, 0, 185)
+        ListFrame.Position = UDim2.new(0.5, -450, 0.5, 0)
+        ListFrame.BackgroundColor3 = THEME.BgMain
         ListFrame.Parent = ScreenGui
 
         local Corner = Instance.new("UICorner")
-        Corner.CornerRadius = UDim.new(0, 10)
+        Corner.CornerRadius = UDim.new(0, 8)
         Corner.Parent = ListFrame
 
         local Stroke = Instance.new("UIStroke")
@@ -1042,8 +1059,8 @@ function NamelessWare:CreateWindow(config)
         Stroke.Parent = ListFrame
 
         local Header = Instance.new("TextLabel")
-        Header.Size = UDim2.new(1, -16, 0, 24)
-        Header.Position = UDim2.new(0, 8, 0, 2)
+        Header.Size = UDim2.new(1, -16, 0, 20)
+        Header.Position = UDim2.new(0, 8, 0, 3)
         Header.BackgroundTransparency = 1
         Header.Text = listTitle
         Header.Font = THEME.FontMain
@@ -1053,8 +1070,8 @@ function NamelessWare:CreateWindow(config)
         Header.Parent = ListFrame
 
         local Scroll = Instance.new("ScrollingFrame")
-        Scroll.Size = UDim2.new(1, -12, 1, -48)
-        Scroll.Position = UDim2.new(0, 6, 0, 26)
+        Scroll.Size = UDim2.new(1, -12, 1, -40)
+        Scroll.Position = UDim2.new(0, 6, 0, 22)
         Scroll.BackgroundTransparency = 1
         Scroll.ScrollBarThickness = 0
         Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
@@ -1062,17 +1079,17 @@ function NamelessWare:CreateWindow(config)
         Scroll.Parent = ListFrame
 
         local Layout = Instance.new("UIListLayout")
-        Layout.Padding = UDim.new(0, 3)
+        Layout.Padding = UDim.new(0, 2)
         Layout.Parent = Scroll
 
         for i, item in ipairs(items) do
             local Row = Instance.new("Frame")
-            Row.Size = UDim2.new(1, 0, 0, 18)
+            Row.Size = UDim2.new(1, 0, 0, 16)
             Row.BackgroundTransparency = 1
             Row.Parent = Scroll
 
             local Num = Instance.new("TextLabel")
-            Num.Size = UDim2.new(0, 15, 1, 0)
+            Num.Size = UDim2.new(0, 14, 1, 0)
             Num.BackgroundTransparency = 1
             Num.Text = tostring(i)
             Num.Font = THEME.FontMain
@@ -1081,8 +1098,8 @@ function NamelessWare:CreateWindow(config)
             Num.Parent = Row
 
             local Name = Instance.new("TextLabel")
-            Name.Size = UDim2.new(0, 45, 1, 0)
-            Name.Position = UDim2.new(0, 18, 0, 0)
+            Name.Size = UDim2.new(0, 42, 1, 0)
+            Name.Position = UDim2.new(0, 16, 0, 0)
             Name.BackgroundTransparency = 1
             Name.Text = item.Name or ("item " .. i)
             Name.Font = THEME.FontMain
@@ -1092,26 +1109,26 @@ function NamelessWare:CreateWindow(config)
             Name.Parent = Row
 
             local Val = Instance.new("TextLabel")
-            Val.Size = UDim2.new(1, -65, 1, 0)
-            Val.Position = UDim2.new(0, 65, 0, 0)
+            Val.Size = UDim2.new(1, -60, 1, 0)
+            Val.Position = UDim2.new(0, 60, 0, 0)
             Val.BackgroundTransparency = 1
             Val.Text = item.Value or "50k dolar 50k lira"
             Val.Font = THEME.FontMain
-            Val.TextSize = 9
+            Val.TextSize = 8
             Val.TextColor3 = THEME.GreenSuccess
             Val.TextXAlignment = Enum.TextXAlignment.Right
             Val.Parent = Row
         end
 
         local BottomBar = Instance.new("Frame")
-        BottomBar.Size = UDim2.new(1, -12, 0, 12)
-        BottomBar.Position = UDim2.new(0, 6, 1, -16)
+        BottomBar.Size = UDim2.new(1, -12, 0, 11)
+        BottomBar.Position = UDim2.new(0, 6, 1, -14)
         BottomBar.BackgroundColor3 = AccentColor
         BottomBar.BorderSizePixel = 0
         BottomBar.Parent = ListFrame
 
         local BottomCorner = Instance.new("UICorner")
-        BottomCorner.CornerRadius = UDim.new(0, 4)
+        BottomCorner.CornerRadius = UDim.new(0, 3)
         BottomCorner.Parent = BottomBar
 
         local BottomText = Instance.new("TextLabel")
@@ -1133,18 +1150,18 @@ function NamelessWare:CreateWindow(config)
     ----------------------------------------------------------------------------
     function Window:CreateWatermark(cfg)
         cfg = cfg or {}
-        local wmTitle = cfg.Title or "namelessware - watermark"
-        local items = cfg.Items or {"item 1", "item 2", "elita_53"}
+        local wmTitle = cfg.Title or "passion - watermark"
+        local items = cfg.Items or {"item 1", "item 2", "notsamet_53"}
 
         local WmFrame = Instance.new("Frame")
         WmFrame.Name = "NamelessWatermark"
-        WmFrame.Size = UDim2.new(0, 130, 0, 20 + (#items * 16))
-        WmFrame.Position = UDim2.new(1, -145, 0, 15)
-        WmFrame.BackgroundColor3 = THEME.Background
+        WmFrame.Size = UDim2.new(0, 120, 0, 20 + (#items * 15))
+        WmFrame.Position = UDim2.new(1, -135, 0, 15)
+        WmFrame.BackgroundColor3 = THEME.BgMain
         WmFrame.Parent = ScreenGui
 
         local Corner = Instance.new("UICorner")
-        Corner.CornerRadius = UDim.new(0, 8)
+        Corner.CornerRadius = UDim.new(0, 6)
         Corner.Parent = WmFrame
 
         local Stroke = Instance.new("UIStroke")
@@ -1162,7 +1179,7 @@ function NamelessWare:CreateWindow(config)
         Layout.Parent = WmFrame
 
         local Header = Instance.new("TextLabel")
-        Header.Size = UDim2.new(1, 0, 0, 16)
+        Header.Size = UDim2.new(1, 0, 0, 14)
         Header.BackgroundTransparency = 1
         Header.Text = wmTitle
         Header.Font = THEME.FontBold
@@ -1173,7 +1190,7 @@ function NamelessWare:CreateWindow(config)
 
         for _, it in ipairs(items) do
             local ItmLbl = Instance.new("TextLabel")
-            ItmLbl.Size = UDim2.new(1, 0, 0, 14)
+            ItmLbl.Size = UDim2.new(1, 0, 0, 13)
             ItmLbl.BackgroundTransparency = 1
             ItmLbl.Text = "• " .. it
             ItmLbl.Font = THEME.FontMain
