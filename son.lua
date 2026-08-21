@@ -10,12 +10,6 @@ local LocalPlayer = Players.LocalPlayer
 local function GetSafeParent()
     local success, result = pcall(function()
         if gethui then return gethui() end
-        if syn and syn.protect_gui then
-            local sg = Instance.new("ScreenGui")
-            syn.protect_gui(sg)
-            sg.Parent = CoreGui
-            return sg
-        end
         return CoreGui
     end)
     if success and result then return result end
@@ -1116,6 +1110,9 @@ function NamelessWare:CreateWindow(config)
     ScreenGui.Name = "NamelessWare_UI"
     ScreenGui.ResetOnSpawn = false
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    if syn and syn.protect_gui then
+        pcall(function() syn.protect_gui(ScreenGui) end)
+    end
     ScreenGui.Parent = GetSafeParent()
     _G.NamelessWareInstance = ScreenGui
 
