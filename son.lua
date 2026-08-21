@@ -335,46 +335,12 @@ function ThemeManager:ApplyTheme(themeNameOrData, silent)
     return true
 end
 
-function ThemeManager:SetCustomAccent(r, g, b, livePreview)
-    r = math.clamp(math.floor(r or 165), 0, 255)
-    g = math.clamp(math.floor(g or 95), 0, 255)
-    b = math.clamp(math.floor(b or 255), 0, 255)
-
-    self.CurrentCustom = { R = r, G = g, B = b }
-
-    local accent = Color3.fromRGB(r, g, b)
-    local accentGrad = Color3.fromRGB(
-        math.clamp(r + 30, 0, 255),
-        math.clamp(g + 30, 0, 255),
-        math.clamp(b + 30, 0, 255)
-    )
-    local accentDark = Color3.fromRGB(
-        math.clamp(r - 40, 0, 255),
-        math.clamp(g - 40, 0, 255),
-        math.clamp(b - 40, 0, 255)
-    )
-
-    local customData = {
-        Name = "Custom (" .. r .. "," .. g .. "," .. b .. ")",
-        Accent = accent,
-        AccentGradient = accentGrad,
-        AccentDark = accentDark,
-        BgMain = Color3.fromRGB(15, 15, 22),
-        BgMainGradient = Color3.fromRGB(19, 19, 28),
-        BgSidebar = Color3.fromRGB(12, 12, 17),
-        CardBg = Color3.fromRGB(20, 20, 29),
-        CardBgGradient = Color3.fromRGB(24, 24, 35),
-        CardBorder = Color3.fromRGB(36, 36, 52),
-        TextMain = Color3.fromRGB(245, 245, 252),
-        TextMuted = Color3.fromRGB(130, 130, 155),
-        CircleOff = Color3.fromRGB(26, 26, 36),
-        CircleOffBorder = Color3.fromRGB(45, 45, 62)
-    }
-
-    if livePreview then
-        self:ApplyTheme(customData, true)
+function ThemeManager:SetColor(key, color3)
+    if not color3 or typeof(color3) ~= "Color3" then return end
+    THEME[key] = color3
+    for _, sub in ipairs(NamelessWare.ThemeSubscribers) do
+        pcall(function() sub(THEME) end)
     end
-    return customData
 end
 
 function ThemeManager:GetCustomThemes()
@@ -402,9 +368,17 @@ function ThemeManager:SaveCustomTheme(name)
 
     local payload = {
         Name = name,
-        R = self.CurrentCustom.R,
-        G = self.CurrentCustom.G,
-        B = self.CurrentCustom.B
+        Colors = {
+            Accent = { R = math.floor(THEME.Accent.R * 255), G = math.floor(THEME.Accent.G * 255), B = math.floor(THEME.Accent.B * 255) },
+            AccentGradient = { R = math.floor(THEME.AccentGradient.R * 255), G = math.floor(THEME.AccentGradient.G * 255), B = math.floor(THEME.AccentGradient.B * 255) },
+            BgMain = { R = math.floor(THEME.BgMain.R * 255), G = math.floor(THEME.BgMain.G * 255), B = math.floor(THEME.BgMain.B * 255) },
+            BgMainGradient = { R = math.floor(THEME.BgMainGradient.R * 255), G = math.floor(THEME.BgMainGradient.G * 255), B = math.floor(THEME.BgMainGradient.B * 255) },
+            BgSidebar = { R = math.floor(THEME.BgSidebar.R * 255), G = math.floor(THEME.BgSidebar.G * 255), B = math.floor(THEME.BgSidebar.B * 255) },
+            CardBg = { R = math.floor(THEME.CardBg.R * 255), G = math.floor(THEME.CardBg.G * 255), B = math.floor(THEME.CardBg.B * 255) },
+            CardBorder = { R = math.floor(THEME.CardBorder.R * 255), G = math.floor(THEME.CardBorder.G * 255), B = math.floor(THEME.CardBorder.B * 255) },
+            TextMain = { R = math.floor(THEME.TextMain.R * 255), G = math.floor(THEME.TextMain.G * 255), B = math.floor(THEME.TextMain.B * 255) },
+            TextMuted = { R = math.floor(THEME.TextMuted.R * 255), G = math.floor(THEME.TextMuted.G * 255), B = math.floor(THEME.TextMuted.B * 255) },
+        }
     }
 
     local path = self.Folder .. "/" .. name .. ".json"
@@ -415,7 +389,7 @@ function ThemeManager:SaveCustomTheme(name)
         if success then
             NamelessWare:Notify({
                 Title = "Theme Saved",
-                Content = "Custom theme '" .. name .. "' was saved.",
+                Content = "Custom palette '" .. name .. "' was saved.",
                 Duration = 2.5,
                 Type = "Success"
             })
@@ -431,8 +405,16 @@ function ThemeManager:LoadCustomThemeData(name)
         local success, content = pcall(function() return readfile(path) end)
         if success and content then
             local decodeSuccess, data = pcall(function() return HttpService:JSONDecode(content) end)
-            if decodeSuccess and type(data) == "table" and data.R and data.G and data.B then
-                return self:SetCustomAccent(data.R, data.G, data.B, false)
+            if decodeSuccess and type(data) == "table" then
+                if data.Colors then
+                    local themeData = { Name = name }
+                    for colKey, rgb in pairs(data.Colors) do
+                        themeData[colKey] = Color3.fromRGB(rgb.R or 255, rgb.G or 255, rgb.B or 255)
+                    end
+                    return themeData
+                elseif data.R and data.G and data.B then
+                    return self:SetCustomAccent(data.R, data.G, data.B, false)
+                end
             end
         end
     end
@@ -472,40 +454,87 @@ function ThemeManager:BuildThemeSection(Section)
         end
     })
 
-    Section:AddSubHeader("Custom Accent Creator", "rbxassetid://10734975692")
+    Section:AddSubHeader("Color Palette Customizer", "rbxassetid://10734975692")
 
-    local SliderR, SliderG, SliderB
-
-    local function OnColorSliderChanged()
-        local r = SliderR and SliderR.Get and SliderR.Get() or self.CurrentCustom.R
-        local g = SliderG and SliderG.Get and SliderG.Get() or self.CurrentCustom.G
-        local b = SliderB and SliderB.Get and SliderB.Get() or self.CurrentCustom.B
-        self:SetCustomAccent(r, g, b, true)
-    end
-
-    SliderR = Section:AddSlider({
-        Name = "Red (R)",
-        Min = 0,
-        Max = 255,
-        Default = self.CurrentCustom.R,
-        Callback = function() OnColorSliderChanged() end
+    local AccentPicker = Section:AddColorPicker({
+        Name = "Accent Color",
+        Default = THEME.Accent,
+        Callback = function(col)
+            self:SetColor("Accent", col)
+            self:SetColor("AccentDark", Color3.fromRGB(math.clamp(math.floor(col.R * 255) - 40, 0, 255), math.clamp(math.floor(col.G * 255) - 40, 0, 255), math.clamp(math.floor(col.B * 255) - 40, 0, 255)))
+        end
     })
 
-    SliderG = Section:AddSlider({
-        Name = "Green (G)",
-        Min = 0,
-        Max = 255,
-        Default = self.CurrentCustom.G,
-        Callback = function() OnColorSliderChanged() end
+    local AccentGradPicker = Section:AddColorPicker({
+        Name = "Accent Highlight",
+        Default = THEME.AccentGradient,
+        Callback = function(col)
+            self:SetColor("AccentGradient", col)
+        end
     })
 
-    SliderB = Section:AddSlider({
-        Name = "Blue (B)",
-        Min = 0,
-        Max = 255,
-        Default = self.CurrentCustom.B,
-        Callback = function() OnColorSliderChanged() end
+    local BgMainPicker = Section:AddColorPicker({
+        Name = "Window Background",
+        Default = THEME.BgMain,
+        Callback = function(col)
+            self:SetColor("BgMain", col)
+            self:SetColor("BgMainGradient", Color3.fromRGB(math.clamp(math.floor(col.R * 255) + 4, 0, 255), math.clamp(math.floor(col.G * 255) + 4, 0, 255), math.clamp(math.floor(col.B * 255) + 6, 0, 255)))
+        end
     })
+
+    local BgSidebarPicker = Section:AddColorPicker({
+        Name = "Sidebar Background",
+        Default = THEME.BgSidebar,
+        Callback = function(col)
+            self:SetColor("BgSidebar", col)
+        end
+    })
+
+    local CardBgPicker = Section:AddColorPicker({
+        Name = "Card Background",
+        Default = THEME.CardBg,
+        Callback = function(col)
+            self:SetColor("CardBg", col)
+            self:SetColor("CardBgGradient", Color3.fromRGB(math.clamp(math.floor(col.R * 255) + 4, 0, 255), math.clamp(math.floor(col.G * 255) + 4, 0, 255), math.clamp(math.floor(col.B * 255) + 6, 0, 255)))
+        end
+    })
+
+    local BorderPicker = Section:AddColorPicker({
+        Name = "Borders & Outlines",
+        Default = THEME.CardBorder,
+        Callback = function(col)
+            self:SetColor("CardBorder", col)
+        end
+    })
+
+    local TextMainPicker = Section:AddColorPicker({
+        Name = "Primary Text",
+        Default = THEME.TextMain,
+        Callback = function(col)
+            self:SetColor("TextMain", col)
+        end
+    })
+
+    local TextMutedPicker = Section:AddColorPicker({
+        Name = "Muted Text",
+        Default = THEME.TextMuted,
+        Callback = function(col)
+            self:SetColor("TextMuted", col)
+        end
+    })
+
+    table.insert(NamelessWare.ThemeSubscribers, function(theme)
+        if AccentPicker and AccentPicker.Set then AccentPicker.Set(theme.Accent) end
+        if AccentGradPicker and AccentGradPicker.Set then AccentGradPicker.Set(theme.AccentGradient) end
+        if BgMainPicker and BgMainPicker.Set then BgMainPicker.Set(theme.BgMain) end
+        if BgSidebarPicker and BgSidebarPicker.Set then BgSidebarPicker.Set(theme.BgSidebar) end
+        if CardBgPicker and CardBgPicker.Set then CardBgPicker.Set(theme.CardBg) end
+        if BorderPicker and BorderPicker.Set then BorderPicker.Set(theme.CardBorder) end
+        if TextMainPicker and TextMainPicker.Set then TextMainPicker.Set(theme.TextMain) end
+        if TextMutedPicker and TextMutedPicker.Set then TextMutedPicker.Set(theme.TextMuted) end
+    end)
+
+    Section:AddSubHeader("Theme Profiles", "rbxassetid://10709791437")
 
     local customThemeName = "MyTheme"
     Section:AddTextBox({
@@ -525,7 +554,8 @@ function ThemeManager:BuildThemeSection(Section)
             if customThemeName and customThemeName ~= "" then
                 self:SaveCustomTheme(customThemeName)
                 if CustomThemeDropdown and CustomThemeDropdown.Refresh then
-                    CustomThemeDropdown.Refresh(self:GetCustomThemes())
+                    local updated = self:GetCustomThemes()
+                    CustomThemeDropdown.Refresh((#updated > 0) and updated or {"None"})
                 end
             end
         end
@@ -2396,6 +2426,302 @@ function NamelessWare:CreateWindow(config)
                     end,
                     Get = function() return key end,
                     Type = "Keybind"
+                }
+
+                NamelessWare.Flags[flag] = controller
+                return controller
+            end
+
+            function Controls:AddColorPicker(cfg)
+                cfg = cfg or {}
+                local name = cfg.Name or "Color Picker"
+                local defColor = cfg.Default or THEME.Accent
+                local flag = cfg.Flag or name
+                local callback = cfg.Callback or function() end
+                local currentColor = defColor
+                local isPickerOpen = false
+
+                local ColorPickerRow = Instance.new("Frame")
+                ColorPickerRow.Size = UDim2.new(1, 0, 0, 26)
+                ColorPickerRow.AutomaticSize = Enum.AutomaticSize.Y
+                ColorPickerRow.BackgroundTransparency = 1
+                ColorPickerRow.Parent = Card
+                table.insert(RegisteredItems, {Name = name, Element = ColorPickerRow, Card = Card})
+
+                local HeaderRow = Instance.new("Frame")
+                HeaderRow.Size = UDim2.new(1, 0, 0, 26)
+                HeaderRow.BackgroundTransparency = 1
+                HeaderRow.Parent = ColorPickerRow
+
+                local Label = Instance.new("TextLabel")
+                Label.Size = UDim2.new(1, -95, 1, 0)
+                Label.BackgroundTransparency = 1
+                Label.Text = name
+                Label.Font = THEME.FontMain
+                Label.TextSize = 10
+                Label.TextColor3 = THEME.TextMain
+                Label.TextXAlignment = Enum.TextXAlignment.Left
+                Label.Parent = HeaderRow
+
+                local SwatchHolder = Instance.new("Frame")
+                SwatchHolder.Size = UDim2.new(0, 90, 1, 0)
+                SwatchHolder.Position = UDim2.new(1, -90, 0, 0)
+                SwatchHolder.BackgroundTransparency = 1
+                SwatchHolder.Parent = HeaderRow
+
+                local SwatchBtn = Instance.new("TextButton")
+                SwatchBtn.Size = UDim2.new(0, 26, 0, 16)
+                SwatchBtn.Position = UDim2.new(1, -26, 0.5, -8)
+                SwatchBtn.BackgroundColor3 = currentColor
+                SwatchBtn.Text = ""
+                SwatchBtn.AutoButtonColor = false
+                SwatchBtn.Parent = SwatchHolder
+
+                local SwatchCorner = Instance.new("UICorner")
+                SwatchCorner.CornerRadius = UDim.new(0, 4)
+                SwatchCorner.Parent = SwatchBtn
+
+                local SwatchStroke = Instance.new("UIStroke")
+                SwatchStroke.Color = THEME.CardBorder
+                SwatchStroke.Thickness = 1
+                SwatchStroke.Parent = SwatchBtn
+
+                local HexLabel = Instance.new("TextLabel")
+                HexLabel.Size = UDim2.new(1, -32, 1, 0)
+                HexLabel.Position = UDim2.new(0, 0, 0, 0)
+                HexLabel.BackgroundTransparency = 1
+                HexLabel.Text = "#" .. currentColor:ToHex():upper()
+                HexLabel.Font = THEME.FontMain
+                HexLabel.TextSize = 9
+                HexLabel.TextColor3 = THEME.TextMuted
+                HexLabel.TextXAlignment = Enum.TextXAlignment.Right
+                HexLabel.Parent = SwatchHolder
+
+                local PickerPanel = Instance.new("Frame")
+                PickerPanel.Size = UDim2.new(1, 0, 0, 0)
+                PickerPanel.Position = UDim2.new(0, 0, 0, 28)
+                PickerPanel.BackgroundColor3 = THEME.BgSidebar
+                PickerPanel.BorderSizePixel = 0
+                PickerPanel.ClipsDescendants = true
+                PickerPanel.Visible = false
+                PickerPanel.Parent = ColorPickerRow
+
+                local PanelCorner = Instance.new("UICorner")
+                PanelCorner.CornerRadius = UDim.new(0, 6)
+                PanelCorner.Parent = PickerPanel
+
+                local PanelStroke = Instance.new("UIStroke")
+                PanelStroke.Color = THEME.CardBorder
+                PanelStroke.Thickness = 1
+                PanelStroke.Parent = PickerPanel
+
+                local PanelPadding = Instance.new("UIPadding")
+                PanelPadding.PaddingTop = UDim.new(0, 8)
+                PanelPadding.PaddingBottom = UDim.new(0, 8)
+                PanelPadding.PaddingLeft = UDim.new(0, 8)
+                PanelPadding.PaddingRight = UDim.new(0, 8)
+                PanelPadding.Parent = PickerPanel
+
+                local PanelLayout = Instance.new("UIListLayout")
+                PanelLayout.Padding = UDim.new(0, 6)
+                PanelLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                PanelLayout.Parent = PickerPanel
+
+                local SwatchGrid = Instance.new("Frame")
+                SwatchGrid.Size = UDim2.new(1, 0, 0, 18)
+                SwatchGrid.BackgroundTransparency = 1
+                SwatchGrid.Parent = PickerPanel
+
+                local GridLay = Instance.new("UIListLayout")
+                GridLay.FillDirection = Enum.FillDirection.Horizontal
+                GridLay.Padding = UDim.new(0, 4)
+                GridLay.HorizontalAlignment = Enum.HorizontalAlignment.Center
+                GridLay.Parent = SwatchGrid
+
+                local QuickColors = {
+                    Color3.fromRGB(165, 95, 255),
+                    Color3.fromRGB(130, 90, 255),
+                    Color3.fromRGB(0, 225, 255),
+                    Color3.fromRGB(0, 230, 135),
+                    Color3.fromRGB(255, 65, 150),
+                    Color3.fromRGB(255, 45, 75),
+                    Color3.fromRGB(255, 180, 35),
+                    Color3.fromRGB(255, 255, 255),
+                    Color3.fromRGB(160, 160, 180),
+                    Color3.fromRGB(20, 20, 29),
+                }
+
+                local RSlider, GSlider, BSlider
+
+                local function UpdateColor(col, triggerCallback)
+                    currentColor = col
+                    SwatchBtn.BackgroundColor3 = currentColor
+                    HexLabel.Text = "#" .. currentColor:ToHex():upper()
+                    if RSlider then RSlider.Update(currentColor.R * 255) end
+                    if GSlider then GSlider.Update(currentColor.G * 255) end
+                    if BSlider then BSlider.Update(currentColor.B * 255) end
+                    if triggerCallback ~= false then
+                        callback(currentColor)
+                    end
+                end
+
+                for _, qCol in ipairs(QuickColors) do
+                    local QBtn = Instance.new("TextButton")
+                    QBtn.Size = UDim2.new(0, 14, 0, 14)
+                    QBtn.BackgroundColor3 = qCol
+                    QBtn.Text = ""
+                    QBtn.AutoButtonColor = false
+                    QBtn.Parent = SwatchGrid
+
+                    local QCorner = Instance.new("UICorner")
+                    QCorner.CornerRadius = UDim.new(1, 0)
+                    QCorner.Parent = QBtn
+
+                    local QStroke = Instance.new("UIStroke")
+                    QStroke.Color = Color3.fromRGB(50, 50, 65)
+                    QStroke.Thickness = 1
+                    QStroke.Parent = QBtn
+
+                    QBtn.MouseButton1Click:Connect(function()
+                        UpdateColor(qCol, true)
+                    end)
+                end
+
+                local function CreateRGBSlider(compName, getComp, onCompChange)
+                    local SRow = Instance.new("Frame")
+                    SRow.Size = UDim2.new(1, 0, 0, 16)
+                    SRow.BackgroundTransparency = 1
+                    SRow.Parent = PickerPanel
+
+                    local SLabel = Instance.new("TextLabel")
+                    SLabel.Size = UDim2.new(0, 14, 1, 0)
+                    SLabel.BackgroundTransparency = 1
+                    SLabel.Text = compName
+                    SLabel.Font = THEME.FontBold
+                    SLabel.TextSize = 9
+                    SLabel.TextColor3 = THEME.TextMuted
+                    SLabel.Parent = SRow
+
+                    local STrack = Instance.new("TextButton")
+                    STrack.Size = UDim2.new(1, -45, 0, 4)
+                    STrack.Position = UDim2.new(0, 18, 0.5, -2)
+                    STrack.BackgroundColor3 = THEME.CardBg
+                    STrack.Text = ""
+                    STrack.AutoButtonColor = false
+                    STrack.Parent = SRow
+
+                    local STrackCorner = Instance.new("UICorner")
+                    STrackCorner.CornerRadius = UDim.new(1, 0)
+                    STrackCorner.Parent = STrack
+
+                    local SFill = Instance.new("Frame")
+                    SFill.Size = UDim2.new(getComp() / 255, 0, 1, 0)
+                    SFill.BackgroundColor3 = THEME.Accent
+                    SFill.BorderSizePixel = 0
+                    SFill.Parent = STrack
+
+                    local SFillCorner = Instance.new("UICorner")
+                    SFillCorner.CornerRadius = UDim.new(1, 0)
+                    SFillCorner.Parent = SFill
+
+                    local SValLabel = Instance.new("TextLabel")
+                    SValLabel.Size = UDim2.new(0, 24, 1, 0)
+                    SValLabel.Position = UDim2.new(1, -24, 0, 0)
+                    SValLabel.BackgroundTransparency = 1
+                    SValLabel.Text = tostring(math.floor(getComp()))
+                    SValLabel.Font = THEME.FontMain
+                    SValLabel.TextSize = 9
+                    SValLabel.TextColor3 = THEME.TextMain
+                    SValLabel.Parent = SRow
+
+                    local sDragging = false
+                    local function SetValFromInput(input)
+                        local p = math.clamp((input.Position.X - STrack.AbsolutePosition.X) / STrack.AbsoluteSize.X, 0, 1)
+                        local v = math.floor(p * 255)
+                        SFill.Size = UDim2.new(p, 0, 1, 0)
+                        SValLabel.Text = tostring(v)
+                        onCompChange(v)
+                    end
+
+                    STrack.InputBegan:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                            sDragging = true
+                            SetValFromInput(input)
+                        end
+                    end)
+
+                    STrack.InputEnded:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                            sDragging = false
+                        end
+                    end)
+
+                    UserInputService.InputChanged:Connect(function(input)
+                        if sDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                            SetValFromInput(input)
+                        end
+                    end)
+
+                    return {
+                        Update = function(val)
+                            local p = math.clamp(val / 255, 0, 1)
+                            SFill.Size = UDim2.new(p, 0, 1, 0)
+                            SValLabel.Text = tostring(math.floor(val))
+                        end
+                    }
+                end
+
+                RSlider = CreateRGBSlider("R", function() return currentColor.R * 255 end, function(v)
+                    local col = Color3.fromRGB(v, math.floor(currentColor.G * 255), math.floor(currentColor.B * 255))
+                    UpdateColor(col, true)
+                end)
+
+                GSlider = CreateRGBSlider("G", function() return currentColor.G * 255 end, function(v)
+                    local col = Color3.fromRGB(math.floor(currentColor.R * 255), v, math.floor(currentColor.B * 255))
+                    UpdateColor(col, true)
+                end)
+
+                BSlider = CreateRGBSlider("B", function() return currentColor.B * 255 end, function(v)
+                    local col = Color3.fromRGB(math.floor(currentColor.R * 255), math.floor(currentColor.G * 255), v)
+                    UpdateColor(col, true)
+                end)
+
+                local function TogglePicker()
+                    isPickerOpen = not isPickerOpen
+                    if isPickerOpen then
+                        RSlider.Update(currentColor.R * 255)
+                        GSlider.Update(currentColor.G * 255)
+                        BSlider.Update(currentColor.B * 255)
+                        PickerPanel.Visible = true
+                        Tween(PickerPanel, {Size = UDim2.new(1, 0, 0, 100)}, 0.18)
+                        Tween(SwatchStroke, {Color = THEME.Accent}, 0.15)
+                    else
+                        local tw = Tween(PickerPanel, {Size = UDim2.new(1, 0, 0, 0)}, 0.15)
+                        tw.Completed:Connect(function()
+                            if not isPickerOpen then PickerPanel.Visible = false end
+                        end)
+                        Tween(SwatchStroke, {Color = THEME.CardBorder}, 0.15)
+                    end
+                end
+
+                SwatchBtn.MouseButton1Click:Connect(TogglePicker)
+
+                table.insert(NamelessWare.ThemeSubscribers, function(theme)
+                    Label.TextColor3 = theme.TextMain
+                    HexLabel.TextColor3 = theme.TextMuted
+                    PickerPanel.BackgroundColor3 = theme.BgSidebar
+                    PanelStroke.Color = theme.CardBorder
+                    SwatchStroke.Color = isPickerOpen and theme.Accent or theme.CardBorder
+                end)
+
+                local controller = {
+                    Set = function(newCol)
+                        if typeof(newCol) == "Color3" then
+                            UpdateColor(newCol, true)
+                        end
+                    end,
+                    Get = function() return currentColor end,
+                    Type = "ColorPicker"
                 }
 
                 NamelessWare.Flags[flag] = controller
