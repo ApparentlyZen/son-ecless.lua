@@ -248,6 +248,8 @@ local THEME = {}
 for k, v in pairs(THEME_PRESETS["Nameless Violet"]) do
     THEME[k] = v
 end
+THEME.FontMain = Enum.Font.GothamMedium
+THEME.FontBold = Enum.Font.GothamBold
 
 
 local RAW_LOGO_URL = "https://raw.githubusercontent.com/ApparentlyZen/image-namelessWare/main/165abdd521328d77324b02ce8a77e090_1780162334922.webp"
@@ -535,6 +537,8 @@ function ThemeManager:ApplyTheme(themeNameOrData, silent)
     for k, v in pairs(themeData) do
         THEME[k] = v
     end
+    THEME.FontMain = THEME.FontMain or Enum.Font.GothamMedium
+    THEME.FontBold = THEME.FontBold or Enum.Font.GothamBold
 
     for _, sub in ipairs(NamelessWare.ThemeSubscribers) do
         pcall(function() sub(themeData) end)
