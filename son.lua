@@ -1758,7 +1758,7 @@ function NamelessWare:CreateWindow(config)
     UserTimerLabel.Size = UDim2.new(1, -48, 0, 12)
     UserTimerLabel.Position = UDim2.new(0, 46, 0, 25)
     UserTimerLabel.BackgroundTransparency = 1
-    UserTimerLabel.Text = "⏱ 00:00:00"
+    UserTimerLabel.Text = "00:00:00"
     UserTimerLabel.Font = THEME.FontMain
     UserTimerLabel.TextSize = 9
     UserTimerLabel.TextColor3 = THEME.Accent
@@ -1772,7 +1772,7 @@ function NamelessWare:CreateWindow(config)
             local hrs = math.floor(elapsed / 3600)
             local mins = math.floor((elapsed % 3600) / 60)
             local secs = elapsed % 60
-            UserTimerLabel.Text = string.format("⏱ %02d:%02d:%02d", hrs, mins, secs)
+            UserTimerLabel.Text = string.format("%02d:%02d:%02d", hrs, mins, secs)
             task.wait(1)
         end
     end)
@@ -1874,7 +1874,7 @@ function NamelessWare:CreateWindow(config)
     ClearSearchBtn.Size = UDim2.new(0, 16, 0, 16)
     ClearSearchBtn.Position = UDim2.new(1, -19, 0.5, -8)
     ClearSearchBtn.BackgroundTransparency = 1
-    ClearSearchBtn.Text = "✕"
+    ClearSearchBtn.Text = "X"
     ClearSearchBtn.Font = THEME.FontBold
     ClearSearchBtn.TextSize = 9
     ClearSearchBtn.TextColor3 = THEME.TextMuted
@@ -2778,14 +2778,13 @@ function NamelessWare:CreateWindow(config)
                 SelLabel.ZIndex = 3
                 SelLabel.Parent = DropBtn
 
-                local Arrow = Instance.new("TextLabel")
-                Arrow.Size = UDim2.new(0, 16, 1, 0)
-                Arrow.Position = UDim2.new(1, -20, 0, 0)
+                local Arrow = Instance.new("ImageLabel")
+                Arrow.Size = UDim2.new(0, 12, 0, 12)
+                Arrow.Position = UDim2.new(1, -20, 0.5, -6)
                 Arrow.BackgroundTransparency = 1
-                Arrow.Text = "▾"
-                Arrow.Font = THEME.FontBold
-                Arrow.TextSize = 12
-                Arrow.TextColor3 = THEME.TextMuted
+                Arrow.Image = "rbxassetid://10709790948"
+                Arrow.ImageColor3 = THEME.TextMuted
+                Arrow.ScaleType = Enum.ScaleType.Fit
                 Arrow.ZIndex = 3
                 Arrow.Parent = DropBtn
 
@@ -2829,7 +2828,7 @@ function NamelessWare:CreateWindow(config)
                 local function CloseDropdown()
                     if not isOpen then return end
                     isOpen = false
-                    Tween(Arrow, {Rotation = 0}, 0.15)
+                    Tween(Arrow, {Rotation = 0, ImageColor3 = THEME.TextMuted}, 0.15)
                     Tween(DropStroke, {Color = THEME.CardBorder}, 0.15)
                     local tw = Tween(MenuList, {Size = UDim2.new(1, 0, 0, 0)}, 0.15)
                     tw.Completed:Connect(function()
@@ -2856,7 +2855,7 @@ function NamelessWare:CreateWindow(config)
                     MenuList.Visible = true
 
                     local targetHeight = math.min(#options * 24 + 6, 120)
-                    Tween(Arrow, {Rotation = 180}, 0.15)
+                    Tween(Arrow, {Rotation = 180, ImageColor3 = THEME.Accent}, 0.15)
                     Tween(DropStroke, {Color = THEME.Accent}, 0.15)
                     Tween(MenuList, {Size = UDim2.new(1, 0, 0, targetHeight)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
                 end
@@ -2922,7 +2921,7 @@ function NamelessWare:CreateWindow(config)
                     DropBtn.BackgroundColor3 = theme.BgSidebar
                     DropStroke.Color = isOpen and theme.Accent or theme.CardBorder
                     SelLabel.TextColor3 = theme.TextMain
-                    Arrow.TextColor3 = theme.TextMuted
+                    Arrow.ImageColor3 = isOpen and theme.Accent or theme.TextMuted
                     MenuList.BackgroundColor3 = theme.CardBg
                     MenuStroke.Color = theme.Accent
                     MenuScroll.ScrollBarImageColor3 = theme.Accent
