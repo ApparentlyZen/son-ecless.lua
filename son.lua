@@ -126,31 +126,16 @@ local THEME_PRESETS = {
         Accent = Color3.fromRGB(165, 95, 255),
         AccentGradient = Color3.fromRGB(195, 135, 255),
         AccentDark = Color3.fromRGB(120, 50, 220),
-        BgMain = Color3.fromRGB(8, 8, 12),
-        BgMainGradient = Color3.fromRGB(24, 24, 34),
-        BgSidebar = Color3.fromRGB(7, 7, 10),
-        CardBg = Color3.fromRGB(14, 14, 20),
-        CardBgGradient = Color3.fromRGB(21, 21, 29),
-        CardBorder = Color3.fromRGB(30, 30, 42),
+        BgMain = Color3.fromRGB(15, 15, 22),
+        BgMainGradient = Color3.fromRGB(19, 19, 28),
+        BgSidebar = Color3.fromRGB(12, 12, 17),
+        CardBg = Color3.fromRGB(20, 20, 29),
+        CardBgGradient = Color3.fromRGB(24, 24, 35),
+        CardBorder = Color3.fromRGB(36, 36, 52),
         TextMain = Color3.fromRGB(245, 245, 252),
-        TextMuted = Color3.fromRGB(120, 120, 145),
-        CircleOff = Color3.fromRGB(20, 20, 28),
-        CircleOffBorder = Color3.fromRGB(38, 38, 52),
-    },
-    ["Noir Onyx"] = {
-        Accent = Color3.fromRGB(165, 95, 255),
-        AccentGradient = Color3.fromRGB(195, 135, 255),
-        AccentDark = Color3.fromRGB(120, 50, 220),
-        BgMain = Color3.fromRGB(7, 7, 11),
-        BgMainGradient = Color3.fromRGB(26, 26, 36),
-        BgSidebar = Color3.fromRGB(6, 6, 9),
-        CardBg = Color3.fromRGB(13, 13, 18),
-        CardBgGradient = Color3.fromRGB(20, 20, 28),
-        CardBorder = Color3.fromRGB(28, 28, 40),
-        TextMain = Color3.fromRGB(245, 245, 252),
-        TextMuted = Color3.fromRGB(120, 120, 145),
-        CircleOff = Color3.fromRGB(18, 18, 26),
-        CircleOffBorder = Color3.fromRGB(36, 36, 50),
+        TextMuted = Color3.fromRGB(130, 130, 155),
+        CircleOff = Color3.fromRGB(26, 26, 36),
+        CircleOffBorder = Color3.fromRGB(45, 45, 62),
     },
     ["Flow Indigo"] = {
         Accent = Color3.fromRGB(130, 90, 255),
@@ -265,13 +250,6 @@ for k, v in pairs(THEME_PRESETS["Nameless Violet"]) do
 end
 THEME.FontMain = Enum.Font.GothamMedium
 THEME.FontBold = Enum.Font.GothamBold
-
-pcall(function()
-    if Font and Font.new then
-        THEME.FontFaceMain = Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
-        THEME.FontFaceBold = Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
-    end
-end)
 
 local RAW_LOGO_URL = "https://raw.githubusercontent.com/ApparentlyZen/image-namelessWare/main/165abdd521328d77324b02ce8a77e090_1780162334922.webp"
 
@@ -496,6 +474,74 @@ function NamelessWare:SetCardTransparency(alpha)
                 card.BackgroundTransparency = self.CardTransparency
             end
         end)
+    end
+end
+
+local function SafeGetFont(name, fallback)
+    fallback = fallback or Enum.Font.GothamMedium
+    local success, result = pcall(function()
+        return Enum.Font[name]
+    end)
+    return (success and result) or fallback
+end
+
+local function SafeGetFontFace(familyPath)
+    local faceReg, faceBold = nil, nil
+    if familyPath and Font and Font.new then
+        pcall(function()
+            faceReg = Font.new("rbxasset://fonts/families/" .. familyPath .. ".json", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
+            faceBold = Font.new("rbxasset://fonts/families/" .. familyPath .. ".json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+        end)
+    end
+    return faceReg, faceBold
+end
+
+local FONT_MAP = {
+    ["Nunito (Ronde)"]           = { Main = SafeGetFont("Nunito"), Bold = SafeGetFont("NunitoBold", SafeGetFont("Nunito")), FaceMain = select(1, SafeGetFontFace("Nunito")), FaceBold = select(2, SafeGetFontFace("Nunito")) },
+    ["Comfortaa (Ronde)"]        = { Main = SafeGetFont("Comfortaa", Enum.Font.GothamMedium), Bold = SafeGetFont("ComfortaaBold", Enum.Font.GothamBold), FaceMain = select(1, SafeGetFontFace("Comfortaa")), FaceBold = select(2, SafeGetFontFace("Comfortaa")) },
+    ["Quicksand (Ronde)"]        = { Main = SafeGetFont("Quicksand", Enum.Font.GothamMedium), Bold = SafeGetFont("QuicksandBold", Enum.Font.GothamBold), FaceMain = select(1, SafeGetFontFace("Quicksand")), FaceBold = select(2, SafeGetFontFace("Quicksand")) },
+    ["Fredoka (Ronde)"]          = { Main = SafeGetFont("FredokaOne"), Bold = SafeGetFont("FredokaOne"), FaceMain = select(1, SafeGetFontFace("FredokaOne")), FaceBold = select(2, SafeGetFontFace("FredokaOne")) },
+    ["Ubuntu (Ronde/Dynamique)"] = { Main = SafeGetFont("Ubuntu"), Bold = SafeGetFont("UbuntuBold", SafeGetFont("Ubuntu")), FaceMain = select(1, SafeGetFontFace("Ubuntu")), FaceBold = select(2, SafeGetFontFace("Ubuntu")) },
+    ["Gotham (Default)"]         = { Main = SafeGetFont("GothamMedium", Enum.Font.Gotham), Bold = SafeGetFont("GothamBold", Enum.Font.GothamBold) },
+    ["Gotham Semibold"]          = { Main = SafeGetFont("GothamSemibold", Enum.Font.Gotham), Bold = SafeGetFont("GothamBlack", Enum.Font.GothamBold) },
+    ["Montserrat"]               = { Main = SafeGetFont("MontserratMedium", SafeGetFont("Montserrat")), Bold = SafeGetFont("MontserratBold", SafeGetFont("Montserrat")) },
+    ["Poppins"]                  = { Main = SafeGetFont("Poppins", Enum.Font.GothamMedium), Bold = SafeGetFont("PoppinsBold", Enum.Font.GothamBold), FaceMain = select(1, SafeGetFontFace("Poppins")), FaceBold = select(2, SafeGetFontFace("Poppins")) },
+    ["Inter"]                    = { Main = SafeGetFont("Inter", Enum.Font.GothamMedium), Bold = SafeGetFont("InterBold", Enum.Font.GothamBold), FaceMain = select(1, SafeGetFontFace("Inter")), FaceBold = select(2, SafeGetFontFace("Inter")) },
+    ["SourceSans"]               = { Main = SafeGetFont("SourceSans"), Bold = SafeGetFont("SourceSansBold", SafeGetFont("SourceSans")) },
+    ["Roboto"]                   = { Main = SafeGetFont("Roboto"), Bold = SafeGetFont("RobotoBold", SafeGetFont("Roboto")) },
+    ["RobotoCondensed"]          = { Main = SafeGetFont("RobotoCondensed"), Bold = SafeGetFont("RobotoCondensedBold", SafeGetFont("RobotoCondensed")) },
+    ["RobotoMono (Code)"]        = { Main = SafeGetFont("RobotoMono"), Bold = SafeGetFont("RobotoMono") },
+    ["JosefinSans"]              = { Main = SafeGetFont("JosefinSans"), Bold = SafeGetFont("JosefinSansBold", SafeGetFont("JosefinSans")) },
+    ["Oswald"]                   = { Main = SafeGetFont("Oswald"), Bold = SafeGetFont("OswaldBold", SafeGetFont("Oswald")) },
+    ["LuckiestGuy"]              = { Main = SafeGetFont("LuckiestGuy"), Bold = SafeGetFont("LuckiestGuy") },
+    ["AmaticSC"]                 = { Main = SafeGetFont("AmaticSC"), Bold = SafeGetFont("AmaticSC") },
+    ["SciFi"]                    = { Main = SafeGetFont("SciFi"), Bold = SafeGetFont("SciFi") },
+    ["Code"]                     = { Main = SafeGetFont("Code"), Bold = SafeGetFont("Code") },
+    ["Arcade"]                   = { Main = SafeGetFont("Arcade"), Bold = SafeGetFont("Arcade") },
+    ["DenkOne"]                  = { Main = SafeGetFont("DenkOne"), Bold = SafeGetFont("DenkOne") },
+    ["Creepster"]                = { Main = SafeGetFont("Creepster"), Bold = SafeGetFont("Creepster") },
+    ["SpecialElite"]             = { Main = SafeGetFont("SpecialElite"), Bold = SafeGetFont("SpecialElite") },
+    ["Fondamento"]               = { Main = SafeGetFont("Fondamento"), Bold = SafeGetFont("Fondamento") }
+}
+
+function NamelessWare:SetFontByName(fontName)
+    local preset = FONT_MAP[fontName] or FONT_MAP["Gotham (Default)"]
+    THEME.FontMain = preset.Main
+    THEME.FontBold = preset.Bold
+    if self.ActiveWindow and self.ActiveWindow.ScreenGui then
+        for _, obj in ipairs(self.ActiveWindow.ScreenGui:GetDescendants()) do
+            if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+                pcall(function()
+                    local fontStr = tostring(obj.Font.Name or "")
+                    local isBold = string.find(fontStr, "Bold") or string.find(fontStr, "Black")
+                    if preset.FaceMain and obj.FontFace then
+                        obj.FontFace = isBold and (preset.FaceBold or preset.FaceMain) or preset.FaceMain
+                    else
+                        obj.Font = isBold and THEME.FontBold or THEME.FontMain
+                    end
+                end)
+            end
+        end
     end
 end
 
@@ -793,6 +839,51 @@ function ThemeManager:BuildThemeSection(Section)
         Suffix = "%",
         Callback = function(val)
             NamelessWare:SetCardTransparency(val / 100)
+        end
+    })
+
+    Section:AddSubHeader("Typography & Font (Preview)", "rbxassetid://10709791437")
+
+    local fontNames = {
+        "Nunito (Ronde)",
+        "Comfortaa (Ronde)",
+        "Quicksand (Ronde)",
+        "Fredoka (Ronde)",
+        "Ubuntu (Ronde/Dynamique)",
+        "Gotham (Default)",
+        "Gotham Semibold",
+        "Montserrat",
+        "Poppins",
+        "Inter",
+        "SourceSans",
+        "Roboto",
+        "RobotoCondensed",
+        "RobotoMono (Code)",
+        "JosefinSans",
+        "Oswald",
+        "LuckiestGuy",
+        "AmaticSC",
+        "SciFi",
+        "Code",
+        "Arcade",
+        "DenkOne",
+        "Creepster",
+        "SpecialElite",
+        "Fondamento"
+    }
+
+    Section:AddDropdown({
+        Name = "UI Font Family",
+        Options = fontNames,
+        Default = "Gotham (Default)",
+        Callback = function(chosenFont)
+            NamelessWare:SetFontByName(chosenFont)
+            NamelessWare:Notify({
+                Title = "Font Changed",
+                Content = "Previewing: " .. chosenFont,
+                Duration = 1.5,
+                Type = "Success"
+            })
         end
     })
 
@@ -1386,6 +1477,51 @@ function SettingsManager:BuildSettingsSection(Section)
         end
     })
 
+    Section:AddSubHeader("Typography & Font (Preview)", "rbxassetid://10709791437")
+
+    local fontNames = {
+        "Nunito (Ronde)",
+        "Comfortaa (Ronde)",
+        "Quicksand (Ronde)",
+        "Fredoka (Ronde)",
+        "Ubuntu (Ronde/Dynamique)",
+        "Gotham (Default)",
+        "Gotham Semibold",
+        "Montserrat",
+        "Poppins",
+        "Inter",
+        "SourceSans",
+        "Roboto",
+        "RobotoCondensed",
+        "RobotoMono (Code)",
+        "JosefinSans",
+        "Oswald",
+        "LuckiestGuy",
+        "AmaticSC",
+        "SciFi",
+        "Code",
+        "Arcade",
+        "DenkOne",
+        "Creepster",
+        "SpecialElite",
+        "Fondamento"
+    }
+
+    Section:AddDropdown({
+        Name = "UI Font Family",
+        Options = fontNames,
+        Default = "Gotham (Default)",
+        Callback = function(chosenFont)
+            NamelessWare:SetFontByName(chosenFont)
+            NamelessWare:Notify({
+                Title = "Font Changed",
+                Content = "Previewing: " .. chosenFont,
+                Duration = 1.5,
+                Type = "Success"
+            })
+        end
+    })
+
     Section:AddSubHeader("Actions", "rbxassetid://10734950309")
 
     Section:AddButton({
@@ -1606,19 +1742,11 @@ function NamelessWare:CreateWindow(config)
     MainCorner.Parent = MainWindow
 
     local MainGrad = Instance.new("UIGradient")
-    local bgGrad = THEME.BgMainGradient or Color3.fromRGB(24, 24, 34)
-    local bgBase = THEME.BgMain or Color3.fromRGB(8, 8, 12)
-    local midBg = Color3.new(
-        bgGrad.R * 0.45 + bgBase.R * 0.55,
-        bgGrad.G * 0.45 + bgBase.G * 0.55,
-        bgGrad.B * 0.45 + bgBase.B * 0.55
-    )
     MainGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, bgGrad),
-        ColorSequenceKeypoint.new(0.5, midBg),
-        ColorSequenceKeypoint.new(1, bgBase)
+        ColorSequenceKeypoint.new(0, THEME.BgMainGradient),
+        ColorSequenceKeypoint.new(1, THEME.BgMain)
     })
-    MainGrad.Rotation = 45
+    MainGrad.Rotation = 90
     MainGrad.Parent = MainWindow
 
     local MainStroke = Instance.new("UIStroke")
@@ -1636,16 +1764,6 @@ function NamelessWare:CreateWindow(config)
     local SidebarCorner = Instance.new("UICorner")
     SidebarCorner.CornerRadius = UDim.new(0, 12)
     SidebarCorner.Parent = Sidebar
-
-    local SidebarGrad = Instance.new("UIGradient")
-    local sbGrad = THEME.CardBgGradient or THEME.BgSidebar or Color3.fromRGB(15, 15, 20)
-    local sbBase = THEME.BgSidebar or Color3.fromRGB(7, 7, 10)
-    SidebarGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, sbGrad),
-        ColorSequenceKeypoint.new(1, sbBase)
-    })
-    SidebarGrad.Rotation = 45
-    SidebarGrad.Parent = Sidebar
 
     local SidebarStroke = Instance.new("UIStroke")
     SidebarStroke.Color = THEME.CardBorder
@@ -2083,28 +2201,12 @@ function NamelessWare:CreateWindow(config)
 
     table.insert(NamelessWare.ThemeSubscribers, function(theme)
         MainWindow.BackgroundColor3 = theme.BgMain
-        local gStart = theme.BgMainGradient or theme.BgMain or Color3.fromRGB(24, 24, 34)
-        local gEnd = theme.BgMain or Color3.fromRGB(8, 8, 12)
-        local gMid = Color3.new(
-            gStart.R * 0.45 + gEnd.R * 0.55,
-            gStart.G * 0.45 + gEnd.G * 0.55,
-            gStart.B * 0.45 + gEnd.B * 0.55
-        )
         MainGrad.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, gStart),
-            ColorSequenceKeypoint.new(0.5, gMid),
-            ColorSequenceKeypoint.new(1, gEnd)
+            ColorSequenceKeypoint.new(0, theme.BgMainGradient),
+            ColorSequenceKeypoint.new(1, theme.BgMain)
         })
-        MainGrad.Rotation = 45
         MainStroke.Color = theme.CardBorder
         Sidebar.BackgroundColor3 = theme.BgSidebar
-        local sStart = theme.CardBgGradient or theme.BgSidebar or Color3.fromRGB(15, 15, 20)
-        local sEnd = theme.BgSidebar or Color3.fromRGB(7, 7, 10)
-        SidebarGrad.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, sStart),
-            ColorSequenceKeypoint.new(1, sEnd)
-        })
-        SidebarGrad.Rotation = 45
         SidebarStroke.Color = theme.CardBorder
         MobileBtn.BackgroundColor3 = theme.BgSidebar
         MobileBtnStroke.Color = theme.CardBorder
@@ -2362,19 +2464,11 @@ function NamelessWare:CreateWindow(config)
             CardCorner.Parent = Card
 
             local CardGrad = Instance.new("UIGradient")
-            local cStart0 = THEME.CardBgGradient or THEME.CardBg or Color3.fromRGB(21, 21, 29)
-            local cEnd0 = THEME.CardBg or Color3.fromRGB(14, 14, 20)
-            local cMid0 = Color3.new(
-                cStart0.R * 0.5 + cEnd0.R * 0.5,
-                cStart0.G * 0.5 + cEnd0.G * 0.5,
-                cStart0.B * 0.5 + cEnd0.B * 0.5
-            )
             CardGrad.Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, cStart0),
-                ColorSequenceKeypoint.new(0.5, cMid0),
-                ColorSequenceKeypoint.new(1, cEnd0)
+                ColorSequenceKeypoint.new(0, THEME.CardBgGradient),
+                ColorSequenceKeypoint.new(1, THEME.CardBg)
             })
-            CardGrad.Rotation = 45
+            CardGrad.Rotation = 90
             CardGrad.Parent = Card
 
             local CardStroke = Instance.new("UIStroke")
@@ -2424,19 +2518,10 @@ function NamelessWare:CreateWindow(config)
 
             table.insert(NamelessWare.ThemeSubscribers, function(theme)
                 Card.BackgroundColor3 = theme.CardBg
-                local cStart = theme.CardBgGradient or theme.CardBg or Color3.fromRGB(21, 21, 29)
-                local cEnd = theme.CardBg or Color3.fromRGB(14, 14, 20)
-                local cMid = Color3.new(
-                    (cStart.R + cEnd.R) * 0.5,
-                    (cStart.G + cEnd.G) * 0.5,
-                    (cStart.B + cEnd.B) * 0.5
-                )
                 CardGrad.Color = ColorSequence.new({
-                    ColorSequenceKeypoint.new(0, cStart),
-                    ColorSequenceKeypoint.new(0.5, cMid),
-                    ColorSequenceKeypoint.new(1, cEnd)
+                    ColorSequenceKeypoint.new(0, theme.CardBgGradient),
+                    ColorSequenceKeypoint.new(1, theme.CardBg)
                 })
-                CardGrad.Rotation = 45
                 CardStroke.Color = theme.CardBorder
                 SecLabel.TextColor3 = theme.TextMain
                 if SecIconImg then
