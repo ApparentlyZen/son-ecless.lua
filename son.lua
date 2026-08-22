@@ -1651,11 +1651,24 @@ function NamelessWare:CreateWindow(config)
         LogoTxt.Parent = LogoBox
     end
 
+    local function FormatBrandTitle(rawTitle)
+        local formatted = rawTitle or "NamelessWare"
+        if string.find(formatted, "Ware") then
+            formatted = string.gsub(formatted, "Ware", "<font color=\"#A55FFF\">Ware</font>")
+        elseif string.find(formatted, "WARE") then
+            formatted = string.gsub(formatted, "WARE", "<font color=\"#A55FFF\">WARE</font>")
+        elseif string.find(formatted, "ware") then
+            formatted = string.gsub(formatted, "ware", "<font color=\"#A55FFF\">ware</font>")
+        end
+        return formatted
+    end
+
     local BrandTitle = Instance.new("TextLabel")
     BrandTitle.Size = UDim2.new(1, -48, 1, 0)
     BrandTitle.Position = UDim2.new(0, 44, 0, 0)
     BrandTitle.BackgroundTransparency = 1
-    BrandTitle.Text = Title
+    BrandTitle.RichText = true
+    BrandTitle.Text = FormatBrandTitle(Title)
     BrandTitle.Font = THEME.FontBold
     BrandTitle.TextSize = 12
     BrandTitle.TextColor3 = THEME.TextMain
