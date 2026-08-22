@@ -2646,6 +2646,18 @@ function NamelessWare:CreateWindow(config)
                 DotStroke.Thickness = 1.2
                 DotStroke.Parent = Dot
 
+                local function UpdateValFromX(screenX)
+                    local trackAbsX = Track.AbsolutePosition.X
+                    local trackWidth = Track.AbsoluteSize.X
+                    local width = (trackWidth > 0 and trackWidth) or 1
+                    local percent = math.clamp((screenX - trackAbsX) / width, 0, 1)
+                    value = math.floor(min + (max - min) * percent)
+                    Fill.Size = UDim2.new(percent, 0, 1, 0)
+                    Dot.Position = UDim2.new(percent, 0, 0.5, 0)
+                    ValLabel.Text = tostring(value) .. suffix
+                    callback(value)
+                end
+
                 local TouchHitbox = Instance.new("TextButton")
                 TouchHitbox.Name = "SliderHitbox"
                 TouchHitbox.Size = UDim2.new(1, 0, 0, 26)
@@ -3384,10 +3396,10 @@ function NamelessWare:CreateWindow(config)
 
                 local function UpdateDotPosition()
                     local radius = ((Wheel.AbsoluteSize.X > 0 and Wheel.AbsoluteSize.X or 82) / 2)
-                    local angle = (1 - currentHue) * math.pi * 2
+                    local dotAngle = math.pi - (currentHue * math.pi * 2)
                     local clampedDist = currentSat * radius
-                    local dotX = radius + math.cos(angle) * clampedDist
-                    local dotY = radius + math.sin(angle) * clampedDist
+                    local dotX = radius + math.cos(dotAngle) * clampedDist
+                    local dotY = radius + math.sin(dotAngle) * clampedDist
                     WheelDot.Position = UDim2.new(0, dotX, 0, dotY)
                 end
 
@@ -3445,13 +3457,12 @@ function NamelessWare:CreateWindow(config)
                     local clampedDist = math.clamp(dist, 0, radius)
 
                     local angle = math.atan2(delta.Y, delta.X)
-                    if angle < 0 then angle = angle + (math.pi * 2) end
-
-                    currentHue = (1 - (angle / (math.pi * 2))) % 1
+                    currentHue = ((math.pi - angle) / (math.pi * 2)) % 1
                     currentSat = math.clamp(clampedDist / radius, 0, 1)
 
-                    local dotX = radius + math.cos(angle) * clampedDist
-                    local dotY = radius + math.sin(angle) * clampedDist
+                    local dotAngle = math.pi - (currentHue * math.pi * 2)
+                    local dotX = radius + math.cos(dotAngle) * clampedDist
+                    local dotY = radius + math.sin(dotAngle) * clampedDist
                     WheelDot.Position = UDim2.new(0, dotX, 0, dotY)
 
                     currentColor = Color3.fromHSV(currentHue, currentSat, currentVal)
