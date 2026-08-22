@@ -54,6 +54,8 @@ local function FetchCustomAsset(url, fileName)
     return nil
 end
 
+local ActiveDragSession = nil
+
 local function Tween(obj, props, time, style, dir)
     time = time or 0.18
     style = style or Enum.EasingStyle.Quad
@@ -2589,40 +2591,35 @@ function NamelessWare:CreateWindow(config)
                 TouchHitbox.ZIndex = 5
                 TouchHitbox.Parent = Frame
 
-                local dragging = false
+                local sliderId = {}
 
-                local function UpdateValFromX(screenX)
-                    local trackAbsX = Track.AbsolutePosition.X
-                    local trackWidth = Track.AbsoluteSize.X
-                    local percent = math.clamp((screenX - trackAbsX) / ((trackWidth > 0 and trackWidth) or 1), 0, 1)
-                    value = math.floor(min + (max - min) * percent)
-                    Fill.Size = UDim2.new(percent, 0, 1, 0)
-                    Dot.Position = UDim2.new(percent, 0, 0.5, 0)
-                    ValLabel.Text = tostring(value) .. suffix
-                    callback(value)
+                local function StartDrag(screenX)
+                    if ActiveDragSession ~= nil and ActiveDragSession ~= sliderId then
+                        return
+                    end
+                    ActiveDragSession = sliderId
+                    UpdateValFromX(screenX)
                 end
 
                 TouchHitbox.MouseButton1Down:Connect(function(x, y)
-                    dragging = true
-                    UpdateValFromX(x)
+                    StartDrag(x)
                 end)
 
                 TouchHitbox.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        dragging = true
-                        UpdateValFromX(input.Position.X)
+                        StartDrag(input.Position.X)
                     end
                 end)
 
                 UserInputService.InputChanged:Connect(function(input)
-                    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                    if ActiveDragSession == sliderId and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
                         UpdateValFromX(input.Position.X)
                     end
                 end)
 
                 UserInputService.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        dragging = false
+                    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and ActiveDragSession == sliderId then
+                        ActiveDragSession = nil
                     end
                 end)
 
@@ -3434,25 +3431,36 @@ function NamelessWare:CreateWindow(config)
                     callback(currentColor)
                 end
 
+                local wheelId = {}
+                local valId = {}
+
                 Wheel.MouseButton1Down:Connect(function(x, y)
+                    if ActiveDragSession ~= nil and ActiveDragSession ~= wheelId then return end
+                    ActiveDragSession = wheelId
                     wheelDragging = true
                     UpdateFromWheelPos(x, y)
                 end)
 
                 Wheel.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        if ActiveDragSession ~= nil and ActiveDragSession ~= wheelId then return end
+                        ActiveDragSession = wheelId
                         wheelDragging = true
                         UpdateFromWheelPos(input.Position.X, input.Position.Y)
                     end
                 end)
 
                 ValTrack.MouseButton1Down:Connect(function(x, y)
+                    if ActiveDragSession ~= nil and ActiveDragSession ~= valId then return end
+                    ActiveDragSession = valId
                     valDragging = true
                     UpdateFromValPos(x)
                 end)
 
                 ValTrack.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        if ActiveDragSession ~= nil and ActiveDragSession ~= valId then return end
+                        ActiveDragSession = valId
                         valDragging = true
                         UpdateFromValPos(input.Position.X)
                     end
@@ -3460,9 +3468,9 @@ function NamelessWare:CreateWindow(config)
 
                 UserInputService.InputChanged:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-                        if wheelDragging then
+                        if ActiveDragSession == wheelId and wheelDragging then
                             UpdateFromWheelPos(input.Position.X, input.Position.Y)
-                        elseif valDragging then
+                        elseif ActiveDragSession == valId and valDragging then
                             UpdateFromValPos(input.Position.X)
                         end
                     end
@@ -3470,8 +3478,13 @@ function NamelessWare:CreateWindow(config)
 
                 UserInputService.InputEnded:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        wheelDragging = false
-                        valDragging = false
+                        if ActiveDragSession == wheelId then
+                            ActiveDragSession = nil
+                            wheelDragging = false
+                        elseif ActiveDragSession == valId then
+                            ActiveDragSession = nil
+                            valDragging = false
+                        end
                     end
                 end)
 
