@@ -2545,26 +2545,38 @@ function NamelessWare:CreateWindow(config)
                     ColorStroke.Parent = ColorBox
                 end
 
-                local Circle = Instance.new("Frame")
-                Circle.Size = UDim2.new(0, 12, 0, 12)
-                Circle.BackgroundColor3 = state and THEME.Accent or THEME.CircleOff
-                Circle.BorderSizePixel = 0
-                Circle.Parent = RightHold
+                local Switch = Instance.new("Frame")
+                Switch.Size = UDim2.new(0, 32, 0, 18)
+                Switch.BackgroundColor3 = state and THEME.Accent or THEME.CircleOff
+                Switch.BorderSizePixel = 0
+                Switch.Parent = RightHold
 
-                local CircleCorner = Instance.new("UICorner")
-                CircleCorner.CornerRadius = UDim.new(1, 0)
-                CircleCorner.Parent = Circle
+                local SwitchCorner = Instance.new("UICorner")
+                SwitchCorner.CornerRadius = UDim.new(1, 0)
+                SwitchCorner.Parent = Switch
 
-                local CircleStroke = Instance.new("UIStroke")
-                CircleStroke.Color = state and THEME.Accent or THEME.CircleOffBorder
-                CircleStroke.Thickness = 1.2
-                CircleStroke.Parent = Circle
+                local SwitchStroke = Instance.new("UIStroke")
+                SwitchStroke.Color = state and THEME.Accent or THEME.CircleOffBorder
+                SwitchStroke.Thickness = 1
+                SwitchStroke.Parent = Switch
+
+                local Knob = Instance.new("Frame")
+                Knob.Size = UDim2.new(0, 14, 0, 14)
+                Knob.Position = state and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)
+                Knob.BackgroundColor3 = Color3.fromRGB(245, 245, 255)
+                Knob.BorderSizePixel = 0
+                Knob.Parent = Switch
+
+                local KnobCorner = Instance.new("UICorner")
+                KnobCorner.CornerRadius = UDim.new(1, 0)
+                KnobCorner.Parent = Knob
 
                 local function UpdateState(val)
                     state = val
                     Tween(Label, {TextColor3 = state and THEME.TextMain or THEME.TextMuted}, 0.15)
-                    Tween(Circle, {BackgroundColor3 = state and THEME.Accent or THEME.CircleOff}, 0.15)
-                    Tween(CircleStroke, {Color = state and THEME.Accent or THEME.CircleOffBorder}, 0.15)
+                    Tween(Switch, {BackgroundColor3 = state and THEME.Accent or THEME.CircleOff}, 0.15)
+                    Tween(SwitchStroke, {Color = state and THEME.Accent or THEME.CircleOffBorder}, 0.15)
+                    Tween(Knob, {Position = state and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
                     callback(state)
                     NamelessWare:UpdateKeybindsHud()
                 end
@@ -2581,8 +2593,8 @@ function NamelessWare:CreateWindow(config)
 
                 table.insert(NamelessWare.ThemeSubscribers, function(theme)
                     Label.TextColor3 = state and theme.TextMain or theme.TextMuted
-                    Circle.BackgroundColor3 = state and theme.Accent or theme.CircleOff
-                    CircleStroke.Color = state and theme.Accent or theme.CircleOffBorder
+                    Switch.BackgroundColor3 = state and theme.Accent or theme.CircleOff
+                    SwitchStroke.Color = state and theme.Accent or theme.CircleOffBorder
                     if KeyBtn then
                         KeyBtn.BackgroundColor3 = theme.BgSidebar
                         KeyBtn.TextColor3 = isBinding and theme.Accent or theme.TextMuted
@@ -2617,30 +2629,46 @@ function NamelessWare:CreateWindow(config)
                 table.insert(RegisteredItems, {Name = name, Element = Frame, Card = Card})
 
                 local TopLabel = Instance.new("TextLabel")
-                TopLabel.Size = UDim2.new(1, -50, 0, 14)
+                TopLabel.Size = UDim2.new(1, -55, 0, 16)
                 TopLabel.Position = UDim2.new(0, 0, 0, 0)
                 TopLabel.BackgroundTransparency = 1
                 TopLabel.Text = name
                 TopLabel.Font = THEME.FontMain
                 TopLabel.TextSize = 10
-                TopLabel.TextColor3 = THEME.TextMuted
+                TopLabel.TextColor3 = THEME.TextMain
                 TopLabel.TextXAlignment = Enum.TextXAlignment.Left
                 TopLabel.Parent = Frame
 
+                local ValBox = Instance.new("Frame")
+                ValBox.Size = UDim2.new(0, 48, 0, 16)
+                ValBox.Position = UDim2.new(1, -48, 0, 0)
+                ValBox.BackgroundColor3 = THEME.BgSidebar
+                ValBox.BorderSizePixel = 0
+                ValBox.Parent = Frame
+
+                local ValBoxCorner = Instance.new("UICorner")
+                ValBoxCorner.CornerRadius = UDim.new(0, 4)
+                ValBoxCorner.Parent = ValBox
+
+                local ValBoxStroke = Instance.new("UIStroke")
+                ValBoxStroke.Color = THEME.CardBorder
+                ValBoxStroke.Thickness = 1
+                ValBoxStroke.Parent = ValBox
+
                 local ValLabel = Instance.new("TextLabel")
-                ValLabel.Size = UDim2.new(0, 50, 0, 14)
-                ValLabel.Position = UDim2.new(1, -50, 0, 0)
+                ValLabel.Size = UDim2.new(1, 0, 1, 0)
+                ValLabel.Position = UDim2.new(0, 0, 0, 0)
                 ValLabel.BackgroundTransparency = 1
                 ValLabel.Text = tostring(value) .. suffix
                 ValLabel.Font = THEME.FontBold
                 ValLabel.TextSize = 10
-                ValLabel.TextColor3 = THEME.TextMain
-                ValLabel.TextXAlignment = Enum.TextXAlignment.Right
-                ValLabel.Parent = Frame
+                ValLabel.TextColor3 = THEME.TextMuted
+                ValLabel.TextXAlignment = Enum.TextXAlignment.Center
+                ValLabel.Parent = ValBox
 
                 local Track = Instance.new("Frame")
                 Track.Size = UDim2.new(1, 0, 0, 6)
-                Track.Position = UDim2.new(0, 0, 0, 22)
+                Track.Position = UDim2.new(0, 0, 0, 24)
                 Track.BackgroundColor3 = THEME.BgSidebar
                 Track.BorderSizePixel = 0
                 Track.Parent = Frame
@@ -2669,10 +2697,10 @@ function NamelessWare:CreateWindow(config)
                 FillGrad.Parent = Fill
 
                 local Dot = Instance.new("Frame")
-                Dot.Size = UDim2.new(0, 14, 0, 14)
+                Dot.Size = UDim2.new(0, 12, 0, 12)
                 Dot.AnchorPoint = Vector2.new(0.5, 0.5)
                 Dot.Position = UDim2.new(startPercent, 0, 0.5, 0)
-                Dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                Dot.BackgroundColor3 = Color3.fromRGB(240, 242, 255)
                 Dot.BorderSizePixel = 0
                 Dot.ZIndex = 3
                 Dot.Parent = Track
@@ -2682,8 +2710,8 @@ function NamelessWare:CreateWindow(config)
                 DotCorner.Parent = Dot
 
                 local DotStroke = Instance.new("UIStroke")
-                DotStroke.Color = Color3.fromRGB(30, 30, 40)
-                DotStroke.Thickness = 1.2
+                DotStroke.Color = Color3.fromRGB(25, 25, 35)
+                DotStroke.Thickness = 1
                 DotStroke.Parent = Dot
 
                 local function UpdateValFromX(screenX)
@@ -2736,8 +2764,10 @@ function NamelessWare:CreateWindow(config)
                 end)
 
                 table.insert(NamelessWare.ThemeSubscribers, function(theme)
-                    TopLabel.TextColor3 = theme.TextMuted
-                    ValLabel.TextColor3 = theme.TextMain
+                    TopLabel.TextColor3 = theme.TextMain
+                    ValBox.BackgroundColor3 = theme.BgSidebar
+                    ValBoxStroke.Color = theme.CardBorder
+                    ValLabel.TextColor3 = theme.TextMuted
                     Track.BackgroundColor3 = theme.BgSidebar
                     Fill.BackgroundColor3 = theme.Accent
                     FillGrad.Color = ColorSequence.new({
