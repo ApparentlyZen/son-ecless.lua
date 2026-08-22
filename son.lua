@@ -4,6 +4,7 @@ local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local HttpService = game:GetService("HttpService")
+local GuiService = game:GetService("GuiService")
 
 local LocalPlayer = Players.LocalPlayer or Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
 
@@ -1787,7 +1788,12 @@ function NamelessWare:CreateWindow(config)
     local RegisteredCards = {}
 
     local isMobilePlatform = UserInputService.TouchEnabled and not (UserInputService.KeyboardEnabled and UserInputService.MouseEnabled)
-    local isConsolePlatform = GuiService:IsTenFootInterface()
+    local isConsolePlatform = false
+    pcall(function()
+        if GuiService and GuiService.IsTenFootInterface then
+            isConsolePlatform = GuiService:IsTenFootInterface()
+        end
+    end)
     local platformName = "PC"
     local platformIcon = "rbxassetid://10734944444"
 
