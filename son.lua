@@ -1795,7 +1795,7 @@ function NamelessWare:CreateWindow(config)
         end
     end)
     local platformName = "PC"
-    local platformIcon = "rbxassetid://92051964964566"
+    local platformIcon = "rbxassetid://105451070737074"
 
     if isConsolePlatform then
         platformName = "Console"
@@ -1805,7 +1805,7 @@ function NamelessWare:CreateWindow(config)
         platformIcon = "rbxassetid://10734944200"
     else
         platformName = "PC"
-        platformIcon = "rbxassetid://92051964964566"
+        platformIcon = "rbxassetid://105451070737074"
     end
 
     local HeaderTabTitle = Instance.new("TextLabel")
