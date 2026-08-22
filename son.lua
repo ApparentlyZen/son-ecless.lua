@@ -27,6 +27,45 @@ local function SafeParentGui(gui)
     end)
 end
 
+local RAW_LOGO_URL = "https://raw.githubusercontent.com/ApparentlyZen/image-namelessWare/main/165abdd521328d77324b02ce8a77e090_1780162334922.webp"
+
+local function ResolveLogoAsset(logoConfig)
+    local target = logoConfig or RAW_LOGO_URL
+    if not target or target == "" then return nil end
+
+    if type(target) == "string" and (target:sub(1, 13) == "rbxassetid://" or target:sub(1, 10) == "rbxasset://" or tonumber(target)) then
+        return (tonumber(target) and ("rbxassetid://" .. target)) or target
+    end
+
+    if type(target) == "string" and (target:sub(1, 7) == "http://" or target:sub(1, 8) == "https://") then
+        local fileName = "NamelessWare_Logo.webp"
+        if getcustomasset and (writefile and readfile and isfile) then
+            pcall(function()
+                if not isfile(fileName) then
+                    local res
+                    if syn and syn.request then
+                        res = syn.request({Url = target, Method = "GET"}).Body
+                    elseif http_request then
+                        res = http_request({Url = target, Method = "GET"}).Body
+                    elseif request then
+                        res = request({Url = target, Method = "GET"}).Body
+                    elseif game.HttpGet then
+                        res = game:HttpGet(target)
+                    end
+                    if res then
+                        writefile(fileName, res)
+                    end
+                end
+            end)
+            if isfile(fileName) then
+                local asset = getcustomasset(fileName)
+                if asset then return asset end
+            end
+        end
+    end
+    return nil
+end
+
 local function Tween(obj, props, time, style, dir)
     time = time or 0.18
     style = style or Enum.EasingStyle.Quad
@@ -1559,12 +1598,14 @@ function NamelessWare:CreateWindow(config)
     SafeParentGui(ScreenGui)
     _G.NamelessWareInstance = ScreenGui
 
+    local activeLogo = ResolveLogoAsset(config.Logo or config.LogoUrl or config.LogoAsset)
+
     local MobileBtn = Instance.new("TextButton")
     MobileBtn.Name = "NamelessMobileBtn"
     MobileBtn.Size = UDim2.new(0, 50, 0, 50)
     MobileBtn.Position = UDim2.new(0, 16, 0.5, -25)
     MobileBtn.BackgroundColor3 = THEME.BgSidebar
-    MobileBtn.Text = "NW"
+    MobileBtn.Text = activeLogo and "" or "NW"
     MobileBtn.Font = THEME.FontBold
     MobileBtn.TextSize = 16
     MobileBtn.TextColor3 = AccentColor
@@ -1580,13 +1621,12 @@ function NamelessWare:CreateWindow(config)
     MobileBtnStroke.Thickness = 1.2
     MobileBtnStroke.Parent = MobileBtn
 
-    if config.Logo then
-        MobileBtn.Text = ""
+    if activeLogo then
         local MobileImg = Instance.new("ImageLabel")
         MobileImg.Size = UDim2.new(1, -12, 1, -12)
         MobileImg.Position = UDim2.new(0, 6, 0, 6)
         MobileImg.BackgroundTransparency = 1
-        MobileImg.Image = config.Logo
+        MobileImg.Image = activeLogo
         MobileImg.ScaleType = Enum.ScaleType.Fit
         MobileImg.Parent = MobileBtn
     end
@@ -1657,11 +1697,11 @@ function NamelessWare:CreateWindow(config)
     WLogoCorner.CornerRadius = UDim.new(0, 4)
     WLogoCorner.Parent = WLogoBox
 
-    if config.Logo then
+    if activeLogo then
         local WLogoImg = Instance.new("ImageLabel")
         WLogoImg.Size = UDim2.new(1, 0, 1, 0)
         WLogoImg.BackgroundTransparency = 1
-        WLogoImg.Image = config.Logo
+        WLogoImg.Image = activeLogo
         WLogoImg.ScaleType = Enum.ScaleType.Fit
         WLogoImg.Parent = WLogoBox
     else
@@ -1940,12 +1980,12 @@ function NamelessWare:CreateWindow(config)
     LogoGlow.Thickness = 1
     LogoGlow.Parent = LogoBox
 
-    if config.Logo then
+    if activeLogo then
         local LogoImg = Instance.new("ImageLabel")
         LogoImg.Size = UDim2.new(1, -2, 1, -2)
         LogoImg.Position = UDim2.new(0, 1, 0, 1)
         LogoImg.BackgroundTransparency = 1
-        LogoImg.Image = config.Logo
+        LogoImg.Image = activeLogo
         LogoImg.ScaleType = Enum.ScaleType.Fit
         LogoImg.Parent = LogoBox
     else
