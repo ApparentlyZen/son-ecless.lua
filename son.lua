@@ -1602,8 +1602,8 @@ function NamelessWare:CreateWindow(config)
 
     local MobileBtn = Instance.new("TextButton")
     MobileBtn.Name = "NamelessMobileBtn"
-    MobileBtn.Size = UDim2.new(0, 46, 0, 46)
-    MobileBtn.Position = UDim2.new(0, 16, 0.5, -23)
+    MobileBtn.Size = UDim2.new(0, 48, 0, 48)
+    MobileBtn.Position = UDim2.new(0, 16, 0.5, -24)
     MobileBtn.BackgroundTransparency = activeLogo and 1 or 0
     MobileBtn.BackgroundColor3 = THEME.BgSidebar
     MobileBtn.Text = activeLogo and "" or "NW"
@@ -1611,6 +1611,7 @@ function NamelessWare:CreateWindow(config)
     MobileBtn.TextSize = 14
     MobileBtn.TextColor3 = AccentColor
     MobileBtn.AutoButtonColor = false
+    MobileBtn.ClipsDescendants = true
     MobileBtn.Parent = ScreenGui
 
     local MobileBtnCorner = Instance.new("UICorner")
@@ -1631,6 +1632,10 @@ function NamelessWare:CreateWindow(config)
         MobileImg.Image = activeLogo
         MobileImg.ScaleType = Enum.ScaleType.Fit
         MobileImg.Parent = MobileBtn
+
+        local MobileImgCorner = Instance.new("UICorner")
+        MobileImgCorner.CornerRadius = UDim.new(1, 0)
+        MobileImgCorner.Parent = MobileImg
     end
 
     MakeDraggable(MobileBtn)
@@ -1692,6 +1697,7 @@ function NamelessWare:CreateWindow(config)
     WLogoBox.Size = UDim2.new(0, 15, 0, 15)
     WLogoBox.BackgroundColor3 = THEME.CardBg
     WLogoBox.BorderSizePixel = 0
+    WLogoBox.ClipsDescendants = true
     WLogoBox.LayoutOrder = 1
     WLogoBox.Parent = Watermark
 
@@ -1699,14 +1705,28 @@ function NamelessWare:CreateWindow(config)
     WLogoCorner.CornerRadius = UDim.new(0, 4)
     WLogoCorner.Parent = WLogoBox
 
-    local WLogoTxt = Instance.new("TextLabel")
-    WLogoTxt.Size = UDim2.new(1, 0, 1, 0)
-    WLogoTxt.BackgroundTransparency = 1
-    WLogoTxt.Text = "NW"
-    WLogoTxt.Font = THEME.FontBold
-    WLogoTxt.TextSize = 8
-    WLogoTxt.TextColor3 = AccentColor
-    WLogoTxt.Parent = WLogoBox
+    if activeLogo then
+        local WLogoImg = Instance.new("ImageLabel")
+        WLogoImg.Size = UDim2.new(1, 0, 1, 0)
+        WLogoImg.Position = UDim2.new(0, 0, 0, 0)
+        WLogoImg.BackgroundTransparency = 1
+        WLogoImg.Image = activeLogo
+        WLogoImg.ScaleType = Enum.ScaleType.Fit
+        WLogoImg.Parent = WLogoBox
+
+        local WLogoImgCorner = Instance.new("UICorner")
+        WLogoImgCorner.CornerRadius = UDim.new(0, 4)
+        WLogoImgCorner.Parent = WLogoImg
+    else
+        local WLogoTxt = Instance.new("TextLabel")
+        WLogoTxt.Size = UDim2.new(1, 0, 1, 0)
+        WLogoTxt.BackgroundTransparency = 1
+        WLogoTxt.Text = "NW"
+        WLogoTxt.Font = THEME.FontBold
+        WLogoTxt.TextSize = 8
+        WLogoTxt.TextColor3 = AccentColor
+        WLogoTxt.Parent = WLogoBox
+    end
 
     local WTitle = Instance.new("TextLabel")
     WTitle.AutomaticSize = Enum.AutomaticSize.X
@@ -1962,6 +1982,7 @@ function NamelessWare:CreateWindow(config)
     LogoBox.Size = UDim2.new(0, 26, 0, 26)
     LogoBox.Position = UDim2.new(0, 12, 0.5, -13)
     LogoBox.BackgroundColor3 = THEME.CardBg
+    LogoBox.ClipsDescendants = true
     LogoBox.Parent = BrandFrame
 
     local LogoBoxCorner = Instance.new("UICorner")
@@ -1973,14 +1994,28 @@ function NamelessWare:CreateWindow(config)
     LogoGlow.Thickness = 1
     LogoGlow.Parent = LogoBox
 
-    local LogoTxt = Instance.new("TextLabel")
-    LogoTxt.Size = UDim2.new(1, 0, 1, 0)
-    LogoTxt.BackgroundTransparency = 1
-    LogoTxt.Text = "NW"
-    LogoTxt.Font = THEME.FontBold
-    LogoTxt.TextSize = 12
-    LogoTxt.TextColor3 = AccentColor
-    LogoTxt.Parent = LogoBox
+    if activeLogo then
+        local LogoImg = Instance.new("ImageLabel")
+        LogoImg.Size = UDim2.new(1, 0, 1, 0)
+        LogoImg.Position = UDim2.new(0, 0, 0, 0)
+        LogoImg.BackgroundTransparency = 1
+        LogoImg.Image = activeLogo
+        LogoImg.ScaleType = Enum.ScaleType.Fit
+        LogoImg.Parent = LogoBox
+
+        local LogoImgCorner = Instance.new("UICorner")
+        LogoImgCorner.CornerRadius = UDim.new(0, 7)
+        LogoImgCorner.Parent = LogoImg
+    else
+        local LogoTxt = Instance.new("TextLabel")
+        LogoTxt.Size = UDim2.new(1, 0, 1, 0)
+        LogoTxt.BackgroundTransparency = 1
+        LogoTxt.Text = "NW"
+        LogoTxt.Font = THEME.FontBold
+        LogoTxt.TextSize = 12
+        LogoTxt.TextColor3 = AccentColor
+        LogoTxt.Parent = LogoBox
+    end
 
     local function FormatBrandTitle(rawTitle)
         local formatted = rawTitle or "NamelessWare"
