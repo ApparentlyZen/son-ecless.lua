@@ -1599,15 +1599,17 @@ function NamelessWare:CreateWindow(config)
     MainCorner.Parent = MainWindow
 
     local MainGrad = Instance.new("UIGradient")
-    local midBg = Color3.fromRGB(
-        math.floor((THEME.BgMainGradient.R * 0.45 + THEME.BgMain.R * 0.55) * 255),
-        math.floor((THEME.BgMainGradient.G * 0.45 + THEME.BgMain.G * 0.55) * 255),
-        math.floor((THEME.BgMainGradient.B * 0.45 + THEME.BgMain.B * 0.55) * 255)
+    local bgGrad = THEME.BgMainGradient or Color3.fromRGB(24, 24, 34)
+    local bgBase = THEME.BgMain or Color3.fromRGB(8, 8, 12)
+    local midBg = Color3.new(
+        bgGrad.R * 0.45 + bgBase.R * 0.55,
+        bgGrad.G * 0.45 + bgBase.G * 0.55,
+        bgGrad.B * 0.45 + bgBase.B * 0.55
     )
     MainGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, THEME.BgMainGradient),
-        ColorSequenceKeypoint.new(0.48, midBg),
-        ColorSequenceKeypoint.new(1, THEME.BgMain)
+        ColorSequenceKeypoint.new(0, bgGrad),
+        ColorSequenceKeypoint.new(0.5, midBg),
+        ColorSequenceKeypoint.new(1, bgBase)
     })
     MainGrad.Rotation = 45
     MainGrad.Parent = MainWindow
@@ -1629,9 +1631,11 @@ function NamelessWare:CreateWindow(config)
     SidebarCorner.Parent = Sidebar
 
     local SidebarGrad = Instance.new("UIGradient")
+    local sbGrad = THEME.CardBgGradient or THEME.BgSidebar or Color3.fromRGB(15, 15, 20)
+    local sbBase = THEME.BgSidebar or Color3.fromRGB(7, 7, 10)
     SidebarGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, THEME.CardBgGradient),
-        ColorSequenceKeypoint.new(1, THEME.BgSidebar)
+        ColorSequenceKeypoint.new(0, sbGrad),
+        ColorSequenceKeypoint.new(1, sbBase)
     })
     SidebarGrad.Rotation = 45
     SidebarGrad.Parent = Sidebar
@@ -2072,24 +2076,26 @@ function NamelessWare:CreateWindow(config)
 
     table.insert(NamelessWare.ThemeSubscribers, function(theme)
         MainWindow.BackgroundColor3 = theme.BgMain
-        local gStart = theme.BgMainGradient or theme.BgMain
-        local gEnd = theme.BgMain
+        local gStart = theme.BgMainGradient or theme.BgMain or Color3.fromRGB(24, 24, 34)
+        local gEnd = theme.BgMain or Color3.fromRGB(8, 8, 12)
         local gMid = Color3.new(
-            (gStart.R * 0.45 + gEnd.R * 0.55),
-            (gStart.G * 0.45 + gEnd.G * 0.55),
-            (gStart.B * 0.45 + gEnd.B * 0.55)
+            gStart.R * 0.45 + gEnd.R * 0.55,
+            gStart.G * 0.45 + gEnd.G * 0.55,
+            gStart.B * 0.45 + gEnd.B * 0.55
         )
         MainGrad.Color = ColorSequence.new({
             ColorSequenceKeypoint.new(0, gStart),
-            ColorSequenceKeypoint.new(0.48, gMid),
+            ColorSequenceKeypoint.new(0.5, gMid),
             ColorSequenceKeypoint.new(1, gEnd)
         })
         MainGrad.Rotation = 45
         MainStroke.Color = theme.CardBorder
         Sidebar.BackgroundColor3 = theme.BgSidebar
+        local sStart = theme.CardBgGradient or theme.BgSidebar or Color3.fromRGB(15, 15, 20)
+        local sEnd = theme.BgSidebar or Color3.fromRGB(7, 7, 10)
         SidebarGrad.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, theme.CardBgGradient or theme.BgSidebar),
-            ColorSequenceKeypoint.new(1, theme.BgSidebar)
+            ColorSequenceKeypoint.new(0, sStart),
+            ColorSequenceKeypoint.new(1, sEnd)
         })
         SidebarGrad.Rotation = 45
         SidebarStroke.Color = theme.CardBorder
@@ -2349,15 +2355,17 @@ function NamelessWare:CreateWindow(config)
             CardCorner.Parent = Card
 
             local CardGrad = Instance.new("UIGradient")
-            local cardMid = Color3.fromRGB(
-                math.floor((THEME.CardBgGradient.R * 0.5 + THEME.CardBg.R * 0.5) * 255),
-                math.floor((THEME.CardBgGradient.G * 0.5 + THEME.CardBg.G * 0.5) * 255),
-                math.floor((THEME.CardBgGradient.B * 0.5 + THEME.CardBg.B * 0.5) * 255)
+            local cStart0 = THEME.CardBgGradient or THEME.CardBg or Color3.fromRGB(21, 21, 29)
+            local cEnd0 = THEME.CardBg or Color3.fromRGB(14, 14, 20)
+            local cMid0 = Color3.new(
+                cStart0.R * 0.5 + cEnd0.R * 0.5,
+                cStart0.G * 0.5 + cEnd0.G * 0.5,
+                cStart0.B * 0.5 + cEnd0.B * 0.5
             )
             CardGrad.Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, THEME.CardBgGradient),
-                ColorSequenceKeypoint.new(0.5, cardMid),
-                ColorSequenceKeypoint.new(1, THEME.CardBg)
+                ColorSequenceKeypoint.new(0, cStart0),
+                ColorSequenceKeypoint.new(0.5, cMid0),
+                ColorSequenceKeypoint.new(1, cEnd0)
             })
             CardGrad.Rotation = 45
             CardGrad.Parent = Card
@@ -2409,8 +2417,8 @@ function NamelessWare:CreateWindow(config)
 
             table.insert(NamelessWare.ThemeSubscribers, function(theme)
                 Card.BackgroundColor3 = theme.CardBg
-                local cStart = theme.CardBgGradient or theme.CardBg
-                local cEnd = theme.CardBg
+                local cStart = theme.CardBgGradient or theme.CardBg or Color3.fromRGB(21, 21, 29)
+                local cEnd = theme.CardBg or Color3.fromRGB(14, 14, 20)
                 local cMid = Color3.new(
                     (cStart.R + cEnd.R) * 0.5,
                     (cStart.G + cEnd.G) * 0.5,
