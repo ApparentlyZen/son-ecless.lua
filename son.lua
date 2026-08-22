@@ -1192,14 +1192,6 @@ function SettingsManager:BuildSettingsSection(Section)
         end
     })
 
-    Section:AddToggle({
-        Name = "Telemetry Watermark",
-        Default = NamelessWare.ShowWatermark,
-        Callback = function(state)
-            NamelessWare:SetWatermarkVisibility(state)
-        end
-    })
-
     if NamelessWare.ActiveWindow and NamelessWare.ActiveWindow.MobileBtn then
         Section:AddToggle({
             Name = "Mobile Floating Button",
@@ -2208,8 +2200,8 @@ function NamelessWare:CreateWindow(config)
     WRowLabel.Parent = WatermarkRow
 
     local WSwitch = Instance.new("Frame")
-    WSwitch.Size = UDim2.new(0, 28, 0, 15)
-    WSwitch.Position = UDim2.new(1, -28, 0.5, -7.5)
+    WSwitch.Size = UDim2.new(0, 28, 0, 16)
+    WSwitch.Position = UDim2.new(1, -28, 0.5, -8)
     WSwitch.BackgroundColor3 = NamelessWare.ShowWatermark and THEME.Accent or THEME.CardBg
     WSwitch.BorderSizePixel = 0
     WSwitch.ZIndex = 251
@@ -2233,8 +2225,9 @@ function NamelessWare:CreateWindow(config)
     WSwitchStroke.Parent = WSwitch
 
     local WKnob = Instance.new("Frame")
-    WKnob.Size = UDim2.new(0, 11, 0, 11)
-    WKnob.Position = UDim2.new(NamelessWare.ShowWatermark and 1 or 0, NamelessWare.ShowWatermark and -13 or 2, 0.5, -5.5)
+    WKnob.Size = UDim2.new(0, 12, 0, 12)
+    WKnob.AnchorPoint = Vector2.new(0.5, 0.5)
+    WKnob.Position = NamelessWare.ShowWatermark and UDim2.new(1, -8, 0.5, 0) or UDim2.new(0, 8, 0.5, 0)
     WKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     WKnob.BorderSizePixel = 0
     WKnob.ZIndex = 252
@@ -2246,7 +2239,7 @@ function NamelessWare:CreateWindow(config)
 
     local function UpdateWatermarkSwitchUI(state)
         if state then
-            Tween(WKnob, {Position = UDim2.new(1, -13, 0.5, -5.5)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+            Tween(WKnob, {Position = UDim2.new(1, -8, 0.5, 0)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
             Tween(WSwitch, {BackgroundColor3 = THEME.Accent}, 0.18)
             WSwitchGrad.Color = ColorSequence.new({
                 ColorSequenceKeypoint.new(0, THEME.AccentGradient or Color3.fromRGB(165, 95, 255)),
@@ -2254,7 +2247,7 @@ function NamelessWare:CreateWindow(config)
             })
             Tween(WSwitchStroke, {Color = THEME.Accent}, 0.18)
         else
-            Tween(WKnob, {Position = UDim2.new(0, 2, 0.5, -5.5)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+            Tween(WKnob, {Position = UDim2.new(0, 8, 0.5, 0)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
             Tween(WSwitch, {BackgroundColor3 = THEME.CardBg}, 0.18)
             WSwitchGrad.Color = ColorSequence.new({
                 ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(21, 21, 30)),
@@ -3157,7 +3150,7 @@ function NamelessWare:CreateWindow(config)
                 end
 
                 local Switch = Instance.new("Frame")
-                Switch.Size = UDim2.new(0, 28, 0, 15)
+                Switch.Size = UDim2.new(0, 28, 0, 16)
                 Switch.BackgroundColor3 = state and THEME.Accent or THEME.CircleOff
                 Switch.BorderSizePixel = 0
                 Switch.Parent = RightHold
@@ -3177,8 +3170,9 @@ function NamelessWare:CreateWindow(config)
                 SwitchStroke.Parent = Switch
 
                 local Knob = Instance.new("Frame")
-                Knob.Size = UDim2.new(0, 11, 0, 11)
-                Knob.Position = state and UDim2.new(1, -13, 0.5, -5.5) or UDim2.new(0, 2, 0.5, -5.5)
+                Knob.Size = UDim2.new(0, 12, 0, 12)
+                Knob.AnchorPoint = Vector2.new(0.5, 0.5)
+                Knob.Position = state and UDim2.new(1, -8, 0.5, 0) or UDim2.new(0, 8, 0.5, 0)
                 Knob.BackgroundColor3 = Color3.fromRGB(245, 245, 255)
                 Knob.BorderSizePixel = 0
                 Knob.Parent = Switch
@@ -3192,7 +3186,7 @@ function NamelessWare:CreateWindow(config)
                     Tween(Label, {TextColor3 = state and THEME.TextMain or THEME.TextMuted}, 0.15)
                     SwitchGrad.Color = state and ColorSequence.new(THEME.AccentGradient, THEME.Accent) or ColorSequence.new(THEME.CircleOff, Color3.fromRGB(15, 15, 22))
                     Tween(SwitchStroke, {Color = state and THEME.Accent or THEME.CircleOffBorder}, 0.15)
-                    Tween(Knob, {Position = state and UDim2.new(1, -13, 0.5, -5.5) or UDim2.new(0, 2, 0.5, -5.5)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+                    Tween(Knob, {Position = state and UDim2.new(1, -8, 0.5, 0) or UDim2.new(0, 8, 0.5, 0)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
                     callback(state)
                     NamelessWare:UpdateKeybindsHud()
                 end
