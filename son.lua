@@ -461,6 +461,9 @@ function NamelessWare:SetTransparency(alpha)
         if self.ActiveWindow.SearchContainer then
             self.ActiveWindow.SearchContainer.BackgroundTransparency = math.clamp(self.Transparency * 0.8, 0, 0.95)
         end
+        if self.ActiveWindow.DeviceBadge then
+            self.ActiveWindow.DeviceBadge.BackgroundTransparency = math.clamp(self.Transparency * 0.8, 0, 0.95)
+        end
     end
 end
 
@@ -1783,8 +1786,24 @@ function NamelessWare:CreateWindow(config)
     local RegisteredItems = {}
     local RegisteredCards = {}
 
+    local isMobilePlatform = UserInputService.TouchEnabled and not (UserInputService.KeyboardEnabled and UserInputService.MouseEnabled)
+    local isConsolePlatform = GuiService:IsTenFootInterface()
+    local platformName = "PC"
+    local platformIcon = "rbxassetid://10734944444"
+
+    if isConsolePlatform then
+        platformName = "Console"
+        platformIcon = "rbxassetid://10734975692"
+    elseif isMobilePlatform then
+        platformName = "Mobile"
+        platformIcon = "rbxassetid://10734944200"
+    else
+        platformName = "PC"
+        platformIcon = "rbxassetid://10734944444"
+    end
+
     local HeaderTabTitle = Instance.new("TextLabel")
-    HeaderTabTitle.Size = UDim2.new(1, -185, 0, 20)
+    HeaderTabTitle.Size = UDim2.new(1, -225, 0, 20)
     HeaderTabTitle.Position = UDim2.new(0, 6, 0, 6)
     HeaderTabTitle.BackgroundTransparency = 1
     HeaderTabTitle.Text = "Combat"
@@ -1795,7 +1814,7 @@ function NamelessWare:CreateWindow(config)
     HeaderTabTitle.Parent = HeaderFrame
 
     local HeaderTabSub = Instance.new("TextLabel")
-    HeaderTabSub.Size = UDim2.new(1, -185, 0, 14)
+    HeaderTabSub.Size = UDim2.new(1, -225, 0, 14)
     HeaderTabSub.Position = UDim2.new(0, 6, 0, 26)
     HeaderTabSub.BackgroundTransparency = 1
     HeaderTabSub.Text = SubTitle
@@ -1807,8 +1826,8 @@ function NamelessWare:CreateWindow(config)
 
     local SearchContainer = Instance.new("Frame")
     SearchContainer.Name = "SearchContainer"
-    SearchContainer.Size = UDim2.new(0, 160, 0, 26)
-    SearchContainer.Position = UDim2.new(1, -168, 0.5, -13)
+    SearchContainer.Size = UDim2.new(0, 135, 0, 26)
+    SearchContainer.Position = UDim2.new(1, -212, 0.5, -13)
     SearchContainer.BackgroundColor3 = THEME.CardBg
     SearchContainer.BorderSizePixel = 0
     SearchContainer.Parent = HeaderFrame
@@ -1832,7 +1851,7 @@ function NamelessWare:CreateWindow(config)
     SearchIcon.Parent = SearchContainer
 
     local SearchInput = Instance.new("TextBox")
-    SearchInput.Size = UDim2.new(1, -46, 1, 0)
+    SearchInput.Size = UDim2.new(1, -44, 1, 0)
     SearchInput.Position = UDim2.new(0, 24, 0, 0)
     SearchInput.BackgroundTransparency = 1
     SearchInput.Text = ""
@@ -1847,7 +1866,7 @@ function NamelessWare:CreateWindow(config)
 
     local ClearSearchBtn = Instance.new("TextButton")
     ClearSearchBtn.Size = UDim2.new(0, 16, 0, 16)
-    ClearSearchBtn.Position = UDim2.new(1, -20, 0.5, -8)
+    ClearSearchBtn.Position = UDim2.new(1, -19, 0.5, -8)
     ClearSearchBtn.BackgroundTransparency = 1
     ClearSearchBtn.Text = "✕"
     ClearSearchBtn.Font = THEME.FontBold
@@ -1855,6 +1874,43 @@ function NamelessWare:CreateWindow(config)
     ClearSearchBtn.TextColor3 = THEME.TextMuted
     ClearSearchBtn.Visible = false
     ClearSearchBtn.Parent = SearchContainer
+
+    local DeviceBadge = Instance.new("Frame")
+    DeviceBadge.Name = "DeviceBadge"
+    DeviceBadge.Size = UDim2.new(0, 66, 0, 26)
+    DeviceBadge.Position = UDim2.new(1, -70, 0.5, -13)
+    DeviceBadge.BackgroundColor3 = THEME.CardBg
+    DeviceBadge.BorderSizePixel = 0
+    DeviceBadge.Parent = HeaderFrame
+
+    local DeviceCorner = Instance.new("UICorner")
+    DeviceCorner.CornerRadius = UDim.new(0, 6)
+    DeviceCorner.Parent = DeviceBadge
+
+    local DeviceStroke = Instance.new("UIStroke")
+    DeviceStroke.Color = THEME.CardBorder
+    DeviceStroke.Thickness = 1
+    DeviceStroke.Parent = DeviceBadge
+
+    local DeviceIcon = Instance.new("ImageLabel")
+    DeviceIcon.Size = UDim2.new(0, 13, 0, 13)
+    DeviceIcon.Position = UDim2.new(0, 7, 0.5, -6.5)
+    DeviceIcon.BackgroundTransparency = 1
+    DeviceIcon.Image = platformIcon
+    DeviceIcon.ImageColor3 = THEME.Accent
+    DeviceIcon.ScaleType = Enum.ScaleType.Fit
+    DeviceIcon.Parent = DeviceBadge
+
+    local DeviceLabel = Instance.new("TextLabel")
+    DeviceLabel.Size = UDim2.new(1, -23, 1, 0)
+    DeviceLabel.Position = UDim2.new(0, 23, 0, 0)
+    DeviceLabel.BackgroundTransparency = 1
+    DeviceLabel.Text = platformName
+    DeviceLabel.Font = THEME.FontBold
+    DeviceLabel.TextSize = 9
+    DeviceLabel.TextColor3 = THEME.TextMain
+    DeviceLabel.TextXAlignment = Enum.TextXAlignment.Left
+    DeviceLabel.Parent = DeviceBadge
 
     local function PerformSearch(query)
         query = string.lower(query or "")
@@ -1958,6 +2014,7 @@ function NamelessWare:CreateWindow(config)
         Sidebar = Sidebar,
         UserCard = UserCard,
         SearchContainer = SearchContainer,
+        DeviceBadge = DeviceBadge,
         NavScroll = NavScroll,
         ContentArea = ContentArea,
         Tabs = {}
@@ -1985,6 +2042,10 @@ function NamelessWare:CreateWindow(config)
         SearchIcon.ImageColor3 = theme.TextMuted
         SearchInput.TextColor3 = theme.TextMain
         SearchInput.PlaceholderColor3 = theme.TextMuted
+        DeviceBadge.BackgroundColor3 = theme.CardBg
+        DeviceStroke.Color = theme.CardBorder
+        DeviceIcon.ImageColor3 = theme.Accent
+        DeviceLabel.TextColor3 = theme.TextMain
         UserCard.BackgroundColor3 = theme.CardBg
         UserCardStroke.Color = theme.CardBorder
         AvatarBox.BackgroundColor3 = theme.BgSidebar
