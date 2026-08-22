@@ -5,6 +5,206 @@ local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local HttpService = game:GetService("HttpService")
 local GuiService = game:GetService("GuiService")
+local LocalizationService = game:GetService("LocalizationService")
+
+local TRANSLATIONS = {
+    en = {
+        Search = "Search...",
+        Combat = "Combat",
+        Visuals = "Visuals",
+        Settings = "Settings",
+        Themes = "Themes",
+        Configs = "Configs",
+        MenuKeybind = "Menu Keybind",
+        ToggleKey = "Toggle Key",
+        Listening = "Listening...",
+        Watermark = "Watermark",
+        ShowWatermark = "Show Watermark",
+        KeybindBadges = "Keybind Badges",
+        ShowKeybinds = "Show Keybinds",
+        Unload = "Unload",
+        UnloadLibrary = "Unload NamelessWare",
+        PresetThemes = "Theme Presets",
+        CustomThemes = "Custom Themes",
+        CreateCustomTheme = "Create Custom Theme",
+        ThemeName = "Theme Name",
+        SaveTheme = "Save Theme",
+        DeleteTheme = "Delete Theme",
+        MenuBg = "Menu Background",
+        CardBg = "Card Background",
+        SidebarBg = "Sidebar Background",
+        Accent = "Accent Color",
+        Border = "Border Color",
+        TextMain = "Text Color",
+        TextMuted = "Muted Text",
+        MenuTransparency = "Menu Transparency",
+        CardTransparency = "Card Transparency",
+        SaveProfile = "Save Profile",
+        LoadProfile = "Load Profile",
+        DeleteProfile = "Delete Profile",
+        SetAutoLoad = "Set as Auto-Load",
+        AutoLoad = "Auto-Load Active Config",
+        Active = "Active",
+        None = "None",
+        ProfileName = "Profile Name",
+        CreateProfile = "Create Profile",
+        SelectProfile = "Select Profile",
+        CurrentActive = "Current Active",
+        Language = "Interface Language",
+        AutoLang = "Auto (Game)",
+        Preset = "Preset",
+        SelectTheme = "Select Theme",
+        ThemeManager = "Theme Manager",
+        ProfileManager = "Profile Manager",
+        KeybindsRefreshed = "Keybinds Refreshed",
+        NoKeybinds = "No active keybinds registered.",
+        RefreshTracker = "Refresh Keybinds Tracker",
+        ProfileActions = "Profile Actions",
+        ThemePresets = "Theme Presets",
+        ColorPalette = "Color Palette Customizer",
+    },
+    ja = {
+        Search = "検索...",
+        Combat = "戦闘 (Combat)",
+        Visuals = "ビジュアル (Visuals)",
+        Settings = "設定 (Settings)",
+        Themes = "テーマ (Themes)",
+        Configs = "プロファイル (Configs)",
+        MenuKeybind = "メニューキーバインド",
+        ToggleKey = "トグルキー",
+        Listening = "キー入力待機中...",
+        Watermark = "透かし HUD",
+        ShowWatermark = "透かしを表示",
+        KeybindBadges = "キーバインドバッジ",
+        ShowKeybinds = "キーバインドを表示",
+        Unload = "アンロード",
+        UnloadLibrary = "NamelessWare を終了",
+        PresetThemes = "プリセットテーマ",
+        CustomThemes = "カスタムテーマ",
+        CreateCustomTheme = "カスタムテーマ作成",
+        ThemeName = "テーマ名",
+        SaveTheme = "テーマを保存",
+        DeleteTheme = "テーマを削除",
+        MenuBg = "メニュー背景色",
+        CardBg = "カード背景色",
+        SidebarBg = "サイドバー背景色",
+        Accent = "アクセントカラー",
+        Border = "ボーダーカラー",
+        TextMain = "メインテキスト色",
+        TextMuted = "サブテキスト色",
+        MenuTransparency = "メニューの透明度",
+        CardTransparency = "カードの透明度",
+        SaveProfile = "プロファイルを保存",
+        LoadProfile = "プロファイルを読み込む",
+        DeleteProfile = "プロファイルを削除",
+        SetAutoLoad = "自動読み込みに設定",
+        AutoLoad = "自動読み込み設定",
+        Active = "有効",
+        None = "なし",
+        ProfileName = "プロファイル名",
+        CreateProfile = "プロファイルを作成",
+        SelectProfile = "プロファイルを選択",
+        CurrentActive = "現在のアクティブ",
+        Language = "言語設定",
+        AutoLang = "自動 (ゲーム言語)",
+        Preset = "プリセット",
+        SelectTheme = "テーマを選択",
+        ThemeManager = "テーママネージャー",
+        ProfileManager = "プロファイルマネージャー",
+        KeybindsRefreshed = "キーバインド更新完了",
+        NoKeybinds = "登録されたキーバインドはありません。",
+        RefreshTracker = "トラッカーを更新",
+        ProfileActions = "プロファイル操作",
+        ThemePresets = "テーマプリセット",
+        ColorPalette = "カラーパレットカスタマイズ",
+    },
+    zh = {
+        Search = "搜索...",
+        Combat = "战斗 (Combat)",
+        Visuals = "视觉 (Visuals)",
+        Settings = "设置 (Settings)",
+        Themes = "主题 (Themes)",
+        Configs = "配置 (Configs)",
+        MenuKeybind = "菜单快捷键",
+        ToggleKey = "切换按键",
+        Listening = "等待按键输入...",
+        Watermark = "水印 HUD",
+        ShowWatermark = "显示水印",
+        KeybindBadges = "快捷键徽章",
+        ShowKeybinds = "显示按键绑定",
+        Unload = "卸载",
+        UnloadLibrary = "退出/卸载 NamelessWare",
+        PresetThemes = "预设主题",
+        CustomThemes = "自定义主题",
+        CreateCustomTheme = "新建自定义主题",
+        ThemeName = "主题名称",
+        SaveTheme = "保存主题",
+        DeleteTheme = "删除主题",
+        MenuBg = "菜单背景颜色",
+        CardBg = "卡片背景颜色",
+        SidebarBg = "侧边栏背景颜色",
+        Accent = "强调颜色",
+        Border = "边框颜色",
+        TextMain = "主要文本颜色",
+        TextMuted = "次要文本颜色",
+        MenuTransparency = "菜单透明度",
+        CardTransparency = "卡片透明度",
+        SaveProfile = "保存配置",
+        LoadProfile = "加载配置",
+        DeleteProfile = "删除配置",
+        SetAutoLoad = "设为自动加载",
+        AutoLoad = "自动加载当前配置",
+        Active = "当前生效",
+        None = "无",
+        ProfileName = "配置名称",
+        CreateProfile = "新建配置文件",
+        SelectProfile = "选择配置文件",
+        CurrentActive = "当前激活",
+        Language = "界面语言",
+        AutoLang = "自动 (游戏语言)",
+        Preset = "预设",
+        SelectTheme = "选择主题",
+        ThemeManager = "主题管理",
+        ProfileManager = "配置文件管理",
+        KeybindsRefreshed = "快捷键已刷新",
+        NoKeybinds = "暂无已绑定的快捷键。",
+        RefreshTracker = "刷新快捷键追踪",
+        ProfileActions = "配置操作",
+        ThemePresets = "主题预设",
+        ColorPalette = "调色板自定义",
+    }
+}
+
+local function DetectExperienceLanguage()
+    local rawLocale = "en-us"
+    pcall(function()
+        rawLocale = LocalizationService.RobloxLocaleId or LocalizationService.SystemLocaleId or (LocalPlayer and LocalPlayer.LocaleId) or "en-us"
+    end)
+    rawLocale = string.lower(tostring(rawLocale or "en"))
+
+    -- Rule: If French (fr), keep English as requested by user
+    if string.find(rawLocale, "fr") then
+        return "en"
+    elseif string.find(rawLocale, "ja") then
+        return "ja"
+    elseif string.find(rawLocale, "zh") then
+        return "zh"
+    end
+    return "en"
+end
+
+local CurrentLanguage = DetectExperienceLanguage()
+
+local function T(key, fallback)
+    local langDict = TRANSLATIONS[CurrentLanguage] or TRANSLATIONS.en
+    if langDict and langDict[key] then
+        return langDict[key]
+    end
+    if TRANSLATIONS.en and TRANSLATIONS.en[key] then
+        return TRANSLATIONS.en[key]
+    end
+    return fallback or key
+end
 
 local LocalPlayer = Players.LocalPlayer or Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
 
@@ -1237,6 +1437,41 @@ function SettingsManager:SetLibrary(library)
 end
 
 function SettingsManager:BuildSettingsSection(Section)
+    Section:AddSubHeader(T("Language", "Language / 言語 / 语言"), "rbxassetid://10734975692")
+
+    local langOptions = {
+        "Auto (Game Language)",
+        "English (EN)",
+        "Japanese (日本語)",
+        "Chinese (中文)"
+    }
+
+    local currentLangChoice = "Auto (Game Language)"
+    if NamelessWare.LanguageOverride == "en" then
+        currentLangChoice = "English (EN)"
+    elseif NamelessWare.LanguageOverride == "ja" then
+        currentLangChoice = "Japanese (日本語)"
+    elseif NamelessWare.LanguageOverride == "zh" then
+        currentLangChoice = "Chinese (中文)"
+    end
+
+    Section:AddDropdown({
+        Name = T("Language", "Interface Language"),
+        Options = langOptions,
+        Default = currentLangChoice,
+        Callback = function(choice)
+            if choice == "English (EN)" then
+                NamelessWare:SetLanguage("en")
+            elseif choice == "Japanese (日本語)" then
+                NamelessWare:SetLanguage("ja")
+            elseif choice == "Chinese (中文)" then
+                NamelessWare:SetLanguage("zh")
+            else
+                NamelessWare:SetLanguage("auto")
+            end
+        end
+    })
+
     Section:AddSubHeader("Menu Navigation", "rbxassetid://10734950309")
 
     Section:AddKeybind({
@@ -1434,6 +1669,29 @@ function SettingsManager:BuildSettingsSection(Section)
     })
 end
 
+function NamelessWare:SetLanguage(lang)
+    if lang == "auto" or not lang then
+        NamelessWare.LanguageOverride = nil
+        CurrentLanguage = DetectExperienceLanguage()
+    else
+        NamelessWare.LanguageOverride = lang
+        CurrentLanguage = lang
+    end
+    NamelessWare.CurrentLanguage = CurrentLanguage
+    NamelessWare:Notify({
+        Title = T("Language", "Language Updated"),
+        Content = (CurrentLanguage == "ja" and "言語が日本語に設定されました。") or (CurrentLanguage == "zh" and "界面语言已切换为中文。") or "Language set to English.",
+        Duration = 2,
+        Type = "Info"
+    })
+    for _, fn in ipairs(NamelessWare.ThemeSubscribers) do
+        pcall(function() fn(THEME) end)
+    end
+end
+
+NamelessWare.T = T
+NamelessWare.Translate = T
+NamelessWare.CurrentLanguage = CurrentLanguage
 NamelessWare.THEME = THEME
 NamelessWare.ThemeManager = ThemeManager
 NamelessWare.SaveManager = SaveManager
@@ -1597,6 +1855,28 @@ function NamelessWare:CreateWindow(config)
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     SafeParentGui(ScreenGui)
     _G.NamelessWareInstance = ScreenGui
+
+    pcall(function()
+        if Font and Font.new then
+            local uFaceReg = Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
+            local uFaceBold = Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+            ScreenGui.DescendantAdded:Connect(function(obj)
+                if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+                    pcall(function()
+                        if CurrentLanguage == "ja" or CurrentLanguage == "zh" then
+                            local fontStr = tostring(obj.Font.Name or "")
+                            local isBold = string.find(fontStr, "Bold") or string.find(fontStr, "Black") or obj.Font == THEME.FontBold
+                            obj.Font = isBold and Enum.Font.GothamBold or Enum.Font.GothamMedium
+                        else
+                            local fontStr = tostring(obj.Font.Name or "")
+                            local isBold = string.find(fontStr, "Bold") or string.find(fontStr, "Black") or obj.Font == THEME.FontBold
+                            obj.FontFace = isBold and uFaceBold or uFaceReg
+                        end
+                    end)
+                end
+            end)
+        end
+    end)
 
     local LogoUrl = config.LogoUrl or config.Logo or RAW_LOGO_URL
     local customLogoAsset = ResolveLogoAsset(LogoUrl)
@@ -2479,7 +2759,7 @@ function NamelessWare:CreateWindow(config)
     SearchInput.Position = UDim2.new(0, 24, 0, 0)
     SearchInput.BackgroundTransparency = 1
     SearchInput.Text = ""
-    SearchInput.PlaceholderText = "Search..."
+    SearchInput.PlaceholderText = T("Search", "Search...")
     SearchInput.PlaceholderColor3 = THEME.TextMuted
     SearchInput.Font = THEME.FontMain
     SearchInput.TextSize = 10
@@ -2701,6 +2981,7 @@ function NamelessWare:CreateWindow(config)
         SearchIcon.ImageColor3 = theme.TextMuted
         SearchInput.TextColor3 = theme.TextMain
         SearchInput.PlaceholderColor3 = theme.TextMuted
+        SearchInput.PlaceholderText = T("Search", "Search...")
         DeviceBadge.BackgroundColor3 = theme.CardBg
         DeviceStroke.Color = theme.CardBorder
         DeviceIcon.ImageColor3 = theme.TextMuted
