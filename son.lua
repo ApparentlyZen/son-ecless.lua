@@ -1544,22 +1544,6 @@ function NamelessWare:CreateWindow(config)
     SafeParentGui(ScreenGui)
     _G.NamelessWareInstance = ScreenGui
 
-    pcall(function()
-        if Font and Font.new then
-            local uFaceReg = Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
-            local uFaceBold = Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
-            ScreenGui.DescendantAdded:Connect(function(obj)
-                if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
-                    pcall(function()
-                        local fontStr = tostring(obj.Font.Name or "")
-                        local isBold = string.find(fontStr, "Bold") or string.find(fontStr, "Black") or obj.Font == THEME.FontBold
-                        obj.FontFace = isBold and uFaceBold or uFaceReg
-                    end)
-                end
-            end)
-        end
-    end)
-
     local customLogoAsset = FetchCustomAsset(LogoUrl, "NamelessWare_Logo.webp")
 
     local MobileBtn = Instance.new("ImageButton")
