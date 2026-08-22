@@ -1854,6 +1854,18 @@ function NamelessWare:CreateWindow(config)
     local winPosCenter = UDim2.new(0.5, -math.floor(winWidth / 2), 0.5, -math.floor(winHeight / 2))
     local winPosOffset = UDim2.new(0.5, -math.floor(winWidth / 2), 0.5, -math.floor(winHeight / 2) + 14)
 
+    local szBrand = isMobilePlatform and 10.5 or 12
+    local szHeader = isMobilePlatform and 15 or 16.5
+    local szSub = isMobilePlatform and 10 or 11
+    local szTab = isMobilePlatform and 11 or 12
+    local szSec = isMobilePlatform and 11 or 12.5
+    local szSubHeader = isMobilePlatform and 10 or 11
+    local szItem = isMobilePlatform and 10 or 11.5
+    local szBadge = isMobilePlatform and 9 or 10
+    local szInput = isMobilePlatform and 10 or 11
+    local szUser = isMobilePlatform and 10 or 11
+    local szTimer = isMobilePlatform and 9 or 10
+
     local MainWindow = Instance.new("Frame")
     MainWindow.Name = "MainWindow"
     MainWindow.Size = UDim2.new(0, winWidth, 0, winHeight)
@@ -1977,7 +1989,7 @@ function NamelessWare:CreateWindow(config)
     BrandTitle.RichText = true
     BrandTitle.Text = FormatBrandTitle(Title)
     BrandTitle.Font = THEME.FontBold
-    BrandTitle.TextSize = 11
+    BrandTitle.TextSize = szBrand
     BrandTitle.TextColor3 = THEME.TextMain
     BrandTitle.TextXAlignment = Enum.TextXAlignment.Left
     BrandTitle.Parent = BrandFrame
@@ -2066,7 +2078,7 @@ function NamelessWare:CreateWindow(config)
     UserNameLabel.BackgroundTransparency = 1
     UserNameLabel.Text = LocalPlayer and LocalPlayer.DisplayName or "Player"
     UserNameLabel.Font = THEME.FontBold
-    UserNameLabel.TextSize = 10
+    UserNameLabel.TextSize = szUser
     UserNameLabel.TextColor3 = THEME.TextMain
     UserNameLabel.TextXAlignment = Enum.TextXAlignment.Left
     UserNameLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -2078,7 +2090,7 @@ function NamelessWare:CreateWindow(config)
     UserTimerLabel.BackgroundTransparency = 1
     UserTimerLabel.Text = "00:00:00"
     UserTimerLabel.Font = THEME.FontMain
-    UserTimerLabel.TextSize = 9
+    UserTimerLabel.TextSize = szTimer
     UserTimerLabel.TextColor3 = THEME.TextMuted
     UserTimerLabel.TextXAlignment = Enum.TextXAlignment.Left
     UserTimerLabel.Parent = UserCard
@@ -2377,7 +2389,7 @@ function NamelessWare:CreateWindow(config)
     HeaderTabTitle.BackgroundTransparency = 1
     HeaderTabTitle.Text = "Combat"
     HeaderTabTitle.Font = THEME.FontBold
-    HeaderTabTitle.TextSize = 15
+    HeaderTabTitle.TextSize = szHeader
     HeaderTabTitle.TextColor3 = THEME.TextMain
     HeaderTabTitle.TextXAlignment = Enum.TextXAlignment.Left
     HeaderTabTitle.Parent = HeaderFrame
@@ -2388,7 +2400,7 @@ function NamelessWare:CreateWindow(config)
     HeaderTabSub.BackgroundTransparency = 1
     HeaderTabSub.Text = SubTitle
     HeaderTabSub.Font = THEME.FontMain
-    HeaderTabSub.TextSize = 10
+    HeaderTabSub.TextSize = szSub
     HeaderTabSub.TextColor3 = THEME.TextMuted
     HeaderTabSub.TextXAlignment = Enum.TextXAlignment.Left
     HeaderTabSub.Parent = HeaderFrame
@@ -2427,7 +2439,7 @@ function NamelessWare:CreateWindow(config)
     SearchInput.PlaceholderText = "Search..."
     SearchInput.PlaceholderColor3 = THEME.TextMuted
     SearchInput.Font = THEME.FontMain
-    SearchInput.TextSize = 10
+    SearchInput.TextSize = szInput
     SearchInput.TextColor3 = THEME.TextMain
     SearchInput.TextXAlignment = Enum.TextXAlignment.Left
     SearchInput.ClearTextOnFocus = false
@@ -2476,7 +2488,7 @@ function NamelessWare:CreateWindow(config)
     DeviceLabel.BackgroundTransparency = 1
     DeviceLabel.Text = platformName
     DeviceLabel.Font = THEME.FontBold
-    DeviceLabel.TextSize = 9
+    DeviceLabel.TextSize = szBadge
     DeviceLabel.TextColor3 = THEME.TextMain
     DeviceLabel.TextXAlignment = Enum.TextXAlignment.Left
     DeviceLabel.Parent = DeviceBadge
@@ -2755,7 +2767,7 @@ function NamelessWare:CreateWindow(config)
         TabLabel.BackgroundTransparency = 1
         TabLabel.Text = name
         TabLabel.Font = THEME.FontMain
-        TabLabel.TextSize = 11
+        TabLabel.TextSize = szTab
         TabLabel.TextColor3 = THEME.TextMuted
         TabLabel.TextXAlignment = Enum.TextXAlignment.Left
         TabLabel.Parent = TabBtn
@@ -2977,7 +2989,7 @@ function NamelessWare:CreateWindow(config)
             SecLabel.BackgroundTransparency = 1
             SecLabel.Text = secTitle
             SecLabel.Font = THEME.FontBold
-            SecLabel.TextSize = 11
+            SecLabel.TextSize = szSec
             SecLabel.TextColor3 = THEME.TextMain
             SecLabel.TextXAlignment = Enum.TextXAlignment.Left
             SecLabel.Parent = SecHeader
@@ -3009,7 +3021,7 @@ function NamelessWare:CreateWindow(config)
                 SubLabel.BackgroundTransparency = 1
                 SubLabel.Text = title
                 SubLabel.Font = THEME.FontBold
-                SubLabel.TextSize = 10
+                SubLabel.TextSize = szSubHeader
                 SubLabel.TextColor3 = THEME.TextMuted
                 SubLabel.TextXAlignment = Enum.TextXAlignment.Left
                 SubLabel.Parent = SubFrame
@@ -3042,7 +3054,7 @@ function NamelessWare:CreateWindow(config)
                 Label.BackgroundTransparency = 1
                 Label.Text = name
                 Label.Font = THEME.FontMain
-                Label.TextSize = 10
+                Label.TextSize = szItem
                 Label.TextColor3 = state and THEME.TextMain or THEME.TextMuted
                 Label.TextXAlignment = Enum.TextXAlignment.Left
                 Label.Parent = Row
@@ -3071,7 +3083,7 @@ function NamelessWare:CreateWindow(config)
                     KeyBtn.BackgroundColor3 = THEME.BgSidebar
                     KeyBtn.Text = boundKey and boundKey.Name or "-"
                     KeyBtn.Font = THEME.FontBold
-                    KeyBtn.TextSize = 8
+                    KeyBtn.TextSize = szBadge
                     KeyBtn.TextColor3 = THEME.TextMuted
                     KeyBtn.AutoButtonColor = false
                     KeyBtn.Visible = NamelessWare.ShowKeybinds and isPC
@@ -3108,18 +3120,17 @@ function NamelessWare:CreateWindow(config)
                             if input.UserInputType == Enum.UserInputType.Keyboard then
                                 conn:Disconnect()
                                 isBinding = false
-                                if input.KeyCode == Enum.KeyCode.Backspace or input.KeyCode == Enum.KeyCode.Escape then
-                                    boundKey = nil
-                                    KeyBtn.Text = "-"
-                                    KeyBtn.Size = UDim2.new(0, 16, 0, 14)
-                                else
-                                    boundKey = input.KeyCode
-                                    KeyBtn.Text = boundKey.Name
-                                    KeyBtn.Size = UDim2.new(0, math.max(18, #boundKey.Name * 6 + 8), 0, 14)
-                                end
+                                boundKey = input.KeyCode
+                                KeyBtn.Text = boundKey.Name
+                                KeyBtn.Size = UDim2.new(0, math.max(18, #boundKey.Name * 6 + 8), 0, 14)
                                 Tween(KeyStroke, {Color = THEME.CardBorder}, 0.15)
                                 Tween(KeyBtn, {TextColor3 = THEME.TextMuted}, 0.15)
-                                RegisterSelf()
+                                NamelessWare:RegisterKeybind({
+                                    Name = name,
+                                    Tab = currentTabName,
+                                    Key = boundKey.Name,
+                                    GetState = function() return state end
+                                })
                             end
                         end)
                     end)
@@ -3147,7 +3158,7 @@ function NamelessWare:CreateWindow(config)
 
                 local Switch = Instance.new("Frame")
                 Switch.Size = UDim2.new(0, 28, 0, 15)
-                Switch.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                Switch.BackgroundColor3 = state and THEME.Accent or THEME.CircleOff
                 Switch.BorderSizePixel = 0
                 Switch.Parent = RightHold
 
@@ -3155,15 +3166,15 @@ function NamelessWare:CreateWindow(config)
                 SwitchCorner.CornerRadius = UDim.new(1, 0)
                 SwitchCorner.Parent = Switch
 
-                local SwitchStroke = Instance.new("UIStroke")
-                SwitchStroke.Color = state and THEME.Accent or THEME.CircleOffBorder
-                SwitchStroke.Thickness = 1
-                SwitchStroke.Parent = Switch
-
                 local SwitchGrad = Instance.new("UIGradient")
                 SwitchGrad.Color = state and ColorSequence.new(THEME.AccentGradient, THEME.Accent) or ColorSequence.new(THEME.CircleOff, Color3.fromRGB(15, 15, 22))
                 SwitchGrad.Rotation = 45
                 SwitchGrad.Parent = Switch
+
+                local SwitchStroke = Instance.new("UIStroke")
+                SwitchStroke.Color = state and THEME.Accent or THEME.CircleOffBorder
+                SwitchStroke.Thickness = 1
+                SwitchStroke.Parent = Switch
 
                 local Knob = Instance.new("Frame")
                 Knob.Size = UDim2.new(0, 11, 0, 11)
@@ -3239,7 +3250,7 @@ function NamelessWare:CreateWindow(config)
                 TopLabel.BackgroundTransparency = 1
                 TopLabel.Text = name
                 TopLabel.Font = THEME.FontMain
-                TopLabel.TextSize = 10
+                TopLabel.TextSize = szItem
                 TopLabel.TextColor3 = THEME.TextMain
                 TopLabel.TextXAlignment = Enum.TextXAlignment.Left
                 TopLabel.Parent = Frame
@@ -3266,7 +3277,7 @@ function NamelessWare:CreateWindow(config)
                 ValLabel.BackgroundTransparency = 1
                 ValLabel.Text = tostring(value) .. suffix
                 ValLabel.Font = THEME.FontBold
-                ValLabel.TextSize = 9
+                ValLabel.TextSize = szBadge
                 ValLabel.TextColor3 = THEME.TextMuted
                 ValLabel.TextXAlignment = Enum.TextXAlignment.Center
                 ValLabel.Parent = ValBox
@@ -3435,7 +3446,7 @@ function NamelessWare:CreateWindow(config)
                 Title.BackgroundTransparency = 1
                 Title.Text = name
                 Title.Font = THEME.FontMain
-                Title.TextSize = 10
+                Title.TextSize = szSubHeader
                 Title.TextColor3 = THEME.TextMuted
                 Title.TextXAlignment = Enum.TextXAlignment.Left
                 Title.ZIndex = 1
@@ -3465,7 +3476,7 @@ function NamelessWare:CreateWindow(config)
                 SelLabel.BackgroundTransparency = 1
                 SelLabel.Text = selected
                 SelLabel.Font = THEME.FontMain
-                SelLabel.TextSize = 10
+                SelLabel.TextSize = szItem
                 SelLabel.TextColor3 = THEME.TextMain
                 SelLabel.TextXAlignment = Enum.TextXAlignment.Left
                 SelLabel.ZIndex = 3
@@ -3565,7 +3576,7 @@ function NamelessWare:CreateWindow(config)
                         OptItem.BackgroundTransparency = (opt == selected) and 0.8 or 1
                         OptItem.Text = "  " .. opt
                         OptItem.Font = THEME.FontMain
-                        OptItem.TextSize = 10
+                        OptItem.TextSize = szItem
                         OptItem.TextColor3 = (opt == selected) and THEME.Accent or THEME.TextMain
                         OptItem.TextXAlignment = Enum.TextXAlignment.Left
                         OptItem.AutoButtonColor = false
@@ -3665,7 +3676,7 @@ function NamelessWare:CreateWindow(config)
                 Title.BackgroundTransparency = 1
                 Title.Text = name
                 Title.Font = THEME.FontMain
-                Title.TextSize = 10
+                Title.TextSize = szSubHeader
                 Title.TextColor3 = THEME.TextMuted
                 Title.TextXAlignment = Enum.TextXAlignment.Left
                 Title.Parent = Frame
@@ -3694,7 +3705,7 @@ function NamelessWare:CreateWindow(config)
                 Input.PlaceholderText = placeholder
                 Input.PlaceholderColor3 = THEME.TextMuted
                 Input.Font = THEME.FontMain
-                Input.TextSize = 10
+                Input.TextSize = szInput
                 Input.TextColor3 = THEME.TextMain
                 Input.TextXAlignment = Enum.TextXAlignment.Left
                 Input.ClearTextOnFocus = false
@@ -3757,7 +3768,7 @@ function NamelessWare:CreateWindow(config)
                 Label.BackgroundTransparency = 1
                 Label.Text = name
                 Label.Font = THEME.FontMain
-                Label.TextSize = 10
+                Label.TextSize = szItem
                 Label.TextColor3 = THEME.TextMain
                 Label.TextXAlignment = Enum.TextXAlignment.Left
                 Label.Parent = Row
@@ -3768,7 +3779,7 @@ function NamelessWare:CreateWindow(config)
                 KeyBtn.BackgroundColor3 = THEME.BgSidebar
                 KeyBtn.Text = tostring(typeof(key) == "EnumItem" and key.Name or key)
                 KeyBtn.Font = THEME.FontBold
-                KeyBtn.TextSize = 9
+                KeyBtn.TextSize = szBadge
                 KeyBtn.TextColor3 = THEME.TextMuted
                 KeyBtn.AutoButtonColor = false
                 KeyBtn.Parent = Row
@@ -3873,7 +3884,7 @@ function NamelessWare:CreateWindow(config)
                 Label.BackgroundTransparency = 1
                 Label.Text = name
                 Label.Font = THEME.FontMain
-                Label.TextSize = 10
+                Label.TextSize = szItem
                 Label.TextColor3 = THEME.TextMain
                 Label.TextXAlignment = Enum.TextXAlignment.Left
                 Label.Parent = HeaderRow
@@ -3907,7 +3918,7 @@ function NamelessWare:CreateWindow(config)
                 HexLabel.BackgroundTransparency = 1
                 HexLabel.Text = "#" .. currentColor:ToHex():upper()
                 HexLabel.Font = THEME.FontMain
-                HexLabel.TextSize = 9
+                HexLabel.TextSize = szBadge
                 HexLabel.TextColor3 = THEME.TextMuted
                 HexLabel.TextXAlignment = Enum.TextXAlignment.Right
                 HexLabel.Parent = SwatchHolder
@@ -4281,7 +4292,7 @@ function NamelessWare:CreateWindow(config)
                 Btn.BackgroundColor3 = THEME.BgSidebar
                 Btn.Text = text
                 Btn.Font = THEME.FontMain
-                Btn.TextSize = 11
+                Btn.TextSize = szItem
                 Btn.TextColor3 = THEME.TextMain
                 Btn.AutoButtonColor = false
                 Btn.Parent = Card
