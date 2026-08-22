@@ -1802,7 +1802,7 @@ function NamelessWare:CreateWindow(config)
         platformIcon = "rbxassetid://10734975692"
     elseif isMobilePlatform then
         platformName = "Mobile"
-        platformIcon = "rbxassetid://10734944200"
+        platformIcon = "rbxassetid://133870842381885"
     else
         platformName = "PC"
         platformIcon = "rbxassetid://105451070737074"
