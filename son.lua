@@ -1586,8 +1586,8 @@ function NamelessWare:CreateWindow(config)
 
     local MainWindow = Instance.new("Frame")
     MainWindow.Name = "MainWindow"
-    MainWindow.Size = UDim2.new(0, 530, 0, 390)
-    MainWindow.Position = UDim2.new(0.5, -265, 0.5, -195)
+    MainWindow.Size = UDim2.new(0, 560, 0, 360)
+    MainWindow.Position = UDim2.new(0.5, -280, 0.5, -180)
     MainWindow.BackgroundColor3 = THEME.BgMain
     MainWindow.BorderSizePixel = 0
     MainWindow.ClipsDescendants = false
@@ -1620,7 +1620,7 @@ function NamelessWare:CreateWindow(config)
 
     local Sidebar = Instance.new("Frame")
     Sidebar.Name = "Sidebar"
-    Sidebar.Size = UDim2.new(0, 148, 1, 0)
+    Sidebar.Size = UDim2.new(0, 155, 1, 0)
     Sidebar.BackgroundColor3 = THEME.BgSidebar
     Sidebar.BorderSizePixel = 0
     Sidebar.Parent = MainWindow
@@ -1697,13 +1697,13 @@ function NamelessWare:CreateWindow(config)
     end
 
     local BrandTitle = Instance.new("TextLabel")
-    BrandTitle.Size = UDim2.new(1, -40, 1, 0)
-    BrandTitle.Position = UDim2.new(0, 38, 0, 0)
+    BrandTitle.Size = UDim2.new(1, -44, 1, 0)
+    BrandTitle.Position = UDim2.new(0, 42, 0, 0)
     BrandTitle.BackgroundTransparency = 1
     BrandTitle.RichText = true
     BrandTitle.Text = FormatBrandTitle(Title)
     BrandTitle.Font = THEME.FontBold
-    BrandTitle.TextSize = 10.5
+    BrandTitle.TextSize = 11
     BrandTitle.TextColor3 = THEME.TextMain
     BrandTitle.TextXAlignment = Enum.TextXAlignment.Left
     BrandTitle.Parent = BrandFrame
@@ -1787,8 +1787,8 @@ function NamelessWare:CreateWindow(config)
     StatusDotStroke.Parent = StatusDot
 
     local UserNameLabel = Instance.new("TextLabel")
-    UserNameLabel.Size = UDim2.new(1, -48, 0, 14)
-    UserNameLabel.Position = UDim2.new(0, 46, 0, 9)
+    UserNameLabel.Size = UDim2.new(1, -74, 0, 14)
+    UserNameLabel.Position = UDim2.new(0, 44, 0, 9)
     UserNameLabel.BackgroundTransparency = 1
     UserNameLabel.Text = LocalPlayer and LocalPlayer.DisplayName or "Player"
     UserNameLabel.Font = THEME.FontBold
@@ -1799,8 +1799,8 @@ function NamelessWare:CreateWindow(config)
     UserNameLabel.Parent = UserCard
 
     local UserTimerLabel = Instance.new("TextLabel")
-    UserTimerLabel.Size = UDim2.new(1, -48, 0, 12)
-    UserTimerLabel.Position = UDim2.new(0, 46, 0, 25)
+    UserTimerLabel.Size = UDim2.new(1, -74, 0, 12)
+    UserTimerLabel.Position = UDim2.new(0, 44, 0, 25)
     UserTimerLabel.BackgroundTransparency = 1
     UserTimerLabel.Text = "00:00:00"
     UserTimerLabel.Font = THEME.FontMain
@@ -1808,6 +1808,253 @@ function NamelessWare:CreateWindow(config)
     UserTimerLabel.TextColor3 = THEME.TextMuted
     UserTimerLabel.TextXAlignment = Enum.TextXAlignment.Left
     UserTimerLabel.Parent = UserCard
+
+    local UserKeyBtn = Instance.new("TextButton")
+    UserKeyBtn.Name = "UserKeybindToggleBtn"
+    UserKeyBtn.Size = UDim2.new(0, 22, 0, 22)
+    UserKeyBtn.Position = UDim2.new(1, -28, 0.5, -11)
+    UserKeyBtn.BackgroundColor3 = THEME.BgSidebar
+    UserKeyBtn.Text = ""
+    UserKeyBtn.AutoButtonColor = false
+    UserKeyBtn.Parent = UserCard
+
+    local UserKeyCorner = Instance.new("UICorner")
+    UserKeyCorner.CornerRadius = UDim.new(0, 6)
+    UserKeyCorner.Parent = UserKeyBtn
+
+    local UserKeyStroke = Instance.new("UIStroke")
+    UserKeyStroke.Color = THEME.CardBorder
+    UserKeyStroke.Thickness = 1
+    UserKeyStroke.Parent = UserKeyBtn
+
+    local UserKeyIcon = Instance.new("ImageLabel")
+    UserKeyIcon.Size = UDim2.new(0, 12, 0, 12)
+    UserKeyIcon.Position = UDim2.new(0.5, -6, 0.5, -6)
+    UserKeyIcon.BackgroundTransparency = 1
+    UserKeyIcon.Image = "rbxassetid://10734950309"
+    UserKeyIcon.ImageColor3 = THEME.TextMuted
+    UserKeyIcon.ScaleType = Enum.ScaleType.Fit
+    UserKeyIcon.Parent = UserKeyBtn
+
+    -- =====================================================
+    -- FLOATING KEYBIND DROPDOWN POPUP
+    -- =====================================================
+    local KeyDrop = Instance.new("Frame")
+    KeyDrop.Name = "UserKeybindPopup"
+    KeyDrop.Size = UDim2.new(0, 160, 0, 0)
+    KeyDrop.Position = UDim2.new(0, 8, 1, -165)
+    KeyDrop.BackgroundColor3 = THEME.BgSidebar
+    KeyDrop.BorderSizePixel = 0
+    KeyDrop.ClipsDescendants = true
+    KeyDrop.Visible = false
+    KeyDrop.ZIndex = 250
+    KeyDrop.Parent = MainWindow
+
+    local KeyDropCorner = Instance.new("UICorner")
+    KeyDropCorner.CornerRadius = UDim.new(0, 8)
+    KeyDropCorner.Parent = KeyDrop
+
+    local KeyDropGrad = Instance.new("UIGradient")
+    KeyDropGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(21, 21, 30)),
+        ColorSequenceKeypoint.new(1, THEME.BgSidebar or Color3.fromRGB(6, 6, 8))
+    })
+    KeyDropGrad.Rotation = 45
+    KeyDropGrad.Parent = KeyDrop
+
+    local KeyDropStroke = Instance.new("UIStroke")
+    KeyDropStroke.Color = THEME.CardBorder
+    KeyDropStroke.Thickness = 1.2
+    KeyDropStroke.Parent = KeyDrop
+
+    local KeyDropTitle = Instance.new("TextLabel")
+    KeyDropTitle.Size = UDim2.new(1, -16, 0, 14)
+    KeyDropTitle.Position = UDim2.new(0, 8, 0, 7)
+    KeyDropTitle.BackgroundTransparency = 1
+    KeyDropTitle.Text = "Menu Keybind (PC)"
+    KeyDropTitle.Font = THEME.FontBold
+    KeyDropTitle.TextSize = 10
+    KeyDropTitle.TextColor3 = THEME.TextMain
+    KeyDropTitle.TextXAlignment = Enum.TextXAlignment.Left
+    KeyDropTitle.ZIndex = 251
+    KeyDropTitle.Parent = KeyDrop
+
+    local KeyDropBtn = Instance.new("TextButton")
+    KeyDropBtn.Size = UDim2.new(1, -16, 0, 22)
+    KeyDropBtn.Position = UDim2.new(0, 8, 0, 24)
+    KeyDropBtn.BackgroundColor3 = THEME.CardBg
+    KeyDropBtn.Text = "[ " .. tostring(NamelessWare.ToggleKey.Name) .. " ]"
+    KeyDropBtn.Font = THEME.FontBold
+    KeyDropBtn.TextSize = 10
+    KeyDropBtn.TextColor3 = THEME.Accent
+    KeyDropBtn.AutoButtonColor = false
+    KeyDropBtn.ZIndex = 251
+    KeyDropBtn.Parent = KeyDrop
+
+    local KeyDropBtnCorner = Instance.new("UICorner")
+    KeyDropBtnCorner.CornerRadius = UDim.new(0, 5)
+    KeyDropBtnCorner.Parent = KeyDropBtn
+
+    local KeyDropBtnStroke = Instance.new("UIStroke")
+    KeyDropBtnStroke.Color = THEME.CardBorder
+    KeyDropBtnStroke.Thickness = 1
+    KeyDropBtnStroke.Parent = KeyDropBtn
+
+    local PresetsLabel = Instance.new("TextLabel")
+    PresetsLabel.Size = UDim2.new(1, -16, 0, 12)
+    PresetsLabel.Position = UDim2.new(0, 8, 0, 49)
+    PresetsLabel.BackgroundTransparency = 1
+    PresetsLabel.Text = "Quick Presets:"
+    PresetsLabel.Font = THEME.FontMain
+    PresetsLabel.TextSize = 9
+    PresetsLabel.TextColor3 = THEME.TextMuted
+    PresetsLabel.TextXAlignment = Enum.TextXAlignment.Left
+    PresetsLabel.ZIndex = 251
+    PresetsLabel.Parent = KeyDrop
+
+    local PresetsRow = Instance.new("Frame")
+    PresetsRow.Size = UDim2.new(1, -16, 0, 18)
+    PresetsRow.Position = UDim2.new(0, 8, 0, 64)
+    PresetsRow.BackgroundTransparency = 1
+    PresetsRow.ZIndex = 251
+    PresetsRow.Parent = KeyDrop
+
+    local PresetsLayout = Instance.new("UIListLayout")
+    PresetsLayout.FillDirection = Enum.FillDirection.Horizontal
+    PresetsLayout.Padding = UDim.new(0, 4)
+    PresetsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    PresetsLayout.Parent = PresetsRow
+
+    local presetKeys = {
+        { Name = "RShift", Code = Enum.KeyCode.RightShift },
+        { Name = "RCtrl", Code = Enum.KeyCode.RightControl },
+        { Name = "Insert", Code = Enum.KeyCode.Insert },
+        { Name = "F8", Code = Enum.KeyCode.F8 },
+    }
+
+    local isKeyDropOpen = false
+    local isListeningKey = false
+    local listenConn = nil
+
+    local function CloseKeyDrop()
+        if not isKeyDropOpen then return end
+        isKeyDropOpen = false
+        if isListeningKey and listenConn then
+            listenConn:Disconnect()
+            listenConn = nil
+            isListeningKey = false
+        end
+        Tween(KeyDropBtnStroke, {Color = THEME.CardBorder}, 0.15)
+        Tween(KeyDropBtn, {TextColor3 = THEME.Accent}, 0.15)
+        Tween(UserKeyStroke, {Color = THEME.CardBorder}, 0.15)
+        Tween(UserKeyIcon, {ImageColor3 = THEME.TextMuted}, 0.15)
+        local tw = Tween(KeyDrop, {Size = UDim2.new(0, 160, 0, 0)}, 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+        tw.Completed:Connect(function()
+            if not isKeyDropOpen then KeyDrop.Visible = false end
+        end)
+    end
+
+    local function OpenKeyDrop()
+        if isKeyDropOpen then return end
+        if ActiveDropdown then ActiveDropdown() end
+        isKeyDropOpen = true
+        KeyDrop.Visible = true
+        KeyDropBtn.Text = "[ " .. tostring(NamelessWare.ToggleKey.Name) .. " ]"
+        Tween(UserKeyStroke, {Color = THEME.Accent}, 0.15)
+        Tween(UserKeyIcon, {ImageColor3 = THEME.Accent}, 0.15)
+        Tween(KeyDrop, {Size = UDim2.new(0, 160, 0, 90)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    end
+
+    local function ToggleKeyDrop()
+        if isKeyDropOpen then
+            CloseKeyDrop()
+        else
+            OpenKeyDrop()
+        end
+    end
+
+    UserKeyBtn.MouseButton1Click:Connect(ToggleKeyDrop)
+
+    UserKeyBtn.MouseEnter:Connect(function()
+        if not isKeyDropOpen then
+            Tween(UserKeyStroke, {Color = THEME.Accent}, 0.15)
+            Tween(UserKeyIcon, {ImageColor3 = THEME.TextMain}, 0.15)
+        end
+    end)
+    UserKeyBtn.MouseLeave:Connect(function()
+        if not isKeyDropOpen then
+            Tween(UserKeyStroke, {Color = THEME.CardBorder}, 0.15)
+            Tween(UserKeyIcon, {ImageColor3 = THEME.TextMuted}, 0.15)
+        end
+    end)
+
+    local function ApplyNewKey(newKeyCode)
+        NamelessWare.ToggleKey = newKeyCode
+        KeyDropBtn.Text = "[ " .. tostring(newKeyCode.Name) .. " ]"
+        Tween(KeyDropBtnStroke, {Color = THEME.CardBorder}, 0.15)
+        Tween(KeyDropBtn, {TextColor3 = THEME.Accent}, 0.15)
+        NamelessWare:Notify({
+            Title = "Keybind Updated",
+            Content = "Menu toggle key: " .. tostring(newKeyCode.Name),
+            Duration = 2,
+            Type = "Success"
+        })
+        task.delay(0.2, function()
+            CloseKeyDrop()
+        end)
+    end
+
+    KeyDropBtn.MouseButton1Click:Connect(function()
+        if isListeningKey then return end
+        isListeningKey = true
+        KeyDropBtn.Text = "... Press Key ..."
+        Tween(KeyDropBtnStroke, {Color = THEME.Accent}, 0.15)
+        Tween(KeyDropBtn, {TextColor3 = THEME.Accent}, 0.15)
+
+        if listenConn then listenConn:Disconnect() end
+        listenConn = UserInputService.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Keyboard then
+                listenConn:Disconnect()
+                listenConn = nil
+                isListeningKey = false
+                ApplyNewKey(input.KeyCode)
+            end
+        end)
+    end)
+
+    for _, pk in ipairs(presetKeys) do
+        local PBtn = Instance.new("TextButton")
+        PBtn.Size = UDim2.new(0, 32, 1, 0)
+        PBtn.BackgroundColor3 = THEME.CardBg
+        PBtn.Text = pk.Name
+        PBtn.Font = THEME.FontMain
+        PBtn.TextSize = 8
+        PBtn.TextColor3 = THEME.TextMuted
+        PBtn.AutoButtonColor = false
+        PBtn.ZIndex = 252
+        PBtn.Parent = PresetsRow
+
+        local PCorner = Instance.new("UICorner")
+        PCorner.CornerRadius = UDim.new(0, 4)
+        PCorner.Parent = PBtn
+
+        local PStroke = Instance.new("UIStroke")
+        PStroke.Color = THEME.CardBorder
+        PStroke.Thickness = 1
+        PStroke.Parent = PBtn
+
+        PBtn.MouseEnter:Connect(function()
+            Tween(PBtn, {TextColor3 = THEME.Accent}, 0.1)
+            Tween(PStroke, {Color = THEME.Accent}, 0.1)
+        end)
+        PBtn.MouseLeave:Connect(function()
+            Tween(PBtn, {TextColor3 = THEME.TextMuted}, 0.1)
+            Tween(PStroke, {Color = THEME.CardBorder}, 0.1)
+        end)
+        PBtn.MouseButton1Click:Connect(function()
+            ApplyNewKey(pk.Code)
+        end)
+    end
 
     local sessionStart = tick()
     task.spawn(function()
@@ -1823,8 +2070,8 @@ function NamelessWare:CreateWindow(config)
 
     local HeaderFrame = Instance.new("Frame")
     HeaderFrame.Name = "HeaderFrame"
-    HeaderFrame.Size = UDim2.new(1, -158, 0, 44)
-    HeaderFrame.Position = UDim2.new(0, 153, 0, 4)
+    HeaderFrame.Size = UDim2.new(1, -165, 0, 44)
+    HeaderFrame.Position = UDim2.new(0, 160, 0, 4)
     HeaderFrame.BackgroundTransparency = 1
     HeaderFrame.Parent = MainWindow
 
@@ -2016,8 +2263,8 @@ function NamelessWare:CreateWindow(config)
 
     local ContentArea = Instance.new("Frame")
     ContentArea.Name = "ContentArea"
-    ContentArea.Size = UDim2.new(1, -158, 1, -54)
-    ContentArea.Position = UDim2.new(0, 153, 0, 48)
+    ContentArea.Size = UDim2.new(1, -165, 1, -52)
+    ContentArea.Position = UDim2.new(0, 160, 0, 48)
     ContentArea.BackgroundTransparency = 1
     ContentArea.Parent = MainWindow
 
@@ -2028,13 +2275,13 @@ function NamelessWare:CreateWindow(config)
         isUIOpen = not isUIOpen
         if isUIOpen then
             MainWindow.Visible = true
-            MainWindow.Position = UDim2.new(0.5, -265, 0.5, -175)
-            Tween(MainWindow, {Position = UDim2.new(0.5, -265, 0.5, -195)}, 0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            MainWindow.Position = UDim2.new(0.5, -280, 0.5, -160)
+            Tween(MainWindow, {Position = UDim2.new(0.5, -280, 0.5, -180)}, 0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
         else
             if ActiveDropdown then
                 ActiveDropdown()
             end
-            local tw = Tween(MainWindow, {Position = UDim2.new(0.5, -265, 0.5, -175)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+            local tw = Tween(MainWindow, {Position = UDim2.new(0.5, -280, 0.5, -160)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
             tw.Completed:Connect(function()
                 if not isUIOpen then MainWindow.Visible = false end
             end)
@@ -2053,6 +2300,18 @@ function NamelessWare:CreateWindow(config)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             if ActiveDropdown and not gp then
                 ActiveDropdown()
+            end
+            if isKeyDropOpen and not gp then
+                local mousePos = UserInputService:GetMouseLocation()
+                local absP = KeyDrop.AbsolutePosition
+                local absS = KeyDrop.AbsoluteSize
+                local btnP = UserKeyBtn.AbsolutePosition
+                local btnS = UserKeyBtn.AbsoluteSize
+                local inDrop = mousePos.X >= absP.X and mousePos.X <= (absP.X + absS.X) and mousePos.Y >= absP.Y and mousePos.Y <= (absP.Y + absS.Y)
+                local inBtn = mousePos.X >= btnP.X and mousePos.X <= (btnP.X + btnS.X) and mousePos.Y >= btnP.Y and mousePos.Y <= (btnP.Y + btnS.Y)
+                if not inDrop and not inBtn then
+                    CloseKeyDrop()
+                end
             end
         end
     end)
@@ -2119,6 +2378,20 @@ function NamelessWare:CreateWindow(config)
         StatusDotStroke.Color = theme.BgSidebar
         UserNameLabel.TextColor3 = theme.TextMain
         UserTimerLabel.TextColor3 = theme.TextMuted
+        UserKeyBtn.BackgroundColor3 = theme.BgSidebar
+        UserKeyStroke.Color = isKeyDropOpen and theme.Accent or theme.CardBorder
+        UserKeyIcon.ImageColor3 = isKeyDropOpen and theme.Accent or theme.TextMuted
+        KeyDrop.BackgroundColor3 = theme.BgSidebar
+        KeyDropGrad.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, theme.CardBgGradient or theme.BgSidebar or Color3.fromRGB(21, 21, 30)),
+            ColorSequenceKeypoint.new(1, theme.BgSidebar or Color3.fromRGB(6, 6, 8))
+        })
+        KeyDropStroke.Color = theme.CardBorder
+        KeyDropTitle.TextColor3 = theme.TextMain
+        KeyDropBtn.BackgroundColor3 = theme.CardBg
+        KeyDropBtnStroke.Color = isListeningKey and theme.Accent or theme.CardBorder
+        KeyDropBtn.TextColor3 = theme.Accent
+        PresetsLabel.TextColor3 = theme.TextMuted
     end)
 
     function Window:AddCategory(catName)
