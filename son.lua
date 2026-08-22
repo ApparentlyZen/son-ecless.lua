@@ -2656,36 +2656,30 @@ function NamelessWare:CreateWindow(config)
                 TouchHitbox.ZIndex = 5
                 TouchHitbox.Parent = Frame
 
-                local moveConn = nil
-                local endConn = nil
-
-                local function StopDragging()
-                    if moveConn then
-                        moveConn:Disconnect()
-                        moveConn = nil
-                    end
-                    if endConn then
-                        endConn:Disconnect()
-                        endConn = nil
-                    end
-                end
+                local activeSliderInput = nil
 
                 TouchHitbox.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        StopDragging()
+                    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and input.UserInputState == Enum.UserInputState.Begin then
+                        activeSliderInput = input
                         UpdateValFromX(input.Position.X)
+                    end
+                end)
 
-                        moveConn = UserInputService.InputChanged:Connect(function(changeInput)
-                            if changeInput == input or changeInput.UserInputType == Enum.UserInputType.MouseMovement or changeInput.UserInputType == Enum.UserInputType.Touch then
-                                UpdateValFromX(changeInput.Position.X)
-                            end
-                        end)
+                TouchHitbox.MouseButton1Down:Connect(function()
+                    activeSliderInput = true
+                    local mousePos = UserInputService:GetMouseLocation()
+                    UpdateValFromX(mousePos.X)
+                end)
 
-                        endConn = UserInputService.InputEnded:Connect(function(endInput)
-                            if endInput == input or endInput.UserInputType == Enum.UserInputType.MouseButton1 or endInput.UserInputType == Enum.UserInputType.Touch then
-                                StopDragging()
-                            end
-                        end)
+                UserInputService.InputChanged:Connect(function(input)
+                    if activeSliderInput and (input == activeSliderInput or input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                        UpdateValFromX(input.Position.X)
+                    end
+                end)
+
+                UserInputService.InputEnded:Connect(function(input)
+                    if activeSliderInput and (input == activeSliderInput or input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+                        activeSliderInput = nil
                     end
                 end)
 
@@ -3390,7 +3384,7 @@ function NamelessWare:CreateWindow(config)
 
                 local function UpdateDotPosition()
                     local radius = ((Wheel.AbsoluteSize.X > 0 and Wheel.AbsoluteSize.X or 82) / 2)
-                    local angle = currentHue * math.pi * 2
+                    local angle = (1 - currentHue) * math.pi * 2
                     local clampedDist = currentSat * radius
                     local dotX = radius + math.cos(angle) * clampedDist
                     local dotY = radius + math.sin(angle) * clampedDist
@@ -3440,9 +3434,6 @@ function NamelessWare:CreateWindow(config)
                     end)
                 end
 
-                local wheelDragging = false
-                local valDragging = false
-
                 local function UpdateFromWheelPos(screenX, screenY)
                     local wheelAbsPos = Wheel.AbsolutePosition
                     local wheelAbsSize = Wheel.AbsoluteSize
@@ -3456,7 +3447,7 @@ function NamelessWare:CreateWindow(config)
                     local angle = math.atan2(delta.Y, delta.X)
                     if angle < 0 then angle = angle + (math.pi * 2) end
 
-                    currentHue = (angle / (math.pi * 2)) % 1
+                    currentHue = (1 - (angle / (math.pi * 2))) % 1
                     currentSat = math.clamp(clampedDist / radius, 0, 1)
 
                     local dotX = radius + math.cos(angle) * clampedDist
@@ -3481,7 +3472,8 @@ function NamelessWare:CreateWindow(config)
                 local function UpdateFromValPos(screenX)
                     local trackAbsPos = ValTrack.AbsolutePosition
                     local trackAbsSize = ValTrack.AbsoluteSize
-                    local percent = math.clamp((screenX - trackAbsPos.X) / (trackAbsSize.X > 0 and trackAbsSize.X or 1), 0, 1)
+                    local width = (trackAbsSize.X > 0 and trackAbsSize.X) or 1
+                    local percent = math.clamp((screenX - trackAbsPos.X) / width, 0, 1)
                     currentVal = percent
 
                     ValThumb.Position = UDim2.new(currentVal, 0, 0.5, 0)
@@ -3496,53 +3488,51 @@ function NamelessWare:CreateWindow(config)
                     callback(currentColor)
                 end
 
-                local wheelMoveConn, wheelEndConn
-                local function StopWheel()
-                    if wheelMoveConn then wheelMoveConn:Disconnect(); wheelMoveConn = nil end
-                    if wheelEndConn then wheelEndConn:Disconnect(); wheelEndConn = nil end
-                end
+                local activeWheelInput = nil
+                local activeValInput = nil
 
                 Wheel.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        StopWheel()
+                    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and input.UserInputState == Enum.UserInputState.Begin then
+                        activeWheelInput = input
                         UpdateFromWheelPos(input.Position.X, input.Position.Y)
-
-                        wheelMoveConn = UserInputService.InputChanged:Connect(function(changeInput)
-                            if changeInput == input or changeInput.UserInputType == Enum.UserInputType.MouseMovement or changeInput.UserInputType == Enum.UserInputType.Touch then
-                                UpdateFromWheelPos(changeInput.Position.X, changeInput.Position.Y)
-                            end
-                        end)
-
-                        wheelEndConn = UserInputService.InputEnded:Connect(function(endInput)
-                            if endInput == input or endInput.UserInputType == Enum.UserInputType.MouseButton1 or endInput.UserInputType == Enum.UserInputType.Touch then
-                                StopWheel()
-                            end
-                        end)
                     end
                 end)
 
-                local valMoveConn, valEndConn
-                local function StopVal()
-                    if valMoveConn then valMoveConn:Disconnect(); valMoveConn = nil end
-                    if valEndConn then valEndConn:Disconnect(); valEndConn = nil end
-                end
+                Wheel.MouseButton1Down:Connect(function()
+                    activeWheelInput = true
+                    local mousePos = UserInputService:GetMouseLocation()
+                    UpdateFromWheelPos(mousePos.X, mousePos.Y)
+                end)
 
                 ValTrack.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        StopVal()
+                    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and input.UserInputState == Enum.UserInputState.Begin then
+                        activeValInput = input
                         UpdateFromValPos(input.Position.X)
+                    end
+                end)
 
-                        valMoveConn = UserInputService.InputChanged:Connect(function(changeInput)
-                            if changeInput == input or changeInput.UserInputType == Enum.UserInputType.MouseMovement or changeInput.UserInputType == Enum.UserInputType.Touch then
-                                UpdateFromValPos(changeInput.Position.X)
-                            end
-                        end)
+                ValTrack.MouseButton1Down:Connect(function()
+                    activeValInput = true
+                    local mousePos = UserInputService:GetMouseLocation()
+                    UpdateFromValPos(mousePos.X)
+                end)
 
-                        valEndConn = UserInputService.InputEnded:Connect(function(endInput)
-                            if endInput == input or endInput.UserInputType == Enum.UserInputType.MouseButton1 or endInput.UserInputType == Enum.UserInputType.Touch then
-                                StopVal()
-                            end
-                        end)
+                UserInputService.InputChanged:Connect(function(input)
+                    if activeWheelInput and (input == activeWheelInput or input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                        local mousePos = (input.UserInputType == Enum.UserInputType.MouseMovement) and UserInputService:GetMouseLocation() or input.Position
+                        UpdateFromWheelPos(mousePos.X, mousePos.Y)
+                    elseif activeValInput and (input == activeValInput or input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                        local mousePos = (input.UserInputType == Enum.UserInputType.MouseMovement) and UserInputService:GetMouseLocation() or input.Position
+                        UpdateFromValPos(mousePos.X)
+                    end
+                end)
+
+                UserInputService.InputEnded:Connect(function(input)
+                    if activeWheelInput and (input == activeWheelInput or input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+                        activeWheelInput = nil
+                    end
+                    if activeValInput and (input == activeValInput or input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+                        activeValInput = nil
                     end
                 end)
 
