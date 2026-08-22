@@ -252,6 +252,8 @@ THEME.FontBold = Enum.Font.GothamBold
 
 local RAW_LOGO_URL = "https://raw.githubusercontent.com/ApparentlyZen/image-namelessWare/main/165abdd521328d77324b02ce8a77e090_1780162334922.webp"
 
+local isMobileDevice = UserInputService.TouchEnabled and not (UserInputService.KeyboardEnabled and UserInputService.MouseEnabled)
+
 local NamelessWare = {
     Flags = {},
     ThemeSubscribers = {},
@@ -260,7 +262,7 @@ local NamelessWare = {
     CardElements = {},
     Transparency = 0,
     CardTransparency = 0,
-    ShowKeybinds = true,
+    ShowKeybinds = not isMobileDevice,
     ShowKeybindsHud = false,
     KeybindHUD = nil,
     CurrentTheme = "Nameless Violet",
@@ -285,12 +287,13 @@ end
 
 function NamelessWare:SetKeybindsVisibility(visible)
     self.ShowKeybinds = visible
+    local isPC = UserInputService.KeyboardEnabled and UserInputService.MouseEnabled
     for _, el in ipairs(self.KeybindElements) do
         pcall(function()
             if typeof(el) == "function" then
                 el(visible)
             elseif el and el.IsA and el:IsA("GuiObject") then
-                el.Visible = visible
+                el.Visible = visible and isPC
             end
         end)
     end
@@ -2305,7 +2308,7 @@ function NamelessWare:CreateWindow(config)
                 RightLayout.Padding = UDim.new(0, 5)
                 RightLayout.Parent = RightHold
 
-                local isPC = UserInputService.KeyboardEnabled
+                local isPC = UserInputService.KeyboardEnabled and UserInputService.MouseEnabled
                 local boundKey = keybindKey and (typeof(keybindKey) == "EnumItem" and keybindKey or (Enum.KeyCode[tostring(keybindKey)] or nil)) or nil
                 local isBinding = false
 
@@ -2319,7 +2322,7 @@ function NamelessWare:CreateWindow(config)
                     KeyBtn.TextSize = 8
                     KeyBtn.TextColor3 = THEME.TextMuted
                     KeyBtn.AutoButtonColor = false
-                    KeyBtn.Visible = NamelessWare.ShowKeybinds
+                    KeyBtn.Visible = NamelessWare.ShowKeybinds and isPC
                     KeyBtn.Parent = RightHold
 
                     local KeyCorner = Instance.new("UICorner")
@@ -2456,7 +2459,7 @@ function NamelessWare:CreateWindow(config)
                 local value = def
 
                 local Frame = Instance.new("Frame")
-                Frame.Size = UDim2.new(1, 0, 0, 34)
+                Frame.Size = UDim2.new(1, 0, 0, 36)
                 Frame.BackgroundTransparency = 1
                 Frame.Parent = Card
                 table.insert(RegisteredItems, {Name = name, Element = Frame, Card = Card})
@@ -2483,20 +2486,21 @@ function NamelessWare:CreateWindow(config)
                 ValLabel.TextXAlignment = Enum.TextXAlignment.Right
                 ValLabel.Parent = Frame
 
-                local Track = Instance.new("TextButton")
-                Track.Size = UDim2.new(1, 0, 0, 4)
+                local Track = Instance.new("Frame")
+                Track.Size = UDim2.new(1, 0, 0, 6)
                 Track.Position = UDim2.new(0, 0, 0, 22)
                 Track.BackgroundColor3 = THEME.BgSidebar
-                Track.Text = ""
-                Track.AutoButtonColor = false
+                Track.BorderSizePixel = 0
                 Track.Parent = Frame
 
                 local TrackCorner = Instance.new("UICorner")
                 TrackCorner.CornerRadius = UDim.new(1, 0)
                 TrackCorner.Parent = Track
 
+                local startPercent = math.clamp((value - min) / ((max > min and (max - min)) or 1), 0, 1)
+
                 local Fill = Instance.new("Frame")
-                Fill.Size = UDim2.new(math.clamp((value - min) / (max - min), 0, 1), 0, 1, 0)
+                Fill.Size = UDim2.new(startPercent, 0, 1, 0)
                 Fill.BackgroundColor3 = THEME.Accent
                 Fill.BorderSizePixel = 0
                 Fill.Parent = Track
@@ -2513,42 +2517,67 @@ function NamelessWare:CreateWindow(config)
                 FillGrad.Parent = Fill
 
                 local Dot = Instance.new("Frame")
-                Dot.Size = UDim2.new(0, 8, 0, 8)
-                Dot.Position = UDim2.new(1, -4, 0.5, -4)
+                Dot.Size = UDim2.new(0, 14, 0, 14)
+                Dot.AnchorPoint = Vector2.new(0.5, 0.5)
+                Dot.Position = UDim2.new(startPercent, 0, 0.5, 0)
                 Dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 Dot.BorderSizePixel = 0
-                Dot.Parent = Fill
+                Dot.ZIndex = 3
+                Dot.Parent = Track
 
                 local DotCorner = Instance.new("UICorner")
                 DotCorner.CornerRadius = UDim.new(1, 0)
                 DotCorner.Parent = Dot
 
+                local DotStroke = Instance.new("UIStroke")
+                DotStroke.Color = Color3.fromRGB(30, 30, 40)
+                DotStroke.Thickness = 1.2
+                DotStroke.Parent = Dot
+
+                local TouchHitbox = Instance.new("TextButton")
+                TouchHitbox.Name = "SliderHitbox"
+                TouchHitbox.Size = UDim2.new(1, 0, 0, 26)
+                TouchHitbox.Position = UDim2.new(0, 0, 0, 10)
+                TouchHitbox.BackgroundTransparency = 1
+                TouchHitbox.Text = ""
+                TouchHitbox.AutoButtonColor = false
+                TouchHitbox.ZIndex = 5
+                TouchHitbox.Parent = Frame
+
                 local dragging = false
 
-                local function UpdateVal(input)
-                    local percent = math.clamp((input.Position.X - Track.AbsolutePosition.X) / Track.AbsoluteSize.X, 0, 1)
+                local function UpdateValFromX(screenX)
+                    local trackAbsX = Track.AbsolutePosition.X
+                    local trackWidth = Track.AbsoluteSize.X
+                    local percent = math.clamp((screenX - trackAbsX) / ((trackWidth > 0 and trackWidth) or 1), 0, 1)
                     value = math.floor(min + (max - min) * percent)
                     Fill.Size = UDim2.new(percent, 0, 1, 0)
+                    Dot.Position = UDim2.new(percent, 0, 0.5, 0)
                     ValLabel.Text = tostring(value) .. suffix
                     callback(value)
                 end
 
-                Track.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        dragging = true
-                        UpdateVal(input)
-                    end
+                TouchHitbox.MouseButton1Down:Connect(function(x, y)
+                    dragging = true
+                    UpdateValFromX(x)
                 end)
 
-                Track.InputEnded:Connect(function(input)
+                TouchHitbox.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        dragging = false
+                        dragging = true
+                        UpdateValFromX(input.Position.X)
                     end
                 end)
 
                 UserInputService.InputChanged:Connect(function(input)
                     if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                        UpdateVal(input)
+                        UpdateValFromX(input.Position.X)
+                    end
+                end)
+
+                UserInputService.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        dragging = false
                     end
                 end)
 
@@ -2566,8 +2595,9 @@ function NamelessWare:CreateWindow(config)
                 local controller = {
                     Set = function(v)
                         value = math.clamp(v, min, max)
-                        local percent = math.clamp((value - min) / (max - min), 0, 1)
+                        local percent = math.clamp((value - min) / ((max > min and (max - min)) or 1), 0, 1)
                         Fill.Size = UDim2.new(percent, 0, 1, 0)
+                        Dot.Position = UDim2.new(percent, 0, 0.5, 0)
                         ValLabel.Text = tostring(value) .. suffix
                         callback(value)
                     end,
