@@ -1881,27 +1881,27 @@ function NamelessWare:CreateWindow(config)
         platformIcon = "rbxassetid://105451070737074"
     end
 
-    local winWidth = 600
-    local winHeight = 445
-    local sidebarWidth = 155
-    local winPosCenter = UDim2.new(0.5, -300, 0.5, -222)
-    local winPosOffset = UDim2.new(0.5, -300, 0.5, -208)
+    local winWidth = isMobilePlatform and 580 or 600
+    local winHeight = isMobilePlatform and 315 or 445
+    local sidebarWidth = isMobilePlatform and 145 or 155
+    local winPosCenter = UDim2.new(0.5, -math.floor(winWidth / 2), 0.5, -math.floor(winHeight / 2))
+    local winPosOffset = UDim2.new(0.5, -math.floor(winWidth / 2), 0.5, -math.floor(winHeight / 2) + 14)
 
-    local szBrand = 12
-    local szHeader = 16
-    local szSub = 10
-    local szTab = 11
-    local szSec = 11
-    local szSubHeader = 10
-    local szItem = 10
+    local szBrand = isMobilePlatform and 11 or 12
+    local szHeader = isMobilePlatform and 15 or 16
+    local szSub = isMobilePlatform and 9.5 or 10
+    local szTab = isMobilePlatform and 10.5 or 11
+    local szSec = isMobilePlatform and 10.5 or 11
+    local szSubHeader = isMobilePlatform and 9.5 or 10
+    local szItem = isMobilePlatform and 9.5 or 10
     local szBadge = 8
-    local szInput = 10
-    local szUser = 10
-    local szTimer = 9
+    local szInput = isMobilePlatform and 9.5 or 10
+    local szUser = isMobilePlatform and 9.5 or 10
+    local szTimer = isMobilePlatform and 8.5 or 9
 
     local MainWindow = Instance.new("Frame")
     MainWindow.Name = "MainWindow"
-    MainWindow.Size = UDim2.new(0, 600, 0, 445)
+    MainWindow.Size = UDim2.new(0, winWidth, 0, winHeight)
     MainWindow.Position = winPosCenter
     MainWindow.BackgroundColor3 = THEME.BgMain
     MainWindow.BorderSizePixel = 0
@@ -1939,7 +1939,7 @@ function NamelessWare:CreateWindow(config)
 
     local Sidebar = Instance.new("Frame")
     Sidebar.Name = "Sidebar"
-    Sidebar.Size = UDim2.new(0, 155, 1, 0)
+    Sidebar.Size = UDim2.new(0, sidebarWidth, 1, 0)
     Sidebar.BackgroundColor3 = THEME.BgSidebar
     Sidebar.BorderSizePixel = 0
     Sidebar.Parent = MainWindow
@@ -2409,8 +2409,8 @@ function NamelessWare:CreateWindow(config)
 
     local HeaderFrame = Instance.new("Frame")
     HeaderFrame.Name = "HeaderFrame"
-    HeaderFrame.Size = UDim2.new(1, -165, 0, 48)
-    HeaderFrame.Position = UDim2.new(0, 160, 0, 4)
+    HeaderFrame.Size = UDim2.new(1, -(sidebarWidth + 10), 0, isMobilePlatform and 44 or 48)
+    HeaderFrame.Position = UDim2.new(0, sidebarWidth + 5, 0, 4)
     HeaderFrame.BackgroundTransparency = 1
     HeaderFrame.Parent = MainWindow
 
@@ -2581,8 +2581,8 @@ function NamelessWare:CreateWindow(config)
 
     local ContentArea = Instance.new("Frame")
     ContentArea.Name = "ContentArea"
-    ContentArea.Size = UDim2.new(1, -165, 1, -56)
-    ContentArea.Position = UDim2.new(0, 160, 0, 50)
+    ContentArea.Size = UDim2.new(1, -(sidebarWidth + 10), 1, isMobilePlatform and -50 or -56)
+    ContentArea.Position = UDim2.new(0, sidebarWidth + 5, 0, isMobilePlatform and 46 or 50)
     ContentArea.BackgroundTransparency = 1
     ContentArea.Parent = MainWindow
 
