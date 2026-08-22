@@ -263,8 +263,15 @@ local THEME = {}
 for k, v in pairs(THEME_PRESETS["Nameless Violet"]) do
     THEME[k] = v
 end
-THEME.FontMain = Enum.Font.Ubuntu
-THEME.FontBold = Enum.Font.UbuntuBold
+THEME.FontMain = Enum.Font.GothamMedium
+THEME.FontBold = Enum.Font.GothamBold
+
+pcall(function()
+    if Font and Font.new then
+        THEME.FontFaceMain = Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
+        THEME.FontFaceBold = Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+    end
+end)
 
 local RAW_LOGO_URL = "https://raw.githubusercontent.com/ApparentlyZen/image-namelessWare/main/165abdd521328d77324b02ce8a77e090_1780162334922.webp"
 
