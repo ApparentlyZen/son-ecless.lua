@@ -1828,10 +1828,36 @@ function NamelessWare:CreateWindow(config)
         if stepConn then stepConn:Disconnect() end
     end)
 
+    local isMobilePlatform = UserInputService.TouchEnabled and not (UserInputService.KeyboardEnabled and UserInputService.MouseEnabled)
+    local isConsolePlatform = false
+    pcall(function()
+        if GuiService and GuiService.IsTenFootInterface then
+            isConsolePlatform = GuiService:IsTenFootInterface()
+        end
+    end)
+    local platformName = "PC"
+    local platformIcon = "rbxassetid://105451070737074"
+    if isConsolePlatform then
+        platformName = "Console"
+        platformIcon = "rbxassetid://10734975692"
+    elseif isMobilePlatform then
+        platformName = "Mobile"
+        platformIcon = "rbxassetid://109254181370156"
+    else
+        platformName = "PC"
+        platformIcon = "rbxassetid://105451070737074"
+    end
+
+    local winWidth = isMobilePlatform and 550 or 630
+    local winHeight = isMobilePlatform and 350 or 430
+    local sidebarWidth = isMobilePlatform and 150 or 165
+    local winPosCenter = UDim2.new(0.5, -math.floor(winWidth / 2), 0.5, -math.floor(winHeight / 2))
+    local winPosOffset = UDim2.new(0.5, -math.floor(winWidth / 2), 0.5, -math.floor(winHeight / 2) + 14)
+
     local MainWindow = Instance.new("Frame")
     MainWindow.Name = "MainWindow"
-    MainWindow.Size = UDim2.new(0, 560, 0, 360)
-    MainWindow.Position = UDim2.new(0.5, -280, 0.5, -180)
+    MainWindow.Size = UDim2.new(0, winWidth, 0, winHeight)
+    MainWindow.Position = winPosCenter
     MainWindow.BackgroundColor3 = THEME.BgMain
     MainWindow.BorderSizePixel = 0
     MainWindow.ClipsDescendants = false
@@ -1868,7 +1894,7 @@ function NamelessWare:CreateWindow(config)
 
     local Sidebar = Instance.new("Frame")
     Sidebar.Name = "Sidebar"
-    Sidebar.Size = UDim2.new(0, 155, 1, 0)
+    Sidebar.Size = UDim2.new(0, sidebarWidth, 1, 0)
     Sidebar.BackgroundColor3 = THEME.BgSidebar
     Sidebar.BorderSizePixel = 0
     Sidebar.Parent = MainWindow
@@ -2337,34 +2363,13 @@ function NamelessWare:CreateWindow(config)
 
     local HeaderFrame = Instance.new("Frame")
     HeaderFrame.Name = "HeaderFrame"
-    HeaderFrame.Size = UDim2.new(1, -165, 0, 44)
-    HeaderFrame.Position = UDim2.new(0, 160, 0, 4)
+    HeaderFrame.Size = UDim2.new(1, -(sidebarWidth + 10), 0, isMobilePlatform and 44 or 46)
+    HeaderFrame.Position = UDim2.new(0, sidebarWidth + 5, 0, 4)
     HeaderFrame.BackgroundTransparency = 1
     HeaderFrame.Parent = MainWindow
 
     local RegisteredItems = {}
     local RegisteredCards = {}
-
-    local isMobilePlatform = UserInputService.TouchEnabled and not (UserInputService.KeyboardEnabled and UserInputService.MouseEnabled)
-    local isConsolePlatform = false
-    pcall(function()
-        if GuiService and GuiService.IsTenFootInterface then
-            isConsolePlatform = GuiService:IsTenFootInterface()
-        end
-    end)
-    local platformName = "PC"
-    local platformIcon = "rbxassetid://105451070737074"
-
-    if isConsolePlatform then
-        platformName = "Console"
-        platformIcon = "rbxassetid://10734975692"
-    elseif isMobilePlatform then
-        platformName = "Mobile"
-        platformIcon = "rbxassetid://109254181370156"
-    else
-        platformName = "PC"
-        platformIcon = "rbxassetid://105451070737074"
-    end
 
     local HeaderTabTitle = Instance.new("TextLabel")
     HeaderTabTitle.Size = UDim2.new(1, -225, 0, 20)
@@ -2530,8 +2535,8 @@ function NamelessWare:CreateWindow(config)
 
     local ContentArea = Instance.new("Frame")
     ContentArea.Name = "ContentArea"
-    ContentArea.Size = UDim2.new(1, -165, 1, -52)
-    ContentArea.Position = UDim2.new(0, 160, 0, 48)
+    ContentArea.Size = UDim2.new(1, -(sidebarWidth + 10), 1, isMobilePlatform and -52 or -56)
+    ContentArea.Position = UDim2.new(0, sidebarWidth + 5, 0, isMobilePlatform and 48 or 50)
     ContentArea.BackgroundTransparency = 1
     ContentArea.Parent = MainWindow
 
@@ -2544,9 +2549,9 @@ function NamelessWare:CreateWindow(config)
             if isKeyDropOpen then CloseKeyDrop() end
             MainWindow.Visible = true
             MainScale.Scale = 0.92
-            MainWindow.Position = UDim2.new(0.5, -280, 0.5, -168)
+            MainWindow.Position = winPosOffset
             Tween(MainScale, {Scale = 1}, 0.28, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-            Tween(MainWindow, {Position = UDim2.new(0.5, -280, 0.5, -180)}, 0.28, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            Tween(MainWindow, {Position = winPosCenter}, 0.28, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
         else
             if ActiveDropdown then
                 ActiveDropdown()
@@ -2555,7 +2560,7 @@ function NamelessWare:CreateWindow(config)
                 CloseKeyDrop()
             end
             local twScale = Tween(MainScale, {Scale = 0.92}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
-            local twPos = Tween(MainWindow, {Position = UDim2.new(0.5, -280, 0.5, -168)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+            local twPos = Tween(MainWindow, {Position = winPosOffset}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
             twScale.Completed:Connect(function()
                 if not isUIOpen then MainWindow.Visible = false end
             end)
