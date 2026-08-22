@@ -204,121 +204,137 @@ local THEME_PRESETS = {
         Accent = Color3.fromRGB(165, 95, 255),
         AccentGradient = Color3.fromRGB(195, 135, 255),
         AccentDark = Color3.fromRGB(120, 50, 220),
-        BgMain = Color3.fromRGB(7, 7, 10),
-        BgMainGradient = Color3.fromRGB(26, 26, 36),
-        BgSidebar = Color3.fromRGB(6, 6, 8),
-        CardBg = Color3.fromRGB(13, 13, 18),
-        CardBgGradient = Color3.fromRGB(21, 21, 30),
-        CardBorder = Color3.fromRGB(30, 30, 44),
-        TextMain = Color3.fromRGB(245, 245, 252),
-        TextMuted = Color3.fromRGB(120, 120, 145),
-        CircleOff = Color3.fromRGB(18, 18, 26),
-        CircleOffBorder = Color3.fromRGB(36, 36, 50),
+        BgMain = Color3.fromRGB(14, 15, 18),
+        BgMainGradient = Color3.fromRGB(24, 26, 32),
+        BgSidebar = Color3.fromRGB(17, 19, 23),
+        CardBg = Color3.fromRGB(22, 25, 30),
+        CardBgGradient = Color3.fromRGB(30, 34, 42),
+        CardBorder = Color3.fromRGB(38, 44, 54),
+        ElementBg = Color3.fromRGB(32, 37, 46),
+        ElementBgHover = Color3.fromRGB(42, 48, 60),
+        TextMain = Color3.fromRGB(250, 250, 255),
+        TextMuted = Color3.fromRGB(160, 168, 185),
+        CircleOff = Color3.fromRGB(26, 29, 36),
+        CircleOffBorder = Color3.fromRGB(44, 50, 62),
     },
     ["Flow Indigo"] = {
         Accent = Color3.fromRGB(130, 90, 255),
         AccentGradient = Color3.fromRGB(160, 120, 255),
         AccentDark = Color3.fromRGB(90, 50, 200),
-        BgMain = Color3.fromRGB(13, 13, 20),
-        BgMainGradient = Color3.fromRGB(17, 17, 26),
-        BgSidebar = Color3.fromRGB(10, 10, 15),
-        CardBg = Color3.fromRGB(18, 18, 27),
-        CardBgGradient = Color3.fromRGB(22, 22, 33),
-        CardBorder = Color3.fromRGB(34, 34, 48),
-        TextMain = Color3.fromRGB(240, 240, 255),
-        TextMuted = Color3.fromRGB(125, 125, 150),
-        CircleOff = Color3.fromRGB(24, 24, 34),
-        CircleOffBorder = Color3.fromRGB(42, 42, 58),
+        BgMain = Color3.fromRGB(14, 15, 22),
+        BgMainGradient = Color3.fromRGB(22, 24, 34),
+        BgSidebar = Color3.fromRGB(17, 18, 26),
+        CardBg = Color3.fromRGB(22, 24, 34),
+        CardBgGradient = Color3.fromRGB(30, 33, 46),
+        CardBorder = Color3.fromRGB(40, 44, 60),
+        ElementBg = Color3.fromRGB(30, 34, 48),
+        ElementBgHover = Color3.fromRGB(40, 45, 64),
+        TextMain = Color3.fromRGB(250, 250, 255),
+        TextMuted = Color3.fromRGB(155, 165, 190),
+        CircleOff = Color3.fromRGB(26, 28, 40),
+        CircleOffBorder = Color3.fromRGB(44, 48, 68),
     },
     ["Passion Pink"] = {
         Accent = Color3.fromRGB(255, 65, 150),
         AccentGradient = Color3.fromRGB(255, 115, 185),
         AccentDark = Color3.fromRGB(200, 30, 105),
-        BgMain = Color3.fromRGB(20, 14, 18),
-        BgMainGradient = Color3.fromRGB(26, 17, 23),
-        BgSidebar = Color3.fromRGB(15, 10, 13),
-        CardBg = Color3.fromRGB(26, 18, 24),
-        CardBgGradient = Color3.fromRGB(32, 22, 29),
-        CardBorder = Color3.fromRGB(55, 30, 48),
-        TextMain = Color3.fromRGB(255, 245, 250),
-        TextMuted = Color3.fromRGB(165, 125, 145),
-        CircleOff = Color3.fromRGB(32, 20, 28),
-        CircleOffBorder = Color3.fromRGB(58, 35, 50),
+        BgMain = Color3.fromRGB(18, 14, 17),
+        BgMainGradient = Color3.fromRGB(28, 20, 26),
+        BgSidebar = Color3.fromRGB(21, 16, 20),
+        CardBg = Color3.fromRGB(27, 20, 26),
+        CardBgGradient = Color3.fromRGB(36, 26, 35),
+        CardBorder = Color3.fromRGB(56, 34, 50),
+        ElementBg = Color3.fromRGB(38, 26, 36),
+        ElementBgHover = Color3.fromRGB(50, 34, 48),
+        TextMain = Color3.fromRGB(255, 250, 252),
+        TextMuted = Color3.fromRGB(180, 155, 170),
+        CircleOff = Color3.fromRGB(32, 22, 30),
+        CircleOffBorder = Color3.fromRGB(58, 38, 54),
     },
     ["Nebula Cyan"] = {
         Accent = Color3.fromRGB(0, 225, 255),
         AccentGradient = Color3.fromRGB(80, 240, 255),
         AccentDark = Color3.fromRGB(0, 160, 210),
-        BgMain = Color3.fromRGB(10, 18, 24),
-        BgMainGradient = Color3.fromRGB(13, 24, 32),
-        BgSidebar = Color3.fromRGB(8, 14, 18),
-        CardBg = Color3.fromRGB(14, 25, 34),
-        CardBgGradient = Color3.fromRGB(18, 31, 42),
-        CardBorder = Color3.fromRGB(25, 52, 68),
-        TextMain = Color3.fromRGB(240, 252, 255),
-        TextMuted = Color3.fromRGB(115, 150, 165),
-        CircleOff = Color3.fromRGB(18, 28, 36),
-        CircleOffBorder = Color3.fromRGB(32, 54, 68),
+        BgMain = Color3.fromRGB(12, 17, 21),
+        BgMainGradient = Color3.fromRGB(18, 26, 33),
+        BgSidebar = Color3.fromRGB(15, 21, 26),
+        CardBg = Color3.fromRGB(19, 27, 34),
+        CardBgGradient = Color3.fromRGB(26, 36, 46),
+        CardBorder = Color3.fromRGB(32, 52, 68),
+        ElementBg = Color3.fromRGB(26, 38, 50),
+        ElementBgHover = Color3.fromRGB(34, 48, 64),
+        TextMain = Color3.fromRGB(245, 252, 255),
+        TextMuted = Color3.fromRGB(145, 170, 185),
+        CircleOff = Color3.fromRGB(22, 32, 42),
+        CircleOffBorder = Color3.fromRGB(36, 56, 72),
     },
     ["Crimson Obsidian"] = {
         Accent = Color3.fromRGB(255, 45, 75),
         AccentGradient = Color3.fromRGB(255, 95, 120),
         AccentDark = Color3.fromRGB(190, 20, 45),
-        BgMain = Color3.fromRGB(20, 12, 14),
-        BgMainGradient = Color3.fromRGB(26, 15, 18),
-        BgSidebar = Color3.fromRGB(14, 8, 10),
-        CardBg = Color3.fromRGB(27, 16, 19),
-        CardBgGradient = Color3.fromRGB(33, 19, 23),
-        CardBorder = Color3.fromRGB(58, 28, 34),
-        TextMain = Color3.fromRGB(255, 242, 244),
-        TextMuted = Color3.fromRGB(165, 120, 128),
-        CircleOff = Color3.fromRGB(34, 18, 22),
-        CircleOffBorder = Color3.fromRGB(60, 32, 38),
+        BgMain = Color3.fromRGB(18, 13, 14),
+        BgMainGradient = Color3.fromRGB(28, 18, 20),
+        BgSidebar = Color3.fromRGB(22, 15, 17),
+        CardBg = Color3.fromRGB(27, 18, 21),
+        CardBgGradient = Color3.fromRGB(36, 24, 28),
+        CardBorder = Color3.fromRGB(60, 32, 38),
+        ElementBg = Color3.fromRGB(38, 24, 28),
+        ElementBgHover = Color3.fromRGB(50, 30, 36),
+        TextMain = Color3.fromRGB(255, 245, 246),
+        TextMuted = Color3.fromRGB(180, 145, 150),
+        CircleOff = Color3.fromRGB(34, 20, 24),
+        CircleOffBorder = Color3.fromRGB(60, 34, 40),
     },
     ["Emerald Viper"] = {
         Accent = Color3.fromRGB(0, 230, 135),
         AccentGradient = Color3.fromRGB(70, 245, 175),
         AccentDark = Color3.fromRGB(0, 170, 95),
-        BgMain = Color3.fromRGB(10, 20, 16),
-        BgMainGradient = Color3.fromRGB(13, 26, 21),
-        BgSidebar = Color3.fromRGB(8, 15, 12),
-        CardBg = Color3.fromRGB(14, 27, 22),
-        CardBgGradient = Color3.fromRGB(18, 34, 28),
-        CardBorder = Color3.fromRGB(25, 56, 42),
-        TextMain = Color3.fromRGB(240, 255, 248),
-        TextMuted = Color3.fromRGB(115, 165, 140),
-        CircleOff = Color3.fromRGB(16, 30, 24),
-        CircleOffBorder = Color3.fromRGB(30, 58, 46),
+        BgMain = Color3.fromRGB(12, 18, 15),
+        BgMainGradient = Color3.fromRGB(18, 28, 23),
+        BgSidebar = Color3.fromRGB(15, 22, 18),
+        CardBg = Color3.fromRGB(19, 28, 23),
+        CardBgGradient = Color3.fromRGB(26, 38, 31),
+        CardBorder = Color3.fromRGB(30, 58, 46),
+        ElementBg = Color3.fromRGB(26, 40, 32),
+        ElementBgHover = Color3.fromRGB(34, 52, 42),
+        TextMain = Color3.fromRGB(245, 255, 250),
+        TextMuted = Color3.fromRGB(145, 175, 160),
+        CircleOff = Color3.fromRGB(20, 32, 25),
+        CircleOffBorder = Color3.fromRGB(34, 58, 46),
     },
     ["Amber Gold"] = {
         Accent = Color3.fromRGB(255, 180, 35),
         AccentGradient = Color3.fromRGB(255, 205, 85),
         AccentDark = Color3.fromRGB(200, 130, 10),
-        BgMain = Color3.fromRGB(20, 17, 12),
-        BgMainGradient = Color3.fromRGB(26, 22, 15),
-        BgSidebar = Color3.fromRGB(15, 12, 8),
-        CardBg = Color3.fromRGB(27, 23, 16),
-        CardBgGradient = Color3.fromRGB(33, 28, 20),
-        CardBorder = Color3.fromRGB(58, 48, 28),
-        TextMain = Color3.fromRGB(255, 250, 240),
-        TextMuted = Color3.fromRGB(165, 150, 120),
-        CircleOff = Color3.fromRGB(32, 26, 18),
-        CircleOffBorder = Color3.fromRGB(58, 46, 30),
+        BgMain = Color3.fromRGB(18, 16, 13),
+        BgMainGradient = Color3.fromRGB(28, 24, 18),
+        BgSidebar = Color3.fromRGB(22, 19, 15),
+        CardBg = Color3.fromRGB(27, 23, 17),
+        CardBgGradient = Color3.fromRGB(36, 31, 23),
+        CardBorder = Color3.fromRGB(60, 50, 32),
+        ElementBg = Color3.fromRGB(38, 32, 23),
+        ElementBgHover = Color3.fromRGB(50, 42, 30),
+        TextMain = Color3.fromRGB(255, 250, 242),
+        TextMuted = Color3.fromRGB(180, 165, 140),
+        CircleOff = Color3.fromRGB(34, 28, 20),
+        CircleOffBorder = Color3.fromRGB(60, 48, 32),
     },
     ["Monochrome Slate"] = {
         Accent = Color3.fromRGB(210, 210, 225),
         AccentGradient = Color3.fromRGB(240, 240, 255),
         AccentDark = Color3.fromRGB(160, 160, 180),
-        BgMain = Color3.fromRGB(16, 16, 18),
-        BgMainGradient = Color3.fromRGB(21, 21, 24),
-        BgSidebar = Color3.fromRGB(12, 12, 14),
-        CardBg = Color3.fromRGB(22, 22, 25),
-        CardBgGradient = Color3.fromRGB(27, 27, 31),
-        CardBorder = Color3.fromRGB(42, 42, 50),
+        BgMain = Color3.fromRGB(16, 17, 20),
+        BgMainGradient = Color3.fromRGB(24, 26, 30),
+        BgSidebar = Color3.fromRGB(19, 21, 25),
+        CardBg = Color3.fromRGB(24, 26, 32),
+        CardBgGradient = Color3.fromRGB(32, 35, 42),
+        CardBorder = Color3.fromRGB(44, 48, 58),
+        ElementBg = Color3.fromRGB(34, 38, 48),
+        ElementBgHover = Color3.fromRGB(44, 48, 60),
         TextMain = Color3.fromRGB(250, 250, 255),
-        TextMuted = Color3.fromRGB(135, 135, 145),
-        CircleOff = Color3.fromRGB(26, 26, 30),
-        CircleOffBorder = Color3.fromRGB(46, 46, 54),
+        TextMuted = Color3.fromRGB(160, 165, 180),
+        CircleOff = Color3.fromRGB(28, 30, 38),
+        CircleOffBorder = Color3.fromRGB(48, 52, 64),
     }
 }
 
@@ -1739,24 +1755,20 @@ function NamelessWare:CreateWindow(config)
     WatermarkCorner.Parent = Watermark
 
     local WatermarkGrad = Instance.new("UIGradient")
-    local wGrad = THEME.BgMainGradient or Color3.fromRGB(26, 26, 36)
-    local wBase = THEME.BgMain or Color3.fromRGB(7, 7, 10)
-    local wMid = Color3.new(
-        wGrad.R * 0.45 + wBase.R * 0.55,
-        wGrad.G * 0.45 + wBase.G * 0.55,
-        wGrad.B * 0.45 + wBase.B * 0.55
-    )
+    local wGrad = THEME.BgMainGradient or Color3.fromRGB(24, 26, 32)
+    local wBase = THEME.BgMain or Color3.fromRGB(14, 15, 18)
     WatermarkGrad.Color = ColorSequence.new({
         ColorSequenceKeypoint.new(0, wGrad),
-        ColorSequenceKeypoint.new(0.5, wMid),
         ColorSequenceKeypoint.new(1, wBase)
     })
-    WatermarkGrad.Rotation = 45
+    WatermarkGrad.Rotation = 84
     WatermarkGrad.Parent = Watermark
 
     local WatermarkStroke = Instance.new("UIStroke")
     WatermarkStroke.Color = THEME.CardBorder
     WatermarkStroke.Thickness = 1
+    WatermarkStroke.Transparency = 0.4
+    WatermarkStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     WatermarkStroke.Parent = Watermark
 
     local WatermarkPadding = Instance.new("UIPadding")
@@ -2005,24 +2017,20 @@ function NamelessWare:CreateWindow(config)
     MainScale.Parent = MainWindow
 
     local MainGrad = Instance.new("UIGradient")
-    local bgGrad = THEME.BgMainGradient or Color3.fromRGB(26, 26, 36)
-    local bgBase = THEME.BgMain or Color3.fromRGB(7, 7, 10)
-    local midBg = Color3.new(
-        bgGrad.R * 0.45 + bgBase.R * 0.55,
-        bgGrad.G * 0.45 + bgBase.G * 0.55,
-        bgGrad.B * 0.45 + bgBase.B * 0.55
-    )
+    local bgGrad = THEME.BgMainGradient or Color3.fromRGB(24, 26, 32)
+    local bgBase = THEME.BgMain or Color3.fromRGB(14, 15, 18)
     MainGrad.Color = ColorSequence.new({
         ColorSequenceKeypoint.new(0, bgGrad),
-        ColorSequenceKeypoint.new(0.5, midBg),
         ColorSequenceKeypoint.new(1, bgBase)
     })
-    MainGrad.Rotation = 45
+    MainGrad.Rotation = 84
     MainGrad.Parent = MainWindow
 
     local MainStroke = Instance.new("UIStroke")
     MainStroke.Color = THEME.CardBorder
-    MainStroke.Thickness = 1.5
+    MainStroke.Thickness = 1.2
+    MainStroke.Transparency = 0.4
+    MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     MainStroke.Parent = MainWindow
 
     local Sidebar = Instance.new("Frame")
@@ -2038,15 +2046,17 @@ function NamelessWare:CreateWindow(config)
 
     local SidebarGrad = Instance.new("UIGradient")
     SidebarGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(21, 21, 30)),
-        ColorSequenceKeypoint.new(1, THEME.BgSidebar or Color3.fromRGB(6, 6, 8))
+        ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(30, 34, 42)),
+        ColorSequenceKeypoint.new(1, THEME.BgSidebar or Color3.fromRGB(17, 19, 23))
     })
-    SidebarGrad.Rotation = 45
+    SidebarGrad.Rotation = 84
     SidebarGrad.Parent = Sidebar
 
     local SidebarStroke = Instance.new("UIStroke")
     SidebarStroke.Color = THEME.CardBorder
     SidebarStroke.Thickness = 1
+    SidebarStroke.Transparency = 0.4
+    SidebarStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     SidebarStroke.Parent = Sidebar
 
     local BrandFrame = Instance.new("Frame")
@@ -2155,9 +2165,19 @@ function NamelessWare:CreateWindow(config)
     UserCardCorner.CornerRadius = UDim.new(0, 8)
     UserCardCorner.Parent = UserCard
 
+    local UserCardGrad = Instance.new("UIGradient")
+    UserCardGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(30, 34, 42)),
+        ColorSequenceKeypoint.new(1, THEME.CardBg or Color3.fromRGB(22, 25, 30))
+    })
+    UserCardGrad.Rotation = 84
+    UserCardGrad.Parent = UserCard
+
     local UserCardStroke = Instance.new("UIStroke")
     UserCardStroke.Color = THEME.CardBorder
     UserCardStroke.Thickness = 1
+    UserCardStroke.Transparency = 0.4
+    UserCardStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     UserCardStroke.Parent = UserCard
 
     local AvatarBox = Instance.new("Frame")
@@ -2184,6 +2204,8 @@ function NamelessWare:CreateWindow(config)
     local AvatarStroke = Instance.new("UIStroke")
     AvatarStroke.Color = THEME.CardBorder
     AvatarStroke.Thickness = 1
+    AvatarStroke.Transparency = 0.4
+    AvatarStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     AvatarStroke.Parent = AvatarBox
 
     local StatusDot = Instance.new("Frame")
@@ -2238,9 +2260,19 @@ function NamelessWare:CreateWindow(config)
     UserKeyCorner.CornerRadius = UDim.new(0, 6)
     UserKeyCorner.Parent = UserKeyBtn
 
+    local UserKeyGrad = Instance.new("UIGradient")
+    UserKeyGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(30, 34, 42)),
+        ColorSequenceKeypoint.new(1, THEME.BgSidebar or Color3.fromRGB(17, 19, 23))
+    })
+    UserKeyGrad.Rotation = 84
+    UserKeyGrad.Parent = UserKeyBtn
+
     local UserKeyStroke = Instance.new("UIStroke")
     UserKeyStroke.Color = THEME.CardBorder
     UserKeyStroke.Thickness = 1
+    UserKeyStroke.Transparency = 0.4
+    UserKeyStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     UserKeyStroke.Parent = UserKeyBtn
 
     local UserKeyIcon = Instance.new("ImageLabel")
@@ -2272,15 +2304,17 @@ function NamelessWare:CreateWindow(config)
 
     local KeyDropGrad = Instance.new("UIGradient")
     KeyDropGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(21, 21, 30)),
-        ColorSequenceKeypoint.new(1, THEME.BgSidebar or Color3.fromRGB(6, 6, 8))
+        ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(30, 34, 42)),
+        ColorSequenceKeypoint.new(1, THEME.BgSidebar or Color3.fromRGB(17, 19, 23))
     })
-    KeyDropGrad.Rotation = 45
+    KeyDropGrad.Rotation = 84
     KeyDropGrad.Parent = KeyDrop
 
     local KeyDropStroke = Instance.new("UIStroke")
     KeyDropStroke.Color = THEME.CardBorder
     KeyDropStroke.Thickness = 1.2
+    KeyDropStroke.Transparency = 0.4
+    KeyDropStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     KeyDropStroke.Parent = KeyDrop
 
     local KeyDropTitle = Instance.new("TextLabel")
@@ -2548,9 +2582,19 @@ function NamelessWare:CreateWindow(config)
     SearchCorner.CornerRadius = UDim.new(0, 6)
     SearchCorner.Parent = SearchContainer
 
+    local SearchGrad = Instance.new("UIGradient")
+    SearchGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(30, 34, 42)),
+        ColorSequenceKeypoint.new(1, THEME.CardBg or Color3.fromRGB(22, 25, 30))
+    })
+    SearchGrad.Rotation = 84
+    SearchGrad.Parent = SearchContainer
+
     local SearchStroke = Instance.new("UIStroke")
     SearchStroke.Color = THEME.CardBorder
     SearchStroke.Thickness = 1
+    SearchStroke.Transparency = 0.4
+    SearchStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     SearchStroke.Parent = SearchContainer
 
     local SearchIcon = Instance.new("ImageLabel")
@@ -2599,9 +2643,19 @@ function NamelessWare:CreateWindow(config)
     DeviceCorner.CornerRadius = UDim.new(0, 6)
     DeviceCorner.Parent = DeviceBadge
 
+    local DeviceGrad = Instance.new("UIGradient")
+    DeviceGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(30, 34, 42)),
+        ColorSequenceKeypoint.new(1, THEME.CardBg or Color3.fromRGB(22, 25, 30))
+    })
+    DeviceGrad.Rotation = 84
+    DeviceGrad.Parent = DeviceBadge
+
     local DeviceStroke = Instance.new("UIStroke")
     DeviceStroke.Color = THEME.CardBorder
     DeviceStroke.Thickness = 1
+    DeviceStroke.Transparency = 0.4
+    DeviceStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     DeviceStroke.Parent = DeviceBadge
 
     local DeviceIcon = Instance.new("ImageLabel")
@@ -3152,15 +3206,17 @@ function NamelessWare:CreateWindow(config)
 
             local CardGrad = Instance.new("UIGradient")
             CardGrad.Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, THEME.CardBgGradient),
-                ColorSequenceKeypoint.new(1, THEME.CardBg)
+                ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(30, 34, 42)),
+                ColorSequenceKeypoint.new(1, THEME.CardBg or Color3.fromRGB(22, 25, 30))
             })
-            CardGrad.Rotation = 90
+            CardGrad.Rotation = 84
             CardGrad.Parent = Card
 
             local CardStroke = Instance.new("UIStroke")
             CardStroke.Color = THEME.CardBorder
             CardStroke.Thickness = 1
+            CardStroke.Transparency = 0.4
+            CardStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
             CardStroke.Parent = Card
 
             local CardPadding = Instance.new("UIPadding")
@@ -3319,6 +3375,7 @@ function NamelessWare:CreateWindow(config)
                 Label.Font = THEME.FontMain
                 Label.TextSize = szItem
                 Label.TextColor3 = state and THEME.TextMain or THEME.TextMuted
+                Label.TextTransparency = state and 0 or 0.35
                 Label.TextXAlignment = Enum.TextXAlignment.Left
                 Label.Parent = Row
 
@@ -3355,12 +3412,22 @@ function NamelessWare:CreateWindow(config)
                     KeyBtn.Parent = RightHold
 
                     local KeyCorner = Instance.new("UICorner")
-                    KeyCorner.CornerRadius = UDim.new(0, 3)
+                    KeyCorner.CornerRadius = UDim.new(0, 4)
                     KeyCorner.Parent = KeyBtn
+
+                    local KeyGrad = Instance.new("UIGradient")
+                    KeyGrad.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(30, 34, 42)),
+                        ColorSequenceKeypoint.new(1, THEME.BgSidebar or Color3.fromRGB(17, 19, 23))
+                    })
+                    KeyGrad.Rotation = 84
+                    KeyGrad.Parent = KeyBtn
 
                     local KeyStroke = Instance.new("UIStroke")
                     KeyStroke.Color = THEME.CardBorder
                     KeyStroke.Thickness = 1
+                    KeyStroke.Transparency = 0.4
+                    KeyStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                     KeyStroke.Parent = KeyBtn
 
                     local function RegisterSelf()
@@ -3377,7 +3444,7 @@ function NamelessWare:CreateWindow(config)
                         if isBinding then return end
                         isBinding = true
                         KeyBtn.Text = "..."
-                        Tween(KeyStroke, {Color = THEME.Accent}, 0.15)
+                        Tween(KeyStroke, {Color = THEME.Accent, Transparency = 0.2}, 0.15)
                         Tween(KeyBtn, {TextColor3 = THEME.Accent}, 0.15)
 
                         local conn
@@ -3388,7 +3455,7 @@ function NamelessWare:CreateWindow(config)
                                 boundKey = input.KeyCode
                                 KeyBtn.Text = boundKey.Name
                                 KeyBtn.Size = UDim2.new(0, math.max(18, #boundKey.Name * 6 + 8), 0, 14)
-                                Tween(KeyStroke, {Color = THEME.CardBorder}, 0.15)
+                                Tween(KeyStroke, {Color = THEME.CardBorder, Transparency = 0.4}, 0.15)
                                 Tween(KeyBtn, {TextColor3 = THEME.TextMuted}, 0.15)
                                 NamelessWare:RegisterKeybind({
                                     Name = name,
@@ -3418,6 +3485,8 @@ function NamelessWare:CreateWindow(config)
                     local ColorStroke = Instance.new("UIStroke")
                     ColorStroke.Color = Color3.fromRGB(55, 55, 75)
                     ColorStroke.Thickness = 1
+                    ColorStroke.Transparency = 0.4
+                    ColorStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                     ColorStroke.Parent = ColorBox
                 end
 
@@ -3433,12 +3502,14 @@ function NamelessWare:CreateWindow(config)
 
                 local SwitchGrad = Instance.new("UIGradient")
                 SwitchGrad.Color = state and ColorSequence.new(THEME.AccentGradient, THEME.Accent) or ColorSequence.new(THEME.CircleOff, Color3.fromRGB(15, 15, 22))
-                SwitchGrad.Rotation = 45
+                SwitchGrad.Rotation = 84
                 SwitchGrad.Parent = Switch
 
                 local SwitchStroke = Instance.new("UIStroke")
                 SwitchStroke.Color = state and THEME.Accent or THEME.CircleOffBorder
                 SwitchStroke.Thickness = 1
+                SwitchStroke.Transparency = 0.4
+                SwitchStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                 SwitchStroke.Parent = Switch
 
                 local Knob = Instance.new("Frame")
@@ -3455,13 +3526,25 @@ function NamelessWare:CreateWindow(config)
 
                 local function UpdateState(val)
                     state = val
-                    Tween(Label, {TextColor3 = state and THEME.TextMain or THEME.TextMuted}, 0.15)
+                    Tween(Label, {TextColor3 = state and THEME.TextMain or THEME.TextMuted, TextTransparency = state and 0 or 0.35}, 0.15)
                     SwitchGrad.Color = state and ColorSequence.new(THEME.AccentGradient, THEME.Accent) or ColorSequence.new(THEME.CircleOff, Color3.fromRGB(15, 15, 22))
                     Tween(SwitchStroke, {Color = state and THEME.Accent or THEME.CircleOffBorder}, 0.15)
                     Tween(Knob, {Position = state and UDim2.new(1, -8, 0.5, 0) or UDim2.new(0, 8, 0.5, 0)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
                     callback(state)
                     NamelessWare:UpdateKeybindsHud()
                 end
+
+                Row.MouseEnter:Connect(function()
+                    if not state then
+                        Tween(Label, {TextTransparency = 0.15, TextColor3 = THEME.TextMain}, 0.15)
+                    end
+                end)
+
+                Row.MouseLeave:Connect(function()
+                    if not state then
+                        Tween(Label, {TextTransparency = 0.35, TextColor3 = THEME.TextMuted}, 0.15)
+                    end
+                end)
 
                 Row.MouseButton1Click:Connect(function()
                     UpdateState(not state)
@@ -3475,6 +3558,7 @@ function NamelessWare:CreateWindow(config)
 
                 table.insert(NamelessWare.ThemeSubscribers, function(theme)
                     Label.TextColor3 = state and theme.TextMain or theme.TextMuted
+                    Label.TextTransparency = state and 0 or 0.35
                     SwitchGrad.Color = state and ColorSequence.new(theme.AccentGradient, theme.Accent) or ColorSequence.new(theme.CircleOff, Color3.fromRGB(15, 15, 22))
                     SwitchStroke.Color = state and theme.Accent or theme.CircleOffBorder
                     if KeyBtn then
@@ -3518,6 +3602,7 @@ function NamelessWare:CreateWindow(config)
                 TopLabel.Font = THEME.FontMain
                 TopLabel.TextSize = szItem
                 TopLabel.TextColor3 = THEME.TextMain
+                TopLabel.TextTransparency = 0.15
                 TopLabel.TextXAlignment = Enum.TextXAlignment.Left
                 TopLabel.Parent = Frame
 
@@ -3532,9 +3617,19 @@ function NamelessWare:CreateWindow(config)
                 ValBoxCorner.CornerRadius = UDim.new(0, 4)
                 ValBoxCorner.Parent = ValBox
 
+                local ValBoxGrad = Instance.new("UIGradient")
+                ValBoxGrad.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(30, 34, 42)),
+                    ColorSequenceKeypoint.new(1, THEME.BgSidebar or Color3.fromRGB(17, 19, 23))
+                })
+                ValBoxGrad.Rotation = 84
+                ValBoxGrad.Parent = ValBox
+
                 local ValBoxStroke = Instance.new("UIStroke")
                 ValBoxStroke.Color = THEME.CardBorder
                 ValBoxStroke.Thickness = 1
+                ValBoxStroke.Transparency = 0.4
+                ValBoxStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                 ValBoxStroke.Parent = ValBox
 
                 local ValLabel = Instance.new("TextLabel")
@@ -3549,7 +3644,7 @@ function NamelessWare:CreateWindow(config)
                 ValLabel.Parent = ValBox
 
                 local Track = Instance.new("Frame")
-                Track.Size = UDim2.new(1, 0, 0, 5)
+                Track.Size = UDim2.new(1, 0, 0, 6)
                 Track.Position = UDim2.new(0, 0, 0, 20)
                 Track.BackgroundColor3 = THEME.BgSidebar
                 Track.BorderSizePixel = 0
@@ -3564,8 +3659,15 @@ function NamelessWare:CreateWindow(config)
                     ColorSequenceKeypoint.new(0, THEME.CardBgGradient or THEME.BgSidebar),
                     ColorSequenceKeypoint.new(1, THEME.BgSidebar)
                 })
-                TrackGrad.Rotation = 45
+                TrackGrad.Rotation = 84
                 TrackGrad.Parent = Track
+
+                local TrackStroke = Instance.new("UIStroke")
+                TrackStroke.Color = THEME.CardBorder
+                TrackStroke.Thickness = 1
+                TrackStroke.Transparency = 0.4
+                TrackStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                TrackStroke.Parent = Track
 
                 local startPercent = math.clamp((value - min) / ((max > min and (max - min)) or 1), 0, 1)
 
@@ -3584,7 +3686,7 @@ function NamelessWare:CreateWindow(config)
                     ColorSequenceKeypoint.new(0, THEME.AccentGradient),
                     ColorSequenceKeypoint.new(1, THEME.Accent)
                 })
-                FillGrad.Rotation = 45
+                FillGrad.Rotation = 84
                 FillGrad.Parent = Fill
 
                 local Dot = Instance.new("Frame")
@@ -3714,6 +3816,7 @@ function NamelessWare:CreateWindow(config)
                 Title.Font = THEME.FontMain
                 Title.TextSize = szSubHeader
                 Title.TextColor3 = THEME.TextMuted
+                Title.TextTransparency = 0.35
                 Title.TextXAlignment = Enum.TextXAlignment.Left
                 Title.ZIndex = 1
                 Title.Parent = DropFrame
@@ -3733,15 +3836,17 @@ function NamelessWare:CreateWindow(config)
 
                 local DropBtnGrad = Instance.new("UIGradient")
                 DropBtnGrad.Color = ColorSequence.new({
-                    ColorSequenceKeypoint.new(0, THEME.CardBgGradient or THEME.BgSidebar),
-                    ColorSequenceKeypoint.new(1, THEME.BgSidebar)
+                    ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(30, 34, 42)),
+                    ColorSequenceKeypoint.new(1, THEME.BgSidebar or Color3.fromRGB(17, 19, 23))
                 })
-                DropBtnGrad.Rotation = 90
+                DropBtnGrad.Rotation = 84
                 DropBtnGrad.Parent = DropBtn
 
                 local DropStroke = Instance.new("UIStroke")
                 DropStroke.Color = THEME.CardBorder
                 DropStroke.Thickness = 1
+                DropStroke.Transparency = 0.4
+                DropStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                 DropStroke.Parent = DropBtn
 
                 local SelLabel = Instance.new("TextLabel")
@@ -3768,15 +3873,17 @@ function NamelessWare:CreateWindow(config)
 
                 DropBtn.MouseEnter:Connect(function()
                     if not isOpen then
-                        Tween(DropStroke, {Color = THEME.Accent}, 0.15)
+                        Tween(DropStroke, {Color = THEME.Accent, Transparency = 0.2}, 0.15)
                         Tween(Arrow, {ImageColor3 = THEME.Accent}, 0.15)
+                        Tween(Title, {TextTransparency = 0.1}, 0.15)
                     end
                 end)
 
                 DropBtn.MouseLeave:Connect(function()
                     if not isOpen then
-                        Tween(DropStroke, {Color = THEME.CardBorder}, 0.15)
+                        Tween(DropStroke, {Color = THEME.CardBorder, Transparency = 0.4}, 0.15)
                         Tween(Arrow, {ImageColor3 = THEME.TextMuted}, 0.15)
+                        Tween(Title, {TextTransparency = 0.35}, 0.15)
                     end
                 end)
 
@@ -3797,15 +3904,17 @@ function NamelessWare:CreateWindow(config)
 
                 local MenuListGrad = Instance.new("UIGradient")
                 MenuListGrad.Color = ColorSequence.new({
-                    ColorSequenceKeypoint.new(0, THEME.CardBgGradient or THEME.CardBg),
-                    ColorSequenceKeypoint.new(1, THEME.BgSidebar or THEME.CardBg)
+                    ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(30, 34, 42)),
+                    ColorSequenceKeypoint.new(1, THEME.BgSidebar or Color3.fromRGB(17, 19, 23))
                 })
-                MenuListGrad.Rotation = 45
+                MenuListGrad.Rotation = 84
                 MenuListGrad.Parent = MenuList
 
                 local MenuStroke = Instance.new("UIStroke")
                 MenuStroke.Color = THEME.Accent
                 MenuStroke.Thickness = 1.2
+                MenuStroke.Transparency = 0.35
+                MenuStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                 MenuStroke.Parent = MenuList
 
                 local MenuScroll = Instance.new("ScrollingFrame")
@@ -4032,6 +4141,7 @@ function NamelessWare:CreateWindow(config)
                 Title.Font = THEME.FontMain
                 Title.TextSize = szSubHeader
                 Title.TextColor3 = THEME.TextMuted
+                Title.TextTransparency = 0.35
                 Title.TextXAlignment = Enum.TextXAlignment.Left
                 Title.Parent = Frame
 
@@ -4046,9 +4156,19 @@ function NamelessWare:CreateWindow(config)
                 BoxCorner.CornerRadius = UDim.new(0, 6)
                 BoxCorner.Parent = BoxContainer
 
+                local BoxGrad = Instance.new("UIGradient")
+                BoxGrad.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(30, 34, 42)),
+                    ColorSequenceKeypoint.new(1, THEME.BgSidebar or Color3.fromRGB(17, 19, 23))
+                })
+                BoxGrad.Rotation = 84
+                BoxGrad.Parent = BoxContainer
+
                 local BoxStroke = Instance.new("UIStroke")
                 BoxStroke.Color = THEME.CardBorder
                 BoxStroke.Thickness = 1
+                BoxStroke.Transparency = 0.4
+                BoxStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                 BoxStroke.Parent = BoxContainer
 
                 local Input = Instance.new("TextBox")
@@ -4645,7 +4765,7 @@ function NamelessWare:CreateWindow(config)
                 Btn.Size = UDim2.new(1, 0, 0, 28)
                 Btn.BackgroundColor3 = THEME.BgSidebar
                 Btn.Text = text
-                Btn.Font = THEME.FontMain
+                Btn.Font = THEME.FontBold
                 Btn.TextSize = szItem
                 Btn.TextColor3 = THEME.TextMain
                 Btn.AutoButtonColor = false
@@ -4653,33 +4773,47 @@ function NamelessWare:CreateWindow(config)
                 table.insert(RegisteredItems, {Name = text, Element = Btn, Card = Card})
 
                 local BtnCorner = Instance.new("UICorner")
-                BtnCorner.CornerRadius = UDim.new(0, 7)
+                BtnCorner.CornerRadius = UDim.new(0, 6)
                 BtnCorner.Parent = Btn
+
+                local BtnGrad = Instance.new("UIGradient")
+                BtnGrad.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(30, 34, 42)),
+                    ColorSequenceKeypoint.new(1, THEME.BgSidebar or Color3.fromRGB(17, 19, 23))
+                })
+                BtnGrad.Rotation = 84
+                BtnGrad.Parent = Btn
 
                 local BtnStroke = Instance.new("UIStroke")
                 BtnStroke.Color = THEME.CardBorder
                 BtnStroke.Thickness = 1
+                BtnStroke.Transparency = 0.4
+                BtnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                 BtnStroke.Parent = Btn
 
                 Btn.MouseEnter:Connect(function()
-                    Tween(Btn, {BackgroundColor3 = THEME.CardBg}, 0.2)
-                    Tween(BtnStroke, {Color = THEME.Accent}, 0.2)
+                    Tween(BtnStroke, {Color = THEME.Accent, Transparency = 0.2}, 0.15)
+                    Tween(Btn, {TextColor3 = THEME.Accent}, 0.15)
                 end)
 
                 Btn.MouseLeave:Connect(function()
-                    Tween(Btn, {BackgroundColor3 = THEME.BgSidebar}, 0.2)
-                    Tween(BtnStroke, {Color = THEME.CardBorder}, 0.2)
+                    Tween(BtnStroke, {Color = THEME.CardBorder, Transparency = 0.4}, 0.15)
+                    Tween(Btn, {TextColor3 = THEME.TextMain}, 0.15)
                 end)
 
                 Btn.MouseButton1Click:Connect(function()
-                    Tween(Btn, {BackgroundColor3 = THEME.Accent}, 0.1)
-                    task.wait(0.1)
-                    Tween(Btn, {BackgroundColor3 = THEME.BgSidebar}, 0.2)
+                    Tween(Btn, {BackgroundColor3 = THEME.Accent}, 0.08)
+                    task.wait(0.08)
+                    Tween(Btn, {BackgroundColor3 = THEME.BgSidebar}, 0.18)
                     callback()
                 end)
 
                 table.insert(NamelessWare.ThemeSubscribers, function(theme)
                     Btn.BackgroundColor3 = theme.BgSidebar
+                    BtnGrad.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0, theme.CardBgGradient or Color3.fromRGB(30, 34, 42)),
+                        ColorSequenceKeypoint.new(1, theme.BgSidebar or Color3.fromRGB(17, 19, 23))
+                    })
                     Btn.TextColor3 = theme.TextMain
                     BtnStroke.Color = theme.CardBorder
                 end)
