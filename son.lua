@@ -477,30 +477,36 @@ function NamelessWare:SetCardTransparency(alpha)
     end
 end
 
+local function SafeGetFont(name, fallback)
+    fallback = fallback or Enum.Font.GothamMedium
+    local success, result = pcall(function()
+        return Enum.Font[name]
+    end)
+    return (success and result) or fallback
+end
+
 local FONT_MAP = {
-    ["Gotham (Default)"] = { Main = Enum.Font.GothamMedium, Bold = Enum.Font.GothamBold },
-    ["Montserrat"] = { Main = Enum.Font.Montserrat, Bold = Enum.Font.MontserratBold },
-    ["Ubuntu"] = { Main = Enum.Font.Ubuntu, Bold = Enum.Font.UbuntuBold },
-    ["SourceSans"] = { Main = Enum.Font.SourceSans, Bold = Enum.Font.SourceSansBold },
-    ["Roboto"] = { Main = Enum.Font.Roboto, Bold = Enum.Font.RobotoBold },
-    ["RobotoCondensed"] = { Main = Enum.Font.RobotoCondensed, Bold = Enum.Font.RobotoCondensedBold },
-    ["RobotoMono (Code)"] = { Main = Enum.Font.RobotoMono, Bold = Enum.Font.RobotoMono },
-    ["JosefinSans"] = { Main = Enum.Font.JosefinSans, Bold = Enum.Font.JosefinSansBold },
-    ["Nunito"] = { Main = Enum.Font.Nunito, Bold = Enum.Font.NunitoBold },
-    ["Oswald"] = { Main = Enum.Font.Oswald, Bold = Enum.Font.OswaldBold },
-    ["BuilderSans"] = { Main = Enum.Font.BuilderSansMedium, Bold = Enum.Font.BuilderSansBold },
-    ["FredokaOne"] = { Main = Enum.Font.FredokaOne, Bold = Enum.Font.FredokaOne },
-    ["LuckiestGuy"] = { Main = Enum.Font.LuckiestGuy, Bold = Enum.Font.LuckiestGuy },
-    ["AmaticSC"] = { Main = Enum.Font.AmaticSC, Bold = Enum.Font.AmaticSC },
-    ["SciFi"] = { Main = Enum.Font.SciFi, Bold = Enum.Font.SciFi },
-    ["Code"] = { Main = Enum.Font.Code, Bold = Enum.Font.Code },
-    ["Arcade"] = { Main = Enum.Font.Arcade, Bold = Enum.Font.Arcade },
-    ["Sarpanch"] = { Main = Enum.Font.Sarpanch, Bold = Enum.Font.SarpanchBold },
-    ["DenkOne"] = { Main = Enum.Font.DenkOne, Bold = Enum.Font.DenkOne },
-    ["Michroma"] = { Main = Enum.Font.Michroma, Bold = Enum.Font.Michroma },
-    ["Creepster"] = { Main = Enum.Font.Creepster, Bold = Enum.Font.Creepster },
-    ["SpecialElite"] = { Main = Enum.Font.SpecialElite, Bold = Enum.Font.SpecialElite },
-    ["Fondamento"] = { Main = Enum.Font.Fondamento, Bold = Enum.Font.Fondamento }
+    ["Gotham (Default)"] = { Main = SafeGetFont("GothamMedium", Enum.Font.Gotham), Bold = SafeGetFont("GothamBold", Enum.Font.GothamBold) },
+    ["Gotham Semibold"]  = { Main = SafeGetFont("GothamSemibold", Enum.Font.Gotham), Bold = SafeGetFont("GothamBlack", Enum.Font.GothamBold) },
+    ["Montserrat"]       = { Main = SafeGetFont("MontserratMedium", SafeGetFont("Montserrat")), Bold = SafeGetFont("MontserratBold", SafeGetFont("Montserrat")) },
+    ["Ubuntu"]           = { Main = SafeGetFont("Ubuntu"), Bold = SafeGetFont("UbuntuBold", SafeGetFont("Ubuntu")) },
+    ["SourceSans"]       = { Main = SafeGetFont("SourceSans"), Bold = SafeGetFont("SourceSansBold", SafeGetFont("SourceSans")) },
+    ["Roboto"]           = { Main = SafeGetFont("Roboto"), Bold = SafeGetFont("RobotoBold", SafeGetFont("Roboto")) },
+    ["RobotoCondensed"]  = { Main = SafeGetFont("RobotoCondensed"), Bold = SafeGetFont("RobotoCondensedBold", SafeGetFont("RobotoCondensed")) },
+    ["RobotoMono (Code)"] = { Main = SafeGetFont("RobotoMono"), Bold = SafeGetFont("RobotoMono") },
+    ["JosefinSans"]      = { Main = SafeGetFont("JosefinSans"), Bold = SafeGetFont("JosefinSansBold", SafeGetFont("JosefinSans")) },
+    ["Nunito"]           = { Main = SafeGetFont("Nunito"), Bold = SafeGetFont("NunitoBold", SafeGetFont("Nunito")) },
+    ["Oswald"]           = { Main = SafeGetFont("Oswald"), Bold = SafeGetFont("OswaldBold", SafeGetFont("Oswald")) },
+    ["FredokaOne"]       = { Main = SafeGetFont("FredokaOne"), Bold = SafeGetFont("FredokaOne") },
+    ["LuckiestGuy"]      = { Main = SafeGetFont("LuckiestGuy"), Bold = SafeGetFont("LuckiestGuy") },
+    ["AmaticSC"]         = { Main = SafeGetFont("AmaticSC"), Bold = SafeGetFont("AmaticSC") },
+    ["SciFi"]            = { Main = SafeGetFont("SciFi"), Bold = SafeGetFont("SciFi") },
+    ["Code"]             = { Main = SafeGetFont("Code"), Bold = SafeGetFont("Code") },
+    ["Arcade"]           = { Main = SafeGetFont("Arcade"), Bold = SafeGetFont("Arcade") },
+    ["DenkOne"]          = { Main = SafeGetFont("DenkOne"), Bold = SafeGetFont("DenkOne") },
+    ["Creepster"]        = { Main = SafeGetFont("Creepster"), Bold = SafeGetFont("Creepster") },
+    ["SpecialElite"]     = { Main = SafeGetFont("SpecialElite"), Bold = SafeGetFont("SpecialElite") },
+    ["Fondamento"]       = { Main = SafeGetFont("Fondamento"), Bold = SafeGetFont("Fondamento") }
 }
 
 function NamelessWare:SetFontByName(fontName)
@@ -512,7 +518,7 @@ function NamelessWare:SetFontByName(fontName)
             if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
                 pcall(function()
                     local fontStr = tostring(obj.Font.Name or "")
-                    if string.find(fontStr, "Bold") then
+                    if string.find(fontStr, "Bold") or string.find(fontStr, "Black") then
                         obj.Font = THEME.FontBold
                     else
                         obj.Font = THEME.FontMain
@@ -824,6 +830,7 @@ function ThemeManager:BuildThemeSection(Section)
 
     local fontNames = {
         "Gotham (Default)",
+        "Gotham Semibold",
         "Montserrat",
         "Ubuntu",
         "SourceSans",
@@ -833,16 +840,13 @@ function ThemeManager:BuildThemeSection(Section)
         "JosefinSans",
         "Nunito",
         "Oswald",
-        "BuilderSans",
         "FredokaOne",
         "LuckiestGuy",
         "AmaticSC",
         "SciFi",
         "Code",
         "Arcade",
-        "Sarpanch",
         "DenkOne",
-        "Michroma",
         "Creepster",
         "SpecialElite",
         "Fondamento"
@@ -1457,6 +1461,7 @@ function SettingsManager:BuildSettingsSection(Section)
 
     local fontNames = {
         "Gotham (Default)",
+        "Gotham Semibold",
         "Montserrat",
         "Ubuntu",
         "SourceSans",
@@ -1466,16 +1471,13 @@ function SettingsManager:BuildSettingsSection(Section)
         "JosefinSans",
         "Nunito",
         "Oswald",
-        "BuilderSans",
         "FredokaOne",
         "LuckiestGuy",
         "AmaticSC",
         "SciFi",
         "Code",
         "Arcade",
-        "Sarpanch",
         "DenkOne",
-        "Michroma",
         "Creepster",
         "SpecialElite",
         "Fondamento"
