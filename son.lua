@@ -257,6 +257,9 @@ local NamelessWare = {
     ThemeSubscribers = {},
     KeybindRegistry = {},
     KeybindElements = {},
+    CardElements = {},
+    Transparency = 0,
+    CardTransparency = 0,
     ShowKeybinds = true,
     ShowKeybindsHud = false,
     KeybindHUD = nil,
@@ -435,6 +438,35 @@ function NamelessWare:SetKeybindsHud(visible)
         if self.KeybindHUD then
             self.KeybindHUD.Visible = false
         end
+    end
+end
+
+function NamelessWare:SetTransparency(alpha)
+    self.Transparency = math.clamp(alpha or 0, 0, 0.95)
+    if self.ActiveWindow then
+        if self.ActiveWindow.MainWindow then
+            self.ActiveWindow.MainWindow.BackgroundTransparency = self.Transparency
+        end
+        if self.ActiveWindow.Sidebar then
+            self.ActiveWindow.Sidebar.BackgroundTransparency = math.clamp(self.Transparency * 0.9, 0, 0.95)
+        end
+        if self.ActiveWindow.UserCard then
+            self.ActiveWindow.UserCard.BackgroundTransparency = math.clamp(self.Transparency * 0.8, 0, 0.95)
+        end
+        if self.ActiveWindow.SearchContainer then
+            self.ActiveWindow.SearchContainer.BackgroundTransparency = math.clamp(self.Transparency * 0.8, 0, 0.95)
+        end
+    end
+end
+
+function NamelessWare:SetCardTransparency(alpha)
+    self.CardTransparency = math.clamp(alpha or 0, 0, 0.95)
+    for _, card in ipairs(self.CardElements) do
+        pcall(function()
+            if card and card.IsA and card:IsA("GuiObject") then
+                card.BackgroundTransparency = self.CardTransparency
+            end
+        end)
     end
 end
 
@@ -1277,6 +1309,30 @@ function SettingsManager:BuildSettingsSection(Section)
         end
     })
 
+    Section:AddSubHeader("Appearance & Transparency", "rbxassetid://10734950309")
+
+    Section:AddSlider({
+        Name = "Menu Transparency",
+        Min = 0,
+        Max = 85,
+        Default = math.floor((NamelessWare.Transparency or 0) * 100),
+        Suffix = "%",
+        Callback = function(val)
+            NamelessWare:SetTransparency(val / 100)
+        end
+    })
+
+    Section:AddSlider({
+        Name = "Cards Transparency",
+        Min = 0,
+        Max = 80,
+        Default = math.floor((NamelessWare.CardTransparency or 0) * 100),
+        Suffix = "%",
+        Callback = function(val)
+            NamelessWare:SetCardTransparency(val / 100)
+        end
+    })
+
     Section:AddSubHeader("Actions", "rbxassetid://10734950309")
 
     Section:AddButton({
@@ -1870,6 +1926,9 @@ function NamelessWare:CreateWindow(config)
         ScreenGui = ScreenGui,
         MainWindow = MainWindow,
         MobileBtn = MobileBtn,
+        Sidebar = Sidebar,
+        UserCard = UserCard,
+        SearchContainer = SearchContainer,
         NavScroll = NavScroll,
         ContentArea = ContentArea,
         Tabs = {}
@@ -2083,7 +2142,9 @@ function NamelessWare:CreateWindow(config)
             Card.ClipsDescendants = false
             Card.ZIndex = 1
             Card.Parent = ColumnsHolder
+            Card.BackgroundTransparency = NamelessWare.CardTransparency or 0
             table.insert(RegisteredCards, Card)
+            table.insert(NamelessWare.CardElements, Card)
 
             local CardCorner = Instance.new("UICorner")
             CardCorner.CornerRadius = UDim.new(0, 10)
