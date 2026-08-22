@@ -1596,8 +1596,8 @@ function NamelessWare:CreateWindow(config)
 
     local MainWindow = Instance.new("Frame")
     MainWindow.Name = "MainWindow"
-    MainWindow.Size = UDim2.new(0, 600, 0, 445)
-    MainWindow.Position = UDim2.new(0.5, -300, 0.5, -222)
+    MainWindow.Size = UDim2.new(0, 560, 0, 415)
+    MainWindow.Position = UDim2.new(0.5, -280, 0.5, -207)
     MainWindow.BackgroundColor3 = THEME.BgMain
     MainWindow.BorderSizePixel = 0
     MainWindow.ClipsDescendants = false
@@ -1608,11 +1608,19 @@ function NamelessWare:CreateWindow(config)
     MainCorner.Parent = MainWindow
 
     local MainGrad = Instance.new("UIGradient")
+    local bgGrad = THEME.BgMainGradient or Color3.fromRGB(24, 24, 34)
+    local bgBase = THEME.BgMain or Color3.fromRGB(8, 8, 12)
+    local midBg = Color3.new(
+        bgGrad.R * 0.45 + bgBase.R * 0.55,
+        bgGrad.G * 0.45 + bgBase.G * 0.55,
+        bgGrad.B * 0.45 + bgBase.B * 0.55
+    )
     MainGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, THEME.BgMainGradient),
-        ColorSequenceKeypoint.new(1, THEME.BgMain)
+        ColorSequenceKeypoint.new(0, bgGrad),
+        ColorSequenceKeypoint.new(0.5, midBg),
+        ColorSequenceKeypoint.new(1, bgBase)
     })
-    MainGrad.Rotation = 90
+    MainGrad.Rotation = 45
     MainGrad.Parent = MainWindow
 
     local MainStroke = Instance.new("UIStroke")
@@ -1622,7 +1630,7 @@ function NamelessWare:CreateWindow(config)
 
     local Sidebar = Instance.new("Frame")
     Sidebar.Name = "Sidebar"
-    Sidebar.Size = UDim2.new(0, 155, 1, 0)
+    Sidebar.Size = UDim2.new(0, 145, 1, 0)
     Sidebar.BackgroundColor3 = THEME.BgSidebar
     Sidebar.BorderSizePixel = 0
     Sidebar.Parent = MainWindow
@@ -1817,8 +1825,8 @@ function NamelessWare:CreateWindow(config)
 
     local HeaderFrame = Instance.new("Frame")
     HeaderFrame.Name = "HeaderFrame"
-    HeaderFrame.Size = UDim2.new(1, -165, 0, 48)
-    HeaderFrame.Position = UDim2.new(0, 160, 0, 4)
+    HeaderFrame.Size = UDim2.new(1, -155, 0, 48)
+    HeaderFrame.Position = UDim2.new(0, 150, 0, 4)
     HeaderFrame.BackgroundTransparency = 1
     HeaderFrame.Parent = MainWindow
 
@@ -2010,8 +2018,8 @@ function NamelessWare:CreateWindow(config)
 
     local ContentArea = Instance.new("Frame")
     ContentArea.Name = "ContentArea"
-    ContentArea.Size = UDim2.new(1, -165, 1, -58)
-    ContentArea.Position = UDim2.new(0, 160, 0, 52)
+    ContentArea.Size = UDim2.new(1, -155, 1, -58)
+    ContentArea.Position = UDim2.new(0, 150, 0, 52)
     ContentArea.BackgroundTransparency = 1
     ContentArea.Parent = MainWindow
 
@@ -2022,13 +2030,13 @@ function NamelessWare:CreateWindow(config)
         isUIOpen = not isUIOpen
         if isUIOpen then
             MainWindow.Visible = true
-            MainWindow.Position = UDim2.new(0.5, -300, 0.5, -200)
-            Tween(MainWindow, {Position = UDim2.new(0.5, -300, 0.5, -222)}, 0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            MainWindow.Position = UDim2.new(0.5, -280, 0.5, -185)
+            Tween(MainWindow, {Position = UDim2.new(0.5, -280, 0.5, -207)}, 0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
         else
             if ActiveDropdown then
                 ActiveDropdown()
             end
-            local tw = Tween(MainWindow, {Position = UDim2.new(0.5, -300, 0.5, -200)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+            local tw = Tween(MainWindow, {Position = UDim2.new(0.5, -280, 0.5, -185)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
             tw.Completed:Connect(function()
                 if not isUIOpen then MainWindow.Visible = false end
             end)
@@ -2546,8 +2554,8 @@ function NamelessWare:CreateWindow(config)
                 end
 
                 local Switch = Instance.new("Frame")
-                Switch.Size = UDim2.new(0, 32, 0, 18)
-                Switch.BackgroundColor3 = state and THEME.Accent or THEME.CircleOff
+                Switch.Size = UDim2.new(0, 28, 0, 15)
+                Switch.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 Switch.BorderSizePixel = 0
                 Switch.Parent = RightHold
 
@@ -2560,9 +2568,14 @@ function NamelessWare:CreateWindow(config)
                 SwitchStroke.Thickness = 1
                 SwitchStroke.Parent = Switch
 
+                local SwitchGrad = Instance.new("UIGradient")
+                SwitchGrad.Color = state and ColorSequence.new(THEME.AccentGradient, THEME.Accent) or ColorSequence.new(THEME.CircleOff, Color3.fromRGB(15, 15, 22))
+                SwitchGrad.Rotation = 45
+                SwitchGrad.Parent = Switch
+
                 local Knob = Instance.new("Frame")
-                Knob.Size = UDim2.new(0, 14, 0, 14)
-                Knob.Position = state and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)
+                Knob.Size = UDim2.new(0, 11, 0, 11)
+                Knob.Position = state and UDim2.new(1, -13, 0.5, -5.5) or UDim2.new(0, 2, 0.5, -5.5)
                 Knob.BackgroundColor3 = Color3.fromRGB(245, 245, 255)
                 Knob.BorderSizePixel = 0
                 Knob.Parent = Switch
@@ -2574,9 +2587,9 @@ function NamelessWare:CreateWindow(config)
                 local function UpdateState(val)
                     state = val
                     Tween(Label, {TextColor3 = state and THEME.TextMain or THEME.TextMuted}, 0.15)
-                    Tween(Switch, {BackgroundColor3 = state and THEME.Accent or THEME.CircleOff}, 0.15)
+                    SwitchGrad.Color = state and ColorSequence.new(THEME.AccentGradient, THEME.Accent) or ColorSequence.new(THEME.CircleOff, Color3.fromRGB(15, 15, 22))
                     Tween(SwitchStroke, {Color = state and THEME.Accent or THEME.CircleOffBorder}, 0.15)
-                    Tween(Knob, {Position = state and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+                    Tween(Knob, {Position = state and UDim2.new(1, -13, 0.5, -5.5) or UDim2.new(0, 2, 0.5, -5.5)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
                     callback(state)
                     NamelessWare:UpdateKeybindsHud()
                 end
@@ -2593,7 +2606,7 @@ function NamelessWare:CreateWindow(config)
 
                 table.insert(NamelessWare.ThemeSubscribers, function(theme)
                     Label.TextColor3 = state and theme.TextMain or theme.TextMuted
-                    Switch.BackgroundColor3 = state and theme.Accent or theme.CircleOff
+                    SwitchGrad.Color = state and ColorSequence.new(theme.AccentGradient, theme.Accent) or ColorSequence.new(theme.CircleOff, Color3.fromRGB(15, 15, 22))
                     SwitchStroke.Color = state and theme.Accent or theme.CircleOffBorder
                     if KeyBtn then
                         KeyBtn.BackgroundColor3 = theme.BgSidebar
@@ -2623,13 +2636,13 @@ function NamelessWare:CreateWindow(config)
                 local value = def
 
                 local Frame = Instance.new("Frame")
-                Frame.Size = UDim2.new(1, 0, 0, 36)
+                Frame.Size = UDim2.new(1, 0, 0, 32)
                 Frame.BackgroundTransparency = 1
                 Frame.Parent = Card
                 table.insert(RegisteredItems, {Name = name, Element = Frame, Card = Card})
 
                 local TopLabel = Instance.new("TextLabel")
-                TopLabel.Size = UDim2.new(1, -55, 0, 16)
+                TopLabel.Size = UDim2.new(1, -48, 0, 14)
                 TopLabel.Position = UDim2.new(0, 0, 0, 0)
                 TopLabel.BackgroundTransparency = 1
                 TopLabel.Text = name
@@ -2640,8 +2653,8 @@ function NamelessWare:CreateWindow(config)
                 TopLabel.Parent = Frame
 
                 local ValBox = Instance.new("Frame")
-                ValBox.Size = UDim2.new(0, 48, 0, 16)
-                ValBox.Position = UDim2.new(1, -48, 0, 0)
+                ValBox.Size = UDim2.new(0, 42, 0, 14)
+                ValBox.Position = UDim2.new(1, -42, 0, 0)
                 ValBox.BackgroundColor3 = THEME.BgSidebar
                 ValBox.BorderSizePixel = 0
                 ValBox.Parent = Frame
@@ -2661,14 +2674,14 @@ function NamelessWare:CreateWindow(config)
                 ValLabel.BackgroundTransparency = 1
                 ValLabel.Text = tostring(value) .. suffix
                 ValLabel.Font = THEME.FontBold
-                ValLabel.TextSize = 10
+                ValLabel.TextSize = 9
                 ValLabel.TextColor3 = THEME.TextMuted
                 ValLabel.TextXAlignment = Enum.TextXAlignment.Center
                 ValLabel.Parent = ValBox
 
                 local Track = Instance.new("Frame")
-                Track.Size = UDim2.new(1, 0, 0, 6)
-                Track.Position = UDim2.new(0, 0, 0, 24)
+                Track.Size = UDim2.new(1, 0, 0, 5)
+                Track.Position = UDim2.new(0, 0, 0, 20)
                 Track.BackgroundColor3 = THEME.BgSidebar
                 Track.BorderSizePixel = 0
                 Track.Parent = Frame
@@ -2676,6 +2689,14 @@ function NamelessWare:CreateWindow(config)
                 local TrackCorner = Instance.new("UICorner")
                 TrackCorner.CornerRadius = UDim.new(1, 0)
                 TrackCorner.Parent = Track
+
+                local TrackGrad = Instance.new("UIGradient")
+                TrackGrad.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, THEME.CardBgGradient or THEME.BgSidebar),
+                    ColorSequenceKeypoint.new(1, THEME.BgSidebar)
+                })
+                TrackGrad.Rotation = 45
+                TrackGrad.Parent = Track
 
                 local startPercent = math.clamp((value - min) / ((max > min and (max - min)) or 1), 0, 1)
 
@@ -2694,13 +2715,14 @@ function NamelessWare:CreateWindow(config)
                     ColorSequenceKeypoint.new(0, THEME.AccentGradient),
                     ColorSequenceKeypoint.new(1, THEME.Accent)
                 })
+                FillGrad.Rotation = 45
                 FillGrad.Parent = Fill
 
                 local Dot = Instance.new("Frame")
-                Dot.Size = UDim2.new(0, 12, 0, 12)
+                Dot.Size = UDim2.new(0, 10, 0, 10)
                 Dot.AnchorPoint = Vector2.new(0.5, 0.5)
                 Dot.Position = UDim2.new(startPercent, 0, 0.5, 0)
-                Dot.BackgroundColor3 = Color3.fromRGB(240, 242, 255)
+                Dot.BackgroundColor3 = Color3.fromRGB(245, 245, 255)
                 Dot.BorderSizePixel = 0
                 Dot.ZIndex = 3
                 Dot.Parent = Track
@@ -2710,7 +2732,7 @@ function NamelessWare:CreateWindow(config)
                 DotCorner.Parent = Dot
 
                 local DotStroke = Instance.new("UIStroke")
-                DotStroke.Color = Color3.fromRGB(25, 25, 35)
+                DotStroke.Color = Color3.fromRGB(20, 20, 28)
                 DotStroke.Thickness = 1
                 DotStroke.Parent = Dot
 
@@ -2728,8 +2750,8 @@ function NamelessWare:CreateWindow(config)
 
                 local TouchHitbox = Instance.new("TextButton")
                 TouchHitbox.Name = "SliderHitbox"
-                TouchHitbox.Size = UDim2.new(1, 0, 0, 26)
-                TouchHitbox.Position = UDim2.new(0, 0, 0, 10)
+                TouchHitbox.Size = UDim2.new(1, 0, 0, 24)
+                TouchHitbox.Position = UDim2.new(0, 0, 0, 8)
                 TouchHitbox.BackgroundTransparency = 1
                 TouchHitbox.Text = ""
                 TouchHitbox.AutoButtonColor = false
@@ -2769,6 +2791,10 @@ function NamelessWare:CreateWindow(config)
                     ValBoxStroke.Color = theme.CardBorder
                     ValLabel.TextColor3 = theme.TextMuted
                     Track.BackgroundColor3 = theme.BgSidebar
+                    TrackGrad.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0, theme.CardBgGradient or theme.BgSidebar),
+                        ColorSequenceKeypoint.new(1, theme.BgSidebar)
+                    })
                     Fill.BackgroundColor3 = theme.Accent
                     FillGrad.Color = ColorSequence.new({
                         ColorSequenceKeypoint.new(0, theme.AccentGradient),
