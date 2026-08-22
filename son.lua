@@ -27,34 +27,6 @@ local function SafeParentGui(gui)
     end)
 end
 
-local function FetchCustomAsset(url, fileName)
-    fileName = fileName or "NamelessWare_Logo.webp"
-    if getcustomasset and (writefile and readfile and isfile) then
-        local success, err = pcall(function()
-            if not isfile(fileName) then
-                local res
-                if syn and syn.request then
-                    res = syn.request({Url = url, Method = "GET"}).Body
-                elseif http_request then
-                    res = http_request({Url = url, Method = "GET"}).Body
-                elseif request then
-                    res = request({Url = url, Method = "GET"}).Body
-                elseif game.HttpGet then
-                    res = game:HttpGet(url)
-                end
-                if res then
-                    writefile(fileName, res)
-                end
-            end
-        end)
-        if isfile(fileName) then
-            local asset = getcustomasset(fileName)
-            if asset then return asset end
-        end
-    end
-    return nil
-end
-
 local function Tween(obj, props, time, style, dir)
     time = time or 0.18
     style = style or Enum.EasingStyle.Quad
@@ -1081,6 +1053,8 @@ function SaveManager:BuildConfigSection(Section)
     })
 
     local ConfigDropdown
+    local AutoLoadToggle
+    local AutoLoadStatus
 
     Section:AddButton({
         Name = "Create / Save Config",
@@ -1103,6 +1077,13 @@ function SaveManager:BuildConfigSection(Section)
         Default = selectedConfig,
         Callback = function(v)
             selectedConfig = v
+            local currentAuto = self:GetAutoLoad()
+            if AutoLoadToggle and AutoLoadToggle.Set then
+                AutoLoadToggle.Set(currentAuto == selectedConfig and selectedConfig ~= "None")
+            end
+            if AutoLoadStatus and AutoLoadStatus.SetContent then
+                AutoLoadStatus.SetContent("Active: " .. (currentAuto and ("'" .. currentAuto .. "'") or "None"))
+            end
         end
     })
 
@@ -1119,7 +1100,17 @@ function SaveManager:BuildConfigSection(Section)
         Name = "Delete Selected Config",
         Callback = function()
             if selectedConfig and selectedConfig ~= "None" then
+                local wasAuto = (self:GetAutoLoad() == selectedConfig)
                 self:Delete(selectedConfig)
+                if wasAuto then
+                    self:SetAutoLoad(nil)
+                    if AutoLoadStatus and AutoLoadStatus.SetContent then
+                        AutoLoadStatus.SetContent("Active: None")
+                    end
+                    if AutoLoadToggle and AutoLoadToggle.Set then
+                        AutoLoadToggle.Set(false)
+                    end
+                end
                 if ConfigDropdown and ConfigDropdown.Refresh then
                     local updated = self:GetConfigs()
                     ConfigDropdown.Refresh((#updated > 0) and updated or {"None"})
@@ -1134,6 +1125,13 @@ function SaveManager:BuildConfigSection(Section)
             if ConfigDropdown and ConfigDropdown.Refresh then
                 local updated = self:GetConfigs()
                 ConfigDropdown.Refresh((#updated > 0) and updated or {"None"})
+                local currentAuto = self:GetAutoLoad()
+                if AutoLoadStatus and AutoLoadStatus.SetContent then
+                    AutoLoadStatus.SetContent("Active: " .. (currentAuto and ("'" .. currentAuto .. "'") or "None"))
+                end
+                if AutoLoadToggle and AutoLoadToggle.Set then
+                    AutoLoadToggle.Set(currentAuto == selectedConfig and selectedConfig ~= "None")
+                end
                 NamelessWare:Notify({
                     Title = "Refreshed",
                     Content = "Configuration list updated.",
@@ -1144,15 +1142,43 @@ function SaveManager:BuildConfigSection(Section)
         end
     })
 
-    local isAutoLoad = (self:GetAutoLoad() == selectedConfig and selectedConfig ~= "None")
-    Section:AddToggle({
+    Section:AddSubHeader("Auto-Load Configuration", "rbxassetid://10709791437")
+
+    local initialAuto = self:GetAutoLoad()
+    AutoLoadStatus = Section:AddParagraph({
+        Title = "Current Auto-Load",
+        Content = "Active: " .. (initialAuto and ("'" .. initialAuto .. "'") or "None")
+    })
+
+    local isAutoLoad = (initialAuto == selectedConfig and selectedConfig ~= "None")
+    AutoLoadToggle = Section:AddToggle({
         Name = "Set as Auto-Load",
         Default = isAutoLoad,
         Callback = function(state)
             if state then
-                self:SetAutoLoad(selectedConfig)
+                if selectedConfig and selectedConfig ~= "None" then
+                    self:SetAutoLoad(selectedConfig)
+                    if AutoLoadStatus and AutoLoadStatus.SetContent then
+                        AutoLoadStatus.SetContent("Active: '" .. selectedConfig .. "'")
+                    end
+                    NamelessWare:Notify({
+                        Title = "Auto-Load Set",
+                        Content = "Profile '" .. selectedConfig .. "' will load on startup.",
+                        Duration = 2,
+                        Type = "Success"
+                    })
+                end
             else
                 self:SetAutoLoad(nil)
+                if AutoLoadStatus and AutoLoadStatus.SetContent then
+                    AutoLoadStatus.SetContent("Active: None")
+                end
+                NamelessWare:Notify({
+                    Title = "Auto-Load Disabled",
+                    Content = "Auto-load has been turned off.",
+                    Duration = 2,
+                    Type = "Info"
+                })
             end
         end
     })
@@ -1356,31 +1382,6 @@ function SettingsManager:BuildSettingsSection(Section)
         end
     })
 
-    Section:AddSubHeader("Appearance & Transparency", "rbxassetid://10734950309")
-
-    Section:AddSlider({
-        Name = "Menu Transparency",
-        Min = 0,
-        Max = 85,
-        Default = math.floor((NamelessWare.Transparency or 0) * 100),
-        Suffix = "%",
-        Callback = function(val)
-            NamelessWare:SetTransparency(val / 100)
-        end
-    })
-
-    Section:AddSlider({
-        Name = "Cards Transparency",
-        Min = 0,
-        Max = 80,
-        Default = math.floor((NamelessWare.CardTransparency or 0) * 100),
-        Suffix = "%",
-        Callback = function(val)
-            NamelessWare:SetCardTransparency(val / 100)
-        end
-    })
-
-
     Section:AddSubHeader("Actions", "rbxassetid://10734950309")
 
     Section:AddButton({
@@ -1540,7 +1541,6 @@ function NamelessWare:CreateWindow(config)
     local Title = config.Title or "NAMELESS WARE"
     local SubTitle = config.SubTitle or "Combat - default hotkeys"
     local AccentColor = config.Accent or THEME.Accent
-    local LogoUrl = config.LogoUrl or RAW_LOGO_URL
 
     if config.ToggleKey then
         self.ToggleKey = config.ToggleKey
@@ -1559,13 +1559,15 @@ function NamelessWare:CreateWindow(config)
     SafeParentGui(ScreenGui)
     _G.NamelessWareInstance = ScreenGui
 
-    local customLogoAsset = FetchCustomAsset(LogoUrl, "NamelessWare_Logo.webp")
-
-    local MobileBtn = Instance.new("ImageButton")
+    local MobileBtn = Instance.new("TextButton")
     MobileBtn.Name = "NamelessMobileBtn"
     MobileBtn.Size = UDim2.new(0, 50, 0, 50)
     MobileBtn.Position = UDim2.new(0, 16, 0.5, -25)
     MobileBtn.BackgroundColor3 = THEME.BgSidebar
+    MobileBtn.Text = "NW"
+    MobileBtn.Font = THEME.FontBold
+    MobileBtn.TextSize = 16
+    MobileBtn.TextColor3 = AccentColor
     MobileBtn.AutoButtonColor = false
     MobileBtn.Parent = ScreenGui
 
@@ -1578,17 +1580,15 @@ function NamelessWare:CreateWindow(config)
     MobileBtnStroke.Thickness = 1.2
     MobileBtnStroke.Parent = MobileBtn
 
-    if customLogoAsset then
-        MobileBtn.Image = customLogoAsset
-    else
-        local FallbackText = Instance.new("TextLabel")
-        FallbackText.Size = UDim2.new(1, 0, 1, 0)
-        FallbackText.BackgroundTransparency = 1
-        FallbackText.Text = "NW"
-        FallbackText.Font = THEME.FontBold
-        FallbackText.TextSize = 16
-        FallbackText.TextColor3 = AccentColor
-        FallbackText.Parent = MobileBtn
+    if config.Logo then
+        MobileBtn.Text = ""
+        local MobileImg = Instance.new("ImageLabel")
+        MobileImg.Size = UDim2.new(1, -12, 1, -12)
+        MobileImg.Position = UDim2.new(0, 6, 0, 6)
+        MobileImg.BackgroundTransparency = 1
+        MobileImg.Image = config.Logo
+        MobileImg.ScaleType = Enum.ScaleType.Fit
+        MobileImg.Parent = MobileBtn
     end
 
     MakeDraggable(MobileBtn)
@@ -1657,11 +1657,11 @@ function NamelessWare:CreateWindow(config)
     WLogoCorner.CornerRadius = UDim.new(0, 4)
     WLogoCorner.Parent = WLogoBox
 
-    if customLogoAsset then
+    if config.Logo then
         local WLogoImg = Instance.new("ImageLabel")
         WLogoImg.Size = UDim2.new(1, 0, 1, 0)
         WLogoImg.BackgroundTransparency = 1
-        WLogoImg.Image = customLogoAsset
+        WLogoImg.Image = config.Logo
         WLogoImg.ScaleType = Enum.ScaleType.Fit
         WLogoImg.Parent = WLogoBox
     else
@@ -1940,12 +1940,12 @@ function NamelessWare:CreateWindow(config)
     LogoGlow.Thickness = 1
     LogoGlow.Parent = LogoBox
 
-    if customLogoAsset then
+    if config.Logo then
         local LogoImg = Instance.new("ImageLabel")
         LogoImg.Size = UDim2.new(1, -2, 1, -2)
         LogoImg.Position = UDim2.new(0, 1, 0, 1)
         LogoImg.BackgroundTransparency = 1
-        LogoImg.Image = customLogoAsset
+        LogoImg.Image = config.Logo
         LogoImg.ScaleType = Enum.ScaleType.Fit
         LogoImg.Parent = LogoBox
     else
@@ -3022,6 +3022,60 @@ function NamelessWare:CreateWindow(config)
                 table.insert(NamelessWare.ThemeSubscribers, function(theme)
                     SubLabel.TextColor3 = theme.TextMuted
                 end)
+            end
+
+            function Controls:AddParagraph(cfg)
+                cfg = cfg or {}
+                local title = cfg.Title or "Info"
+                local content = cfg.Content or ""
+
+                local ParaFrame = Instance.new("Frame")
+                ParaFrame.Size = UDim2.new(1, 0, 0, 0)
+                ParaFrame.AutomaticSize = Enum.AutomaticSize.Y
+                ParaFrame.BackgroundTransparency = 1
+                ParaFrame.Parent = Card
+
+                local ParaLayout = Instance.new("UIListLayout")
+                ParaLayout.Padding = UDim.new(0, 2)
+                ParaLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                ParaLayout.Parent = ParaFrame
+
+                local TitleLabel = Instance.new("TextLabel")
+                TitleLabel.Size = UDim2.new(1, 0, 0, 14)
+                TitleLabel.BackgroundTransparency = 1
+                TitleLabel.Text = title
+                TitleLabel.Font = THEME.FontBold
+                TitleLabel.TextSize = szSubHeader
+                TitleLabel.TextColor3 = THEME.TextMain
+                TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+                TitleLabel.Parent = ParaFrame
+
+                local ContentLabel = Instance.new("TextLabel")
+                ContentLabel.Size = UDim2.new(1, 0, 0, 0)
+                ContentLabel.AutomaticSize = Enum.AutomaticSize.Y
+                ContentLabel.BackgroundTransparency = 1
+                ContentLabel.Text = content
+                ContentLabel.Font = THEME.FontMain
+                ContentLabel.TextSize = szItem
+                ContentLabel.TextColor3 = THEME.TextMuted
+                ContentLabel.TextXAlignment = Enum.TextXAlignment.Left
+                ContentLabel.TextWrapped = true
+                ContentLabel.Parent = ParaFrame
+
+                table.insert(NamelessWare.ThemeSubscribers, function(theme)
+                    TitleLabel.TextColor3 = theme.TextMain
+                    ContentLabel.TextColor3 = theme.TextMuted
+                end)
+
+                local controller = {
+                    SetTitle = function(t) TitleLabel.Text = t end,
+                    SetContent = function(c) ContentLabel.Text = c end,
+                    Set = function(t, c)
+                        if t then TitleLabel.Text = t end
+                        if c then ContentLabel.Text = c end
+                    end
+                }
+                return controller
             end
 
             function Controls:AddToggle(cfg)
