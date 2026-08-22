@@ -2053,35 +2053,60 @@ function NamelessWare:CreateWindow(config)
         TabLabel.TextXAlignment = Enum.TextXAlignment.Left
         TabLabel.Parent = TabBtn
 
-        local TabPage = Instance.new("ScrollingFrame")
+        local TabPage = Instance.new("Frame")
         TabPage.Name = name .. "_Page"
         TabPage.Size = UDim2.new(1, 0, 1, 0)
         TabPage.BackgroundTransparency = 1
-        TabPage.ScrollBarThickness = 3
-        TabPage.ScrollBarImageColor3 = THEME.Accent
-        TabPage.CanvasSize = UDim2.new(0, 0, 0, 0)
-        TabPage.AutomaticCanvasSize = Enum.AutomaticSize.Y
         TabPage.Visible = false
         TabPage.Parent = ContentArea
 
-        local TabPadding = Instance.new("UIPadding")
-        TabPadding.PaddingTop = UDim.new(0, 6)
-        TabPadding.PaddingBottom = UDim.new(0, 14)
-        TabPadding.PaddingLeft = UDim.new(0, 6)
-        TabPadding.PaddingRight = UDim.new(0, 10)
-        TabPadding.Parent = TabPage
+        local LeftColumn = Instance.new("ScrollingFrame")
+        LeftColumn.Name = "LeftColumn"
+        LeftColumn.Size = UDim2.new(0.5, -5, 1, 0)
+        LeftColumn.Position = UDim2.new(0, 0, 0, 0)
+        LeftColumn.BackgroundTransparency = 1
+        LeftColumn.BorderSizePixel = 0
+        LeftColumn.ScrollBarThickness = 2
+        LeftColumn.ScrollBarImageColor3 = THEME.Accent
+        LeftColumn.CanvasSize = UDim2.new(0, 0, 0, 0)
+        LeftColumn.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        LeftColumn.Parent = TabPage
 
-        local ColumnsHolder = Instance.new("Frame")
-        ColumnsHolder.Size = UDim2.new(1, -6, 0, 0)
-        ColumnsHolder.AutomaticSize = Enum.AutomaticSize.Y
-        ColumnsHolder.BackgroundTransparency = 1
-        ColumnsHolder.Parent = TabPage
+        local LeftPadding = Instance.new("UIPadding")
+        LeftPadding.PaddingTop = UDim.new(0, 6)
+        LeftPadding.PaddingBottom = UDim.new(0, 14)
+        LeftPadding.PaddingLeft = UDim.new(0, 4)
+        LeftPadding.PaddingRight = UDim.new(0, 6)
+        LeftPadding.Parent = LeftColumn
 
-        local ColumnsLayout = Instance.new("UIListLayout")
-        ColumnsLayout.FillDirection = Enum.FillDirection.Horizontal
-        ColumnsLayout.Padding = UDim.new(0, 8)
-        ColumnsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        ColumnsLayout.Parent = ColumnsHolder
+        local LeftLayout = Instance.new("UIListLayout")
+        LeftLayout.Padding = UDim.new(0, 8)
+        LeftLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        LeftLayout.Parent = LeftColumn
+
+        local RightColumn = Instance.new("ScrollingFrame")
+        RightColumn.Name = "RightColumn"
+        RightColumn.Size = UDim2.new(0.5, -5, 1, 0)
+        RightColumn.Position = UDim2.new(0.5, 5, 0, 0)
+        RightColumn.BackgroundTransparency = 1
+        RightColumn.BorderSizePixel = 0
+        RightColumn.ScrollBarThickness = 2
+        RightColumn.ScrollBarImageColor3 = THEME.Accent
+        RightColumn.CanvasSize = UDim2.new(0, 0, 0, 0)
+        RightColumn.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        RightColumn.Parent = TabPage
+
+        local RightPadding = Instance.new("UIPadding")
+        RightPadding.PaddingTop = UDim.new(0, 6)
+        RightPadding.PaddingBottom = UDim.new(0, 14)
+        RightPadding.PaddingLeft = UDim.new(0, 4)
+        RightPadding.PaddingRight = UDim.new(0, 6)
+        RightPadding.Parent = RightColumn
+
+        local RightLayout = Instance.new("UIListLayout")
+        RightLayout.Padding = UDim.new(0, 8)
+        RightLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        RightLayout.Parent = RightColumn
 
         local isCurrentTab = false
 
@@ -2141,7 +2166,8 @@ function NamelessWare:CreateWindow(config)
                 ColorSequenceKeypoint.new(0, theme.AccentGradient),
                 ColorSequenceKeypoint.new(1, theme.Accent)
             })
-            TabPage.ScrollBarImageColor3 = theme.Accent
+            LeftColumn.ScrollBarImageColor3 = theme.Accent
+            RightColumn.ScrollBarImageColor3 = theme.Accent
             if isCurrentTab then
                 TabBtn.BackgroundTransparency = 0
                 TabLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -2159,16 +2185,35 @@ function NamelessWare:CreateWindow(config)
         end
 
         local TabMethods = {}
+        local leftCount = 0
+        local rightCount = 0
 
-        function TabMethods:CreateSection(secTitle, secIcon)
+        function TabMethods:CreateSection(secTitle, secIcon, side)
+            local targetColumn
+            if side == "Left" or side == 1 then
+                targetColumn = LeftColumn
+                leftCount = leftCount + 1
+            elseif side == "Right" or side == 2 then
+                targetColumn = RightColumn
+                rightCount = rightCount + 1
+            else
+                if leftCount <= rightCount then
+                    targetColumn = LeftColumn
+                    leftCount = leftCount + 1
+                else
+                    targetColumn = RightColumn
+                    rightCount = rightCount + 1
+                end
+            end
+
             local Card = Instance.new("Frame")
-            Card.Size = UDim2.new(0.5, -4, 0, 0)
+            Card.Size = UDim2.new(1, 0, 0, 0)
             Card.AutomaticSize = Enum.AutomaticSize.Y
             Card.BackgroundColor3 = THEME.CardBg
             Card.BorderSizePixel = 0
             Card.ClipsDescendants = false
             Card.ZIndex = 1
-            Card.Parent = ColumnsHolder
+            Card.Parent = targetColumn
             Card.BackgroundTransparency = NamelessWare.CardTransparency or 0
             table.insert(RegisteredCards, Card)
             table.insert(NamelessWare.CardElements, Card)
@@ -3540,13 +3585,13 @@ function NamelessWare:CreateWindow(config)
             Subtitle = tabSubtitle
         })
 
-        local ConfigSec = SettingsTab:CreateSection("Profile Manager", "rbxassetid://10709791437")
+        local ConfigSec = SettingsTab:CreateSection("Profile Manager", "rbxassetid://10709791437", "Left")
         SaveManager:BuildConfigSection(ConfigSec)
 
-        local ThemeSec = SettingsTab:CreateSection("Theme Customizer", "rbxassetid://10709791437")
+        local ThemeSec = SettingsTab:CreateSection("Theme Customizer", "rbxassetid://10709791437", "Right")
         ThemeManager:BuildThemeSection(ThemeSec)
 
-        local MenuSec = SettingsTab:CreateSection("Menu Controls", "rbxassetid://10734950309")
+        local MenuSec = SettingsTab:CreateSection("Menu Controls", "rbxassetid://10734950309", "Left")
         SettingsManager:BuildSettingsSection(MenuSec)
 
         SaveManager:AutoLoad()
