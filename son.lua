@@ -1602,8 +1602,9 @@ function NamelessWare:CreateWindow(config)
 
     local MobileBtn = Instance.new("TextButton")
     MobileBtn.Name = "NamelessMobileBtn"
-    MobileBtn.Size = UDim2.new(0, 44, 0, 44)
-    MobileBtn.Position = UDim2.new(0, 16, 0.5, -22)
+    MobileBtn.Size = UDim2.new(0, 46, 0, 46)
+    MobileBtn.Position = UDim2.new(0, 16, 0.5, -23)
+    MobileBtn.BackgroundTransparency = activeLogo and 1 or 0
     MobileBtn.BackgroundColor3 = THEME.BgSidebar
     MobileBtn.Text = activeLogo and "" or "NW"
     MobileBtn.Font = THEME.FontBold
@@ -1619,12 +1620,13 @@ function NamelessWare:CreateWindow(config)
     local MobileBtnStroke = Instance.new("UIStroke")
     MobileBtnStroke.Color = THEME.CardBorder
     MobileBtnStroke.Thickness = 1.2
+    MobileBtnStroke.Enabled = not activeLogo
     MobileBtnStroke.Parent = MobileBtn
 
     if activeLogo then
         local MobileImg = Instance.new("ImageLabel")
-        MobileImg.Size = UDim2.new(1, -10, 1, -10)
-        MobileImg.Position = UDim2.new(0, 5, 0, 5)
+        MobileImg.Size = UDim2.new(1, 0, 1, 0)
+        MobileImg.Position = UDim2.new(0, 0, 0, 0)
         MobileImg.BackgroundTransparency = 1
         MobileImg.Image = activeLogo
         MobileImg.ScaleType = Enum.ScaleType.Fit
@@ -1697,23 +1699,14 @@ function NamelessWare:CreateWindow(config)
     WLogoCorner.CornerRadius = UDim.new(0, 4)
     WLogoCorner.Parent = WLogoBox
 
-    if activeLogo then
-        local WLogoImg = Instance.new("ImageLabel")
-        WLogoImg.Size = UDim2.new(1, 0, 1, 0)
-        WLogoImg.BackgroundTransparency = 1
-        WLogoImg.Image = activeLogo
-        WLogoImg.ScaleType = Enum.ScaleType.Fit
-        WLogoImg.Parent = WLogoBox
-    else
-        local WLogoTxt = Instance.new("TextLabel")
-        WLogoTxt.Size = UDim2.new(1, 0, 1, 0)
-        WLogoTxt.BackgroundTransparency = 1
-        WLogoTxt.Text = "NW"
-        WLogoTxt.Font = THEME.FontBold
-        WLogoTxt.TextSize = 8
-        WLogoTxt.TextColor3 = AccentColor
-        WLogoTxt.Parent = WLogoBox
-    end
+    local WLogoTxt = Instance.new("TextLabel")
+    WLogoTxt.Size = UDim2.new(1, 0, 1, 0)
+    WLogoTxt.BackgroundTransparency = 1
+    WLogoTxt.Text = "NW"
+    WLogoTxt.Font = THEME.FontBold
+    WLogoTxt.TextSize = 8
+    WLogoTxt.TextColor3 = AccentColor
+    WLogoTxt.Parent = WLogoBox
 
     local WTitle = Instance.new("TextLabel")
     WTitle.AutomaticSize = Enum.AutomaticSize.X
@@ -1980,24 +1973,14 @@ function NamelessWare:CreateWindow(config)
     LogoGlow.Thickness = 1
     LogoGlow.Parent = LogoBox
 
-    if activeLogo then
-        local LogoImg = Instance.new("ImageLabel")
-        LogoImg.Size = UDim2.new(1, -2, 1, -2)
-        LogoImg.Position = UDim2.new(0, 1, 0, 1)
-        LogoImg.BackgroundTransparency = 1
-        LogoImg.Image = activeLogo
-        LogoImg.ScaleType = Enum.ScaleType.Fit
-        LogoImg.Parent = LogoBox
-    else
-        local LogoTxt = Instance.new("TextLabel")
-        LogoTxt.Size = UDim2.new(1, 0, 1, 0)
-        LogoTxt.BackgroundTransparency = 1
-        LogoTxt.Text = "NW"
-        LogoTxt.Font = THEME.FontBold
-        LogoTxt.TextSize = 12
-        LogoTxt.TextColor3 = AccentColor
-        LogoTxt.Parent = LogoBox
-    end
+    local LogoTxt = Instance.new("TextLabel")
+    LogoTxt.Size = UDim2.new(1, 0, 1, 0)
+    LogoTxt.BackgroundTransparency = 1
+    LogoTxt.Text = "NW"
+    LogoTxt.Font = THEME.FontBold
+    LogoTxt.TextSize = 12
+    LogoTxt.TextColor3 = AccentColor
+    LogoTxt.Parent = LogoBox
 
     local function FormatBrandTitle(rawTitle)
         local formatted = rawTitle or "NamelessWare"
@@ -3147,8 +3130,10 @@ function NamelessWare:CreateWindow(config)
                 Label.Parent = Row
 
                 local RightHold = Instance.new("Frame")
-                RightHold.Size = UDim2.new(0, 65, 1, 0)
-                RightHold.Position = UDim2.new(1, -65, 0, 0)
+                RightHold.Size = UDim2.new(0, 0, 1, 0)
+                RightHold.AutomaticSize = Enum.AutomaticSize.X
+                RightHold.Position = UDim2.new(1, 0, 0, 0)
+                RightHold.AnchorPoint = Vector2.new(1, 0)
                 RightHold.BackgroundTransparency = 1
                 RightHold.Parent = Row
 
@@ -3156,7 +3141,7 @@ function NamelessWare:CreateWindow(config)
                 RightLayout.FillDirection = Enum.FillDirection.Horizontal
                 RightLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
                 RightLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-                RightLayout.Padding = UDim.new(0, 5)
+                RightLayout.Padding = UDim.new(0, 7)
                 RightLayout.Parent = RightHold
 
                 local isPC = UserInputService.KeyboardEnabled and UserInputService.MouseEnabled
