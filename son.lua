@@ -743,6 +743,30 @@ function ThemeManager:BuildThemeSection(Section)
         if TextMutedPicker and TextMutedPicker.Set then TextMutedPicker.Set(theme.TextMuted) end
     end)
 
+    Section:AddSubHeader("Transparency & Opacity", "rbxassetid://10734950309")
+
+    Section:AddSlider({
+        Name = "Menu Transparency",
+        Min = 0,
+        Max = 85,
+        Default = math.floor((NamelessWare.Transparency or 0) * 100),
+        Suffix = "%",
+        Callback = function(val)
+            NamelessWare:SetTransparency(val / 100)
+        end
+    })
+
+    Section:AddSlider({
+        Name = "Cards Transparency",
+        Min = 0,
+        Max = 80,
+        Default = math.floor((NamelessWare.CardTransparency or 0) * 100),
+        Suffix = "%",
+        Callback = function(val)
+            NamelessWare:SetCardTransparency(val / 100)
+        end
+    })
+
     Section:AddSubHeader("Theme Profiles", "rbxassetid://10709791437")
 
     local customThemeName = "MyTheme"
