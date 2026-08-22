@@ -1596,8 +1596,8 @@ function NamelessWare:CreateWindow(config)
 
     local MainWindow = Instance.new("Frame")
     MainWindow.Name = "MainWindow"
-    MainWindow.Size = UDim2.new(0, 560, 0, 415)
-    MainWindow.Position = UDim2.new(0.5, -280, 0.5, -207)
+    MainWindow.Size = UDim2.new(0, 580, 0, 420)
+    MainWindow.Position = UDim2.new(0.5, -290, 0.5, -210)
     MainWindow.BackgroundColor3 = THEME.BgMain
     MainWindow.BorderSizePixel = 0
     MainWindow.ClipsDescendants = false
@@ -1608,8 +1608,8 @@ function NamelessWare:CreateWindow(config)
     MainCorner.Parent = MainWindow
 
     local MainGrad = Instance.new("UIGradient")
-    local bgGrad = THEME.BgMainGradient or Color3.fromRGB(24, 24, 34)
-    local bgBase = THEME.BgMain or Color3.fromRGB(8, 8, 12)
+    local bgGrad = THEME.BgMainGradient or Color3.fromRGB(26, 26, 36)
+    local bgBase = THEME.BgMain or Color3.fromRGB(7, 7, 10)
     local midBg = Color3.new(
         bgGrad.R * 0.45 + bgBase.R * 0.55,
         bgGrad.G * 0.45 + bgBase.G * 0.55,
@@ -1630,7 +1630,7 @@ function NamelessWare:CreateWindow(config)
 
     local Sidebar = Instance.new("Frame")
     Sidebar.Name = "Sidebar"
-    Sidebar.Size = UDim2.new(0, 145, 1, 0)
+    Sidebar.Size = UDim2.new(0, 160, 1, 0)
     Sidebar.BackgroundColor3 = THEME.BgSidebar
     Sidebar.BorderSizePixel = 0
     Sidebar.Parent = MainWindow
@@ -1707,13 +1707,13 @@ function NamelessWare:CreateWindow(config)
     end
 
     local BrandTitle = Instance.new("TextLabel")
-    BrandTitle.Size = UDim2.new(1, -48, 1, 0)
-    BrandTitle.Position = UDim2.new(0, 44, 0, 0)
+    BrandTitle.Size = UDim2.new(1, -44, 1, 0)
+    BrandTitle.Position = UDim2.new(0, 42, 0, 0)
     BrandTitle.BackgroundTransparency = 1
     BrandTitle.RichText = true
     BrandTitle.Text = FormatBrandTitle(Title)
     BrandTitle.Font = THEME.FontBold
-    BrandTitle.TextSize = 12
+    BrandTitle.TextSize = 11
     BrandTitle.TextColor3 = THEME.TextMain
     BrandTitle.TextXAlignment = Enum.TextXAlignment.Left
     BrandTitle.Parent = BrandFrame
@@ -1776,8 +1776,8 @@ function NamelessWare:CreateWindow(config)
     AvatarImgCorner.Parent = AvatarImg
 
     local AvatarStroke = Instance.new("UIStroke")
-    AvatarStroke.Color = AccentColor
-    AvatarStroke.Thickness = 1.2
+    AvatarStroke.Color = THEME.CardBorder
+    AvatarStroke.Thickness = 1
     AvatarStroke.Parent = AvatarBox
 
     local StatusDot = Instance.new("Frame")
@@ -1815,7 +1815,7 @@ function NamelessWare:CreateWindow(config)
     UserTimerLabel.Text = "00:00:00"
     UserTimerLabel.Font = THEME.FontMain
     UserTimerLabel.TextSize = 9
-    UserTimerLabel.TextColor3 = THEME.Accent
+    UserTimerLabel.TextColor3 = THEME.TextMuted
     UserTimerLabel.TextXAlignment = Enum.TextXAlignment.Left
     UserTimerLabel.Parent = UserCard
 
@@ -1833,8 +1833,8 @@ function NamelessWare:CreateWindow(config)
 
     local HeaderFrame = Instance.new("Frame")
     HeaderFrame.Name = "HeaderFrame"
-    HeaderFrame.Size = UDim2.new(1, -155, 0, 48)
-    HeaderFrame.Position = UDim2.new(0, 150, 0, 4)
+    HeaderFrame.Size = UDim2.new(1, -170, 0, 48)
+    HeaderFrame.Position = UDim2.new(0, 165, 0, 4)
     HeaderFrame.BackgroundTransparency = 1
     HeaderFrame.Parent = MainWindow
 
@@ -1957,7 +1957,7 @@ function NamelessWare:CreateWindow(config)
     DeviceIcon.Position = UDim2.new(0, 7, 0.5, -6.5)
     DeviceIcon.BackgroundTransparency = 1
     DeviceIcon.Image = platformIcon
-    DeviceIcon.ImageColor3 = THEME.Accent
+    DeviceIcon.ImageColor3 = THEME.TextMuted
     DeviceIcon.ScaleType = Enum.ScaleType.Fit
     DeviceIcon.Parent = DeviceBadge
 
@@ -2026,8 +2026,8 @@ function NamelessWare:CreateWindow(config)
 
     local ContentArea = Instance.new("Frame")
     ContentArea.Name = "ContentArea"
-    ContentArea.Size = UDim2.new(1, -155, 1, -58)
-    ContentArea.Position = UDim2.new(0, 150, 0, 52)
+    ContentArea.Size = UDim2.new(1, -170, 1, -58)
+    ContentArea.Position = UDim2.new(0, 165, 0, 52)
     ContentArea.BackgroundTransparency = 1
     ContentArea.Parent = MainWindow
 
@@ -2038,13 +2038,13 @@ function NamelessWare:CreateWindow(config)
         isUIOpen = not isUIOpen
         if isUIOpen then
             MainWindow.Visible = true
-            MainWindow.Position = UDim2.new(0.5, -280, 0.5, -185)
-            Tween(MainWindow, {Position = UDim2.new(0.5, -280, 0.5, -207)}, 0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            MainWindow.Position = UDim2.new(0.5, -290, 0.5, -190)
+            Tween(MainWindow, {Position = UDim2.new(0.5, -290, 0.5, -210)}, 0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
         else
             if ActiveDropdown then
                 ActiveDropdown()
             end
-            local tw = Tween(MainWindow, {Position = UDim2.new(0.5, -280, 0.5, -185)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+            local tw = Tween(MainWindow, {Position = UDim2.new(0.5, -290, 0.5, -190)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
             tw.Completed:Connect(function()
                 if not isUIOpen then MainWindow.Visible = false end
             end)
@@ -2120,15 +2120,15 @@ function NamelessWare:CreateWindow(config)
         SearchInput.PlaceholderColor3 = theme.TextMuted
         DeviceBadge.BackgroundColor3 = theme.CardBg
         DeviceStroke.Color = theme.CardBorder
-        DeviceIcon.ImageColor3 = theme.Accent
+        DeviceIcon.ImageColor3 = theme.TextMuted
         DeviceLabel.TextColor3 = theme.TextMain
         UserCard.BackgroundColor3 = theme.CardBg
         UserCardStroke.Color = theme.CardBorder
         AvatarBox.BackgroundColor3 = theme.BgSidebar
-        AvatarStroke.Color = theme.Accent
+        AvatarStroke.Color = theme.CardBorder
         StatusDotStroke.Color = theme.BgSidebar
         UserNameLabel.TextColor3 = theme.TextMain
-        UserTimerLabel.TextColor3 = theme.Accent
+        UserTimerLabel.TextColor3 = theme.TextMuted
     end)
 
     function Window:AddCategory(catName)
@@ -2398,7 +2398,7 @@ function NamelessWare:CreateWindow(config)
                 SecIconImg.Position = UDim2.new(0, 0, 0.5, -7)
                 SecIconImg.BackgroundTransparency = 1
                 SecIconImg.Image = secIcon
-                SecIconImg.ImageColor3 = THEME.Accent
+                SecIconImg.ImageColor3 = THEME.TextMuted
                 SecIconImg.ScaleType = Enum.ScaleType.Fit
                 SecIconImg.Parent = SecHeader
             end
@@ -2423,7 +2423,7 @@ function NamelessWare:CreateWindow(config)
                 CardStroke.Color = theme.CardBorder
                 SecLabel.TextColor3 = theme.TextMain
                 if SecIconImg then
-                    SecIconImg.ImageColor3 = theme.Accent
+                    SecIconImg.ImageColor3 = theme.TextMuted
                 end
             end)
 
@@ -2442,12 +2442,12 @@ function NamelessWare:CreateWindow(config)
                 SubLabel.Text = title
                 SubLabel.Font = THEME.FontBold
                 SubLabel.TextSize = 10
-                SubLabel.TextColor3 = THEME.Accent
+                SubLabel.TextColor3 = THEME.TextMuted
                 SubLabel.TextXAlignment = Enum.TextXAlignment.Left
                 SubLabel.Parent = SubFrame
 
                 table.insert(NamelessWare.ThemeSubscribers, function(theme)
-                    SubLabel.TextColor3 = theme.Accent
+                    SubLabel.TextColor3 = theme.TextMuted
                 end)
             end
 
