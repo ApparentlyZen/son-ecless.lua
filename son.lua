@@ -1533,6 +1533,12 @@ function NamelessWare:CreateWindow(config)
     local AccentColor = config.Accent or THEME.Accent
     local LogoUrl = config.LogoUrl or RAW_LOGO_URL
 
+    if config.ToggleKey then
+        self.ToggleKey = config.ToggleKey
+    elseif config.Key then
+        self.ToggleKey = config.Key
+    end
+
     if _G.NamelessWareInstance then
         pcall(function() _G.NamelessWareInstance:Destroy() end)
     end
@@ -1543,22 +1549,6 @@ function NamelessWare:CreateWindow(config)
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     SafeParentGui(ScreenGui)
     _G.NamelessWareInstance = ScreenGui
-
-    pcall(function()
-        if Font and Font.new then
-            local uFaceReg = Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
-            local uFaceBold = Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
-            ScreenGui.DescendantAdded:Connect(function(obj)
-                if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
-                    pcall(function()
-                        local fontStr = tostring(obj.Font.Name or "")
-                        local isBold = string.find(fontStr, "Bold") or string.find(fontStr, "Black") or obj.Font == THEME.FontBold
-                        obj.FontFace = isBold and uFaceBold or uFaceReg
-                    end)
-                end
-            end)
-        end
-    end)
 
     local customLogoAsset = FetchCustomAsset(LogoUrl, "NamelessWare_Logo.webp")
 
@@ -1596,8 +1586,8 @@ function NamelessWare:CreateWindow(config)
 
     local MainWindow = Instance.new("Frame")
     MainWindow.Name = "MainWindow"
-    MainWindow.Size = UDim2.new(0, 580, 0, 420)
-    MainWindow.Position = UDim2.new(0.5, -290, 0.5, -210)
+    MainWindow.Size = UDim2.new(0, 530, 0, 390)
+    MainWindow.Position = UDim2.new(0.5, -265, 0.5, -195)
     MainWindow.BackgroundColor3 = THEME.BgMain
     MainWindow.BorderSizePixel = 0
     MainWindow.ClipsDescendants = false
@@ -1630,7 +1620,7 @@ function NamelessWare:CreateWindow(config)
 
     local Sidebar = Instance.new("Frame")
     Sidebar.Name = "Sidebar"
-    Sidebar.Size = UDim2.new(0, 160, 1, 0)
+    Sidebar.Size = UDim2.new(0, 148, 1, 0)
     Sidebar.BackgroundColor3 = THEME.BgSidebar
     Sidebar.BorderSizePixel = 0
     Sidebar.Parent = MainWindow
@@ -1707,13 +1697,13 @@ function NamelessWare:CreateWindow(config)
     end
 
     local BrandTitle = Instance.new("TextLabel")
-    BrandTitle.Size = UDim2.new(1, -44, 1, 0)
-    BrandTitle.Position = UDim2.new(0, 42, 0, 0)
+    BrandTitle.Size = UDim2.new(1, -40, 1, 0)
+    BrandTitle.Position = UDim2.new(0, 38, 0, 0)
     BrandTitle.BackgroundTransparency = 1
     BrandTitle.RichText = true
     BrandTitle.Text = FormatBrandTitle(Title)
     BrandTitle.Font = THEME.FontBold
-    BrandTitle.TextSize = 11
+    BrandTitle.TextSize = 10.5
     BrandTitle.TextColor3 = THEME.TextMain
     BrandTitle.TextXAlignment = Enum.TextXAlignment.Left
     BrandTitle.Parent = BrandFrame
@@ -1833,8 +1823,8 @@ function NamelessWare:CreateWindow(config)
 
     local HeaderFrame = Instance.new("Frame")
     HeaderFrame.Name = "HeaderFrame"
-    HeaderFrame.Size = UDim2.new(1, -170, 0, 48)
-    HeaderFrame.Position = UDim2.new(0, 165, 0, 4)
+    HeaderFrame.Size = UDim2.new(1, -158, 0, 44)
+    HeaderFrame.Position = UDim2.new(0, 153, 0, 4)
     HeaderFrame.BackgroundTransparency = 1
     HeaderFrame.Parent = MainWindow
 
@@ -2026,8 +2016,8 @@ function NamelessWare:CreateWindow(config)
 
     local ContentArea = Instance.new("Frame")
     ContentArea.Name = "ContentArea"
-    ContentArea.Size = UDim2.new(1, -170, 1, -58)
-    ContentArea.Position = UDim2.new(0, 165, 0, 52)
+    ContentArea.Size = UDim2.new(1, -158, 1, -54)
+    ContentArea.Position = UDim2.new(0, 153, 0, 48)
     ContentArea.BackgroundTransparency = 1
     ContentArea.Parent = MainWindow
 
@@ -2038,13 +2028,13 @@ function NamelessWare:CreateWindow(config)
         isUIOpen = not isUIOpen
         if isUIOpen then
             MainWindow.Visible = true
-            MainWindow.Position = UDim2.new(0.5, -290, 0.5, -190)
-            Tween(MainWindow, {Position = UDim2.new(0.5, -290, 0.5, -210)}, 0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            MainWindow.Position = UDim2.new(0.5, -265, 0.5, -175)
+            Tween(MainWindow, {Position = UDim2.new(0.5, -265, 0.5, -195)}, 0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
         else
             if ActiveDropdown then
                 ActiveDropdown()
             end
-            local tw = Tween(MainWindow, {Position = UDim2.new(0.5, -290, 0.5, -190)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+            local tw = Tween(MainWindow, {Position = UDim2.new(0.5, -265, 0.5, -175)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
             tw.Completed:Connect(function()
                 if not isUIOpen then MainWindow.Visible = false end
             end)
