@@ -55,8 +55,6 @@ local function FetchCustomAsset(url, fileName)
     return nil
 end
 
-local ActiveDragSession = nil
-
 local function Tween(obj, props, time, style, dir)
     time = time or 0.18
     style = style or Enum.EasingStyle.Quad
@@ -2658,35 +2656,36 @@ function NamelessWare:CreateWindow(config)
                 TouchHitbox.ZIndex = 5
                 TouchHitbox.Parent = Frame
 
-                local sliderId = {}
+                local moveConn = nil
+                local endConn = nil
 
-                local function StartDrag(screenX)
-                    if ActiveDragSession ~= nil and ActiveDragSession ~= sliderId then
-                        return
+                local function StopDragging()
+                    if moveConn then
+                        moveConn:Disconnect()
+                        moveConn = nil
                     end
-                    ActiveDragSession = sliderId
-                    UpdateValFromX(screenX)
+                    if endConn then
+                        endConn:Disconnect()
+                        endConn = nil
+                    end
                 end
-
-                TouchHitbox.MouseButton1Down:Connect(function(x, y)
-                    StartDrag(x)
-                end)
 
                 TouchHitbox.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        StartDrag(input.Position.X)
-                    end
-                end)
-
-                UserInputService.InputChanged:Connect(function(input)
-                    if ActiveDragSession == sliderId and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                        StopDragging()
                         UpdateValFromX(input.Position.X)
-                    end
-                end)
 
-                UserInputService.InputEnded:Connect(function(input)
-                    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and ActiveDragSession == sliderId then
-                        ActiveDragSession = nil
+                        moveConn = UserInputService.InputChanged:Connect(function(changeInput)
+                            if changeInput == input or changeInput.UserInputType == Enum.UserInputType.MouseMovement or changeInput.UserInputType == Enum.UserInputType.Touch then
+                                UpdateValFromX(changeInput.Position.X)
+                            end
+                        end)
+
+                        endConn = UserInputService.InputEnded:Connect(function(endInput)
+                            if endInput == input or endInput.UserInputType == Enum.UserInputType.MouseButton1 or endInput.UserInputType == Enum.UserInputType.Touch then
+                                StopDragging()
+                            end
+                        end)
                     end
                 end)
 
@@ -3497,60 +3496,53 @@ function NamelessWare:CreateWindow(config)
                     callback(currentColor)
                 end
 
-                local wheelId = {}
-                local valId = {}
-
-                Wheel.MouseButton1Down:Connect(function(x, y)
-                    if ActiveDragSession ~= nil and ActiveDragSession ~= wheelId then return end
-                    ActiveDragSession = wheelId
-                    wheelDragging = true
-                    UpdateFromWheelPos(x, y)
-                end)
+                local wheelMoveConn, wheelEndConn
+                local function StopWheel()
+                    if wheelMoveConn then wheelMoveConn:Disconnect(); wheelMoveConn = nil end
+                    if wheelEndConn then wheelEndConn:Disconnect(); wheelEndConn = nil end
+                end
 
                 Wheel.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        if ActiveDragSession ~= nil and ActiveDragSession ~= wheelId then return end
-                        ActiveDragSession = wheelId
-                        wheelDragging = true
+                        StopWheel()
                         UpdateFromWheelPos(input.Position.X, input.Position.Y)
+
+                        wheelMoveConn = UserInputService.InputChanged:Connect(function(changeInput)
+                            if changeInput == input or changeInput.UserInputType == Enum.UserInputType.MouseMovement or changeInput.UserInputType == Enum.UserInputType.Touch then
+                                UpdateFromWheelPos(changeInput.Position.X, changeInput.Position.Y)
+                            end
+                        end)
+
+                        wheelEndConn = UserInputService.InputEnded:Connect(function(endInput)
+                            if endInput == input or endInput.UserInputType == Enum.UserInputType.MouseButton1 or endInput.UserInputType == Enum.UserInputType.Touch then
+                                StopWheel()
+                            end
+                        end)
                     end
                 end)
 
-                ValTrack.MouseButton1Down:Connect(function(x, y)
-                    if ActiveDragSession ~= nil and ActiveDragSession ~= valId then return end
-                    ActiveDragSession = valId
-                    valDragging = true
-                    UpdateFromValPos(x)
-                end)
+                local valMoveConn, valEndConn
+                local function StopVal()
+                    if valMoveConn then valMoveConn:Disconnect(); valMoveConn = nil end
+                    if valEndConn then valEndConn:Disconnect(); valEndConn = nil end
+                end
 
                 ValTrack.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        if ActiveDragSession ~= nil and ActiveDragSession ~= valId then return end
-                        ActiveDragSession = valId
-                        valDragging = true
+                        StopVal()
                         UpdateFromValPos(input.Position.X)
-                    end
-                end)
 
-                UserInputService.InputChanged:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-                        if ActiveDragSession == wheelId and wheelDragging then
-                            UpdateFromWheelPos(input.Position.X, input.Position.Y)
-                        elseif ActiveDragSession == valId and valDragging then
-                            UpdateFromValPos(input.Position.X)
-                        end
-                    end
-                end)
+                        valMoveConn = UserInputService.InputChanged:Connect(function(changeInput)
+                            if changeInput == input or changeInput.UserInputType == Enum.UserInputType.MouseMovement or changeInput.UserInputType == Enum.UserInputType.Touch then
+                                UpdateFromValPos(changeInput.Position.X)
+                            end
+                        end)
 
-                UserInputService.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        if ActiveDragSession == wheelId then
-                            ActiveDragSession = nil
-                            wheelDragging = false
-                        elseif ActiveDragSession == valId then
-                            ActiveDragSession = nil
-                            valDragging = false
-                        end
+                        valEndConn = UserInputService.InputEnded:Connect(function(endInput)
+                            if endInput == input or endInput.UserInputType == Enum.UserInputType.MouseButton1 or endInput.UserInputType == Enum.UserInputType.Touch then
+                                StopVal()
+                            end
+                        end)
                     end
                 end)
 
