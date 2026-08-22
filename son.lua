@@ -248,8 +248,7 @@ local THEME = {}
 for k, v in pairs(THEME_PRESETS["Nameless Violet"]) do
     THEME[k] = v
 end
-THEME.FontMain = Enum.Font.GothamMedium
-THEME.FontBold = Enum.Font.GothamBold
+
 
 local RAW_LOGO_URL = "https://raw.githubusercontent.com/ApparentlyZen/image-namelessWare/main/165abdd521328d77324b02ce8a77e090_1780162334922.webp"
 
@@ -477,73 +476,7 @@ function NamelessWare:SetCardTransparency(alpha)
     end
 end
 
-local function SafeGetFont(name, fallback)
-    fallback = fallback or Enum.Font.GothamMedium
-    local success, result = pcall(function()
-        return Enum.Font[name]
-    end)
-    return (success and result) or fallback
-end
 
-local function SafeGetFontFace(familyPath)
-    local faceReg, faceBold = nil, nil
-    if familyPath and Font and Font.new then
-        pcall(function()
-            faceReg = Font.new("rbxasset://fonts/families/" .. familyPath .. ".json", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
-            faceBold = Font.new("rbxasset://fonts/families/" .. familyPath .. ".json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
-        end)
-    end
-    return faceReg, faceBold
-end
-
-local FONT_MAP = {
-    ["Nunito (Ronde)"]           = { Main = SafeGetFont("Nunito"), Bold = SafeGetFont("NunitoBold", SafeGetFont("Nunito")), FaceMain = select(1, SafeGetFontFace("Nunito")), FaceBold = select(2, SafeGetFontFace("Nunito")) },
-    ["Comfortaa (Ronde)"]        = { Main = SafeGetFont("Comfortaa", Enum.Font.GothamMedium), Bold = SafeGetFont("ComfortaaBold", Enum.Font.GothamBold), FaceMain = select(1, SafeGetFontFace("Comfortaa")), FaceBold = select(2, SafeGetFontFace("Comfortaa")) },
-    ["Quicksand (Ronde)"]        = { Main = SafeGetFont("Quicksand", Enum.Font.GothamMedium), Bold = SafeGetFont("QuicksandBold", Enum.Font.GothamBold), FaceMain = select(1, SafeGetFontFace("Quicksand")), FaceBold = select(2, SafeGetFontFace("Quicksand")) },
-    ["Fredoka (Ronde)"]          = { Main = SafeGetFont("FredokaOne"), Bold = SafeGetFont("FredokaOne"), FaceMain = select(1, SafeGetFontFace("FredokaOne")), FaceBold = select(2, SafeGetFontFace("FredokaOne")) },
-    ["Ubuntu (Ronde/Dynamique)"] = { Main = SafeGetFont("Ubuntu"), Bold = SafeGetFont("UbuntuBold", SafeGetFont("Ubuntu")), FaceMain = select(1, SafeGetFontFace("Ubuntu")), FaceBold = select(2, SafeGetFontFace("Ubuntu")) },
-    ["Gotham (Default)"]         = { Main = SafeGetFont("GothamMedium", Enum.Font.Gotham), Bold = SafeGetFont("GothamBold", Enum.Font.GothamBold) },
-    ["Gotham Semibold"]          = { Main = SafeGetFont("GothamSemibold", Enum.Font.Gotham), Bold = SafeGetFont("GothamBlack", Enum.Font.GothamBold) },
-    ["Montserrat"]               = { Main = SafeGetFont("MontserratMedium", SafeGetFont("Montserrat")), Bold = SafeGetFont("MontserratBold", SafeGetFont("Montserrat")) },
-    ["Poppins"]                  = { Main = SafeGetFont("Poppins", Enum.Font.GothamMedium), Bold = SafeGetFont("PoppinsBold", Enum.Font.GothamBold), FaceMain = select(1, SafeGetFontFace("Poppins")), FaceBold = select(2, SafeGetFontFace("Poppins")) },
-    ["Inter"]                    = { Main = SafeGetFont("Inter", Enum.Font.GothamMedium), Bold = SafeGetFont("InterBold", Enum.Font.GothamBold), FaceMain = select(1, SafeGetFontFace("Inter")), FaceBold = select(2, SafeGetFontFace("Inter")) },
-    ["SourceSans"]               = { Main = SafeGetFont("SourceSans"), Bold = SafeGetFont("SourceSansBold", SafeGetFont("SourceSans")) },
-    ["Roboto"]                   = { Main = SafeGetFont("Roboto"), Bold = SafeGetFont("RobotoBold", SafeGetFont("Roboto")) },
-    ["RobotoCondensed"]          = { Main = SafeGetFont("RobotoCondensed"), Bold = SafeGetFont("RobotoCondensedBold", SafeGetFont("RobotoCondensed")) },
-    ["RobotoMono (Code)"]        = { Main = SafeGetFont("RobotoMono"), Bold = SafeGetFont("RobotoMono") },
-    ["JosefinSans"]              = { Main = SafeGetFont("JosefinSans"), Bold = SafeGetFont("JosefinSansBold", SafeGetFont("JosefinSans")) },
-    ["Oswald"]                   = { Main = SafeGetFont("Oswald"), Bold = SafeGetFont("OswaldBold", SafeGetFont("Oswald")) },
-    ["LuckiestGuy"]              = { Main = SafeGetFont("LuckiestGuy"), Bold = SafeGetFont("LuckiestGuy") },
-    ["AmaticSC"]                 = { Main = SafeGetFont("AmaticSC"), Bold = SafeGetFont("AmaticSC") },
-    ["SciFi"]                    = { Main = SafeGetFont("SciFi"), Bold = SafeGetFont("SciFi") },
-    ["Code"]                     = { Main = SafeGetFont("Code"), Bold = SafeGetFont("Code") },
-    ["Arcade"]                   = { Main = SafeGetFont("Arcade"), Bold = SafeGetFont("Arcade") },
-    ["DenkOne"]                  = { Main = SafeGetFont("DenkOne"), Bold = SafeGetFont("DenkOne") },
-    ["Creepster"]                = { Main = SafeGetFont("Creepster"), Bold = SafeGetFont("Creepster") },
-    ["SpecialElite"]             = { Main = SafeGetFont("SpecialElite"), Bold = SafeGetFont("SpecialElite") },
-    ["Fondamento"]               = { Main = SafeGetFont("Fondamento"), Bold = SafeGetFont("Fondamento") }
-}
-
-function NamelessWare:SetFontByName(fontName)
-    local preset = FONT_MAP[fontName] or FONT_MAP["Gotham (Default)"]
-    THEME.FontMain = preset.Main
-    THEME.FontBold = preset.Bold
-    if self.ActiveWindow and self.ActiveWindow.ScreenGui then
-        for _, obj in ipairs(self.ActiveWindow.ScreenGui:GetDescendants()) do
-            if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
-                pcall(function()
-                    local fontStr = tostring(obj.Font.Name or "")
-                    local isBold = string.find(fontStr, "Bold") or string.find(fontStr, "Black")
-                    if preset.FaceMain and obj.FontFace then
-                        obj.FontFace = isBold and (preset.FaceBold or preset.FaceMain) or preset.FaceMain
-                    else
-                        obj.Font = isBold and THEME.FontBold or THEME.FontMain
-                    end
-                end)
-            end
-        end
-    end
-end
 
 -- =========================================================
 -- THEME MANAGER
@@ -842,50 +775,7 @@ function ThemeManager:BuildThemeSection(Section)
         end
     })
 
-    Section:AddSubHeader("Typography & Font (Preview)", "rbxassetid://10709791437")
 
-    local fontNames = {
-        "Nunito (Ronde)",
-        "Comfortaa (Ronde)",
-        "Quicksand (Ronde)",
-        "Fredoka (Ronde)",
-        "Ubuntu (Ronde/Dynamique)",
-        "Gotham (Default)",
-        "Gotham Semibold",
-        "Montserrat",
-        "Poppins",
-        "Inter",
-        "SourceSans",
-        "Roboto",
-        "RobotoCondensed",
-        "RobotoMono (Code)",
-        "JosefinSans",
-        "Oswald",
-        "LuckiestGuy",
-        "AmaticSC",
-        "SciFi",
-        "Code",
-        "Arcade",
-        "DenkOne",
-        "Creepster",
-        "SpecialElite",
-        "Fondamento"
-    }
-
-    Section:AddDropdown({
-        Name = "UI Font Family",
-        Options = fontNames,
-        Default = "Gotham (Default)",
-        Callback = function(chosenFont)
-            NamelessWare:SetFontByName(chosenFont)
-            NamelessWare:Notify({
-                Title = "Font Changed",
-                Content = "Previewing: " .. chosenFont,
-                Duration = 1.5,
-                Type = "Success"
-            })
-        end
-    })
 
     Section:AddSubHeader("Theme Profiles", "rbxassetid://10709791437")
 
@@ -1477,50 +1367,6 @@ function SettingsManager:BuildSettingsSection(Section)
         end
     })
 
-    Section:AddSubHeader("Typography & Font (Preview)", "rbxassetid://10709791437")
-
-    local fontNames = {
-        "Nunito (Ronde)",
-        "Comfortaa (Ronde)",
-        "Quicksand (Ronde)",
-        "Fredoka (Ronde)",
-        "Ubuntu (Ronde/Dynamique)",
-        "Gotham (Default)",
-        "Gotham Semibold",
-        "Montserrat",
-        "Poppins",
-        "Inter",
-        "SourceSans",
-        "Roboto",
-        "RobotoCondensed",
-        "RobotoMono (Code)",
-        "JosefinSans",
-        "Oswald",
-        "LuckiestGuy",
-        "AmaticSC",
-        "SciFi",
-        "Code",
-        "Arcade",
-        "DenkOne",
-        "Creepster",
-        "SpecialElite",
-        "Fondamento"
-    }
-
-    Section:AddDropdown({
-        Name = "UI Font Family",
-        Options = fontNames,
-        Default = "Gotham (Default)",
-        Callback = function(chosenFont)
-            NamelessWare:SetFontByName(chosenFont)
-            NamelessWare:Notify({
-                Title = "Font Changed",
-                Content = "Previewing: " .. chosenFont,
-                Duration = 1.5,
-                Type = "Success"
-            })
-        end
-    })
 
     Section:AddSubHeader("Actions", "rbxassetid://10734950309")
 
