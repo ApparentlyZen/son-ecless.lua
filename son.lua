@@ -1968,8 +1968,10 @@ function NamelessWare:CreateWindow(config)
 
     local LogoBox = Instance.new("Frame")
     LogoBox.Size = UDim2.new(0, 26, 0, 26)
-    LogoBox.Position = UDim2.new(0, 12, 0.5, -13)
+    LogoBox.Position = UDim2.new(0, 12, 0.5, 0)
+    LogoBox.AnchorPoint = Vector2.new(0, 0.5)
     LogoBox.BackgroundColor3 = THEME.CardBg
+    LogoBox.ClipsDescendants = true
     LogoBox.Parent = BrandFrame
 
     local LogoBoxCorner = Instance.new("UICorner")
@@ -1983,8 +1985,9 @@ function NamelessWare:CreateWindow(config)
 
     if customLogoAsset then
         local LogoImg = Instance.new("ImageLabel")
-        LogoImg.Size = UDim2.new(1, -2, 1, -2)
-        LogoImg.Position = UDim2.new(0, 1, 0, 1)
+        LogoImg.Size = UDim2.new(1, 0, 1, 0)
+        LogoImg.Position = UDim2.new(0.5, 0, 0.5, 0)
+        LogoImg.AnchorPoint = Vector2.new(0.5, 0.5)
         LogoImg.BackgroundTransparency = 1
         LogoImg.Image = customLogoAsset
         LogoImg.ScaleType = Enum.ScaleType.Fit
@@ -1992,11 +1995,15 @@ function NamelessWare:CreateWindow(config)
     else
         local LogoTxt = Instance.new("TextLabel")
         LogoTxt.Size = UDim2.new(1, 0, 1, 0)
+        LogoTxt.Position = UDim2.new(0.5, 0, 0.5, 0)
+        LogoTxt.AnchorPoint = Vector2.new(0.5, 0.5)
         LogoTxt.BackgroundTransparency = 1
         LogoTxt.Text = "NW"
         LogoTxt.Font = THEME.FontBold
         LogoTxt.TextSize = 12
         LogoTxt.TextColor3 = AccentColor
+        LogoTxt.TextXAlignment = Enum.TextXAlignment.Center
+        LogoTxt.TextYAlignment = Enum.TextYAlignment.Center
         LogoTxt.Parent = LogoBox
     end
 
@@ -2017,7 +2024,8 @@ function NamelessWare:CreateWindow(config)
 
     local BrandTitle = Instance.new("TextLabel")
     BrandTitle.Size = UDim2.new(1, -48, 1, 0)
-    BrandTitle.Position = UDim2.new(0, 44, 0, 0)
+    BrandTitle.Position = UDim2.new(0, 46, 0.5, 0)
+    BrandTitle.AnchorPoint = Vector2.new(0, 0.5)
     BrandTitle.BackgroundTransparency = 1
     BrandTitle.RichText = true
     BrandTitle.Text = FormatBrandTitle(Title)
@@ -2025,6 +2033,7 @@ function NamelessWare:CreateWindow(config)
     BrandTitle.TextSize = 12
     BrandTitle.TextColor3 = THEME.TextMain
     BrandTitle.TextXAlignment = Enum.TextXAlignment.Left
+    BrandTitle.TextYAlignment = Enum.TextYAlignment.Center
     BrandTitle.Parent = BrandFrame
 
     MakeDraggable(MainWindow, BrandFrame)
@@ -2861,7 +2870,7 @@ function NamelessWare:CreateWindow(config)
         RightLayout.SortOrder = Enum.SortOrder.LayoutOrder
         RightLayout.Parent = RightColumn
 
-        local isCurrentTab = false
+        local TabObject
 
         local function ActivateTab()
             if ActiveDropdown then
@@ -2876,7 +2885,9 @@ function NamelessWare:CreateWindow(config)
             end
 
             TabPage.Visible = true
-            isCurrentTab = true
+            if TabObject then
+                TabObject.IsActive = true
+            end
             HeaderTabTitle.Text = name
             HeaderTabSub.Text = subText
 
@@ -2891,25 +2902,25 @@ function NamelessWare:CreateWindow(config)
         TabBtn.MouseButton1Click:Connect(ActivateTab)
 
         TabBtn.MouseEnter:Connect(function()
-            if not isCurrentTab then
+            if TabObject and not TabObject.IsActive then
                 Tween(TabBtn, {BackgroundTransparency = 0.85}, 0.15)
                 Tween(TabLabel, {TextColor3 = THEME.TextMain}, 0.15)
             end
         end)
 
         TabBtn.MouseLeave:Connect(function()
-            if not isCurrentTab then
+            if TabObject and not TabObject.IsActive then
                 Tween(TabBtn, {BackgroundTransparency = 1}, 0.15)
                 Tween(TabLabel, {TextColor3 = THEME.TextMuted}, 0.15)
             end
         end)
 
-        local TabObject = {
+        TabObject = {
             Button = TabBtn,
             Label = TabLabel,
             Icon = TabIcon,
             Page = TabPage,
-            IsActive = isCurrentTab
+            IsActive = false
         }
         table.insert(Window.Tabs, TabObject)
 
@@ -2921,7 +2932,7 @@ function NamelessWare:CreateWindow(config)
             })
             LeftColumn.ScrollBarImageColor3 = theme.Accent
             RightColumn.ScrollBarImageColor3 = theme.Accent
-            if isCurrentTab then
+            if TabObject.IsActive then
                 TabBtn.BackgroundTransparency = 0
                 TabLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
                 TabIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
@@ -3524,7 +3535,7 @@ function NamelessWare:CreateWindow(config)
                 local isOpen = false
 
                 local DropFrame = Instance.new("Frame")
-                DropFrame.Size = UDim2.new(1, 0, 0, 46)
+                DropFrame.Size = UDim2.new(1, 0, 0, 48)
                 DropFrame.BackgroundTransparency = 1
                 DropFrame.ClipsDescendants = false
                 DropFrame.ZIndex = 1
@@ -3544,7 +3555,7 @@ function NamelessWare:CreateWindow(config)
                 Title.Parent = DropFrame
 
                 local DropBtn = Instance.new("TextButton")
-                DropBtn.Size = UDim2.new(1, 0, 0, 26)
+                DropBtn.Size = UDim2.new(1, 0, 0, 28)
                 DropBtn.Position = UDim2.new(0, 0, 0, 18)
                 DropBtn.BackgroundColor3 = THEME.BgSidebar
                 DropBtn.Text = ""
@@ -3556,14 +3567,22 @@ function NamelessWare:CreateWindow(config)
                 DropCorner.CornerRadius = UDim.new(0, 6)
                 DropCorner.Parent = DropBtn
 
+                local DropBtnGrad = Instance.new("UIGradient")
+                DropBtnGrad.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, THEME.CardBgGradient or THEME.BgSidebar),
+                    ColorSequenceKeypoint.new(1, THEME.BgSidebar)
+                })
+                DropBtnGrad.Rotation = 90
+                DropBtnGrad.Parent = DropBtn
+
                 local DropStroke = Instance.new("UIStroke")
                 DropStroke.Color = THEME.CardBorder
                 DropStroke.Thickness = 1
                 DropStroke.Parent = DropBtn
 
                 local SelLabel = Instance.new("TextLabel")
-                SelLabel.Size = UDim2.new(1, -28, 1, 0)
-                SelLabel.Position = UDim2.new(0, 8, 0, 0)
+                SelLabel.Size = UDim2.new(1, -32, 1, 0)
+                SelLabel.Position = UDim2.new(0, 10, 0, 0)
                 SelLabel.BackgroundTransparency = 1
                 SelLabel.Text = selected
                 SelLabel.Font = THEME.FontMain
@@ -3574,8 +3593,8 @@ function NamelessWare:CreateWindow(config)
                 SelLabel.Parent = DropBtn
 
                 local Arrow = Instance.new("ImageLabel")
-                Arrow.Size = UDim2.new(0, 12, 0, 12)
-                Arrow.Position = UDim2.new(1, -20, 0.5, -6)
+                Arrow.Size = UDim2.new(0, 13, 0, 13)
+                Arrow.Position = UDim2.new(1, -22, 0.5, -6.5)
                 Arrow.BackgroundTransparency = 1
                 Arrow.Image = "rbxassetid://10709790948"
                 Arrow.ImageColor3 = THEME.TextMuted
@@ -3583,9 +3602,23 @@ function NamelessWare:CreateWindow(config)
                 Arrow.ZIndex = 3
                 Arrow.Parent = DropBtn
 
+                DropBtn.MouseEnter:Connect(function()
+                    if not isOpen then
+                        Tween(DropStroke, {Color = THEME.Accent}, 0.15)
+                        Tween(Arrow, {ImageColor3 = THEME.Accent}, 0.15)
+                    end
+                end)
+
+                DropBtn.MouseLeave:Connect(function()
+                    if not isOpen then
+                        Tween(DropStroke, {Color = THEME.CardBorder}, 0.15)
+                        Tween(Arrow, {ImageColor3 = THEME.TextMuted}, 0.15)
+                    end
+                end)
+
                 local MenuList = Instance.new("Frame")
                 MenuList.Size = UDim2.new(1, 0, 0, 0)
-                MenuList.Position = UDim2.new(0, 0, 0, 48)
+                MenuList.Position = UDim2.new(0, 0, 0, 50)
                 MenuList.BackgroundColor3 = THEME.CardBg
                 MenuList.BorderSizePixel = 0
                 MenuList.ClipsDescendants = true
@@ -3595,19 +3628,27 @@ function NamelessWare:CreateWindow(config)
                 MenuList.Parent = DropFrame
 
                 local MenuCorner = Instance.new("UICorner")
-                MenuCorner.CornerRadius = UDim.new(0, 6)
+                MenuCorner.CornerRadius = UDim.new(0, 8)
                 MenuCorner.Parent = MenuList
+
+                local MenuListGrad = Instance.new("UIGradient")
+                MenuListGrad.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, THEME.CardBgGradient or THEME.CardBg),
+                    ColorSequenceKeypoint.new(1, THEME.BgSidebar or THEME.CardBg)
+                })
+                MenuListGrad.Rotation = 45
+                MenuListGrad.Parent = MenuList
 
                 local MenuStroke = Instance.new("UIStroke")
                 MenuStroke.Color = THEME.Accent
-                MenuStroke.Thickness = 1
+                MenuStroke.Thickness = 1.2
                 MenuStroke.Parent = MenuList
 
                 local MenuScroll = Instance.new("ScrollingFrame")
-                MenuScroll.Size = UDim2.new(1, -4, 1, -4)
-                MenuScroll.Position = UDim2.new(0, 2, 0, 2)
+                MenuScroll.Size = UDim2.new(1, -6, 1, -6)
+                MenuScroll.Position = UDim2.new(0, 3, 0, 3)
                 MenuScroll.BackgroundTransparency = 1
-                MenuScroll.ScrollBarThickness = 2
+                MenuScroll.ScrollBarThickness = 3
                 MenuScroll.ScrollBarImageColor3 = THEME.Accent
                 MenuScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
                 MenuScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
@@ -3615,8 +3656,15 @@ function NamelessWare:CreateWindow(config)
                 MenuScroll.ZIndex = 101
                 MenuScroll.Parent = MenuList
 
+                local MenuPadding = Instance.new("UIPadding")
+                MenuPadding.PaddingTop = UDim.new(0, 3)
+                MenuPadding.PaddingBottom = UDim.new(0, 3)
+                MenuPadding.PaddingLeft = UDim.new(0, 2)
+                MenuPadding.PaddingRight = UDim.new(0, 4)
+                MenuPadding.Parent = MenuScroll
+
                 local MenuLayout = Instance.new("UIListLayout")
-                MenuLayout.Padding = UDim.new(0, 2)
+                MenuLayout.Padding = UDim.new(0, 3)
                 MenuLayout.SortOrder = Enum.SortOrder.LayoutOrder
                 MenuLayout.Parent = MenuScroll
 
@@ -3649,7 +3697,7 @@ function NamelessWare:CreateWindow(config)
                     DropFrame.ZIndex = 100
                     MenuList.Visible = true
 
-                    local targetHeight = math.min(#options * 24 + 6, 120)
+                    local targetHeight = math.min(#options * 27 + 10, 135)
                     Tween(Arrow, {Rotation = 180, ImageColor3 = THEME.Accent}, 0.15)
                     Tween(DropStroke, {Color = THEME.Accent}, 0.15)
                     Tween(MenuList, {Size = UDim2.new(1, 0, 0, targetHeight)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -3661,33 +3709,76 @@ function NamelessWare:CreateWindow(config)
                     end
 
                     for _, opt in ipairs(options) do
+                        local isSelected = (opt == selected)
                         local OptItem = Instance.new("TextButton")
-                        OptItem.Size = UDim2.new(1, 0, 0, 22)
-                        OptItem.BackgroundColor3 = (opt == selected) and THEME.Accent or THEME.CardBg
-                        OptItem.BackgroundTransparency = (opt == selected) and 0.8 or 1
-                        OptItem.Text = "  " .. opt
-                        OptItem.Font = THEME.FontMain
-                        OptItem.TextSize = szItem
-                        OptItem.TextColor3 = (opt == selected) and THEME.Accent or THEME.TextMain
-                        OptItem.TextXAlignment = Enum.TextXAlignment.Left
+                        OptItem.Size = UDim2.new(1, 0, 0, 24)
+                        OptItem.BackgroundColor3 = isSelected and THEME.Accent or THEME.BgSidebar
+                        OptItem.BackgroundTransparency = isSelected and 0.82 or 1
+                        OptItem.Text = ""
                         OptItem.AutoButtonColor = false
                         OptItem.Active = true
                         OptItem.ZIndex = 102
                         OptItem.Parent = MenuScroll
 
                         local OptCorner = Instance.new("UICorner")
-                        OptCorner.CornerRadius = UDim.new(0, 4)
+                        OptCorner.CornerRadius = UDim.new(0, 5)
                         OptCorner.Parent = OptItem
+
+                        local OptStroke = Instance.new("UIStroke")
+                        OptStroke.Color = isSelected and THEME.Accent or THEME.CardBorder
+                        OptStroke.Thickness = 1
+                        OptStroke.Transparency = isSelected and 0.4 or 1
+                        OptStroke.Parent = OptItem
+
+                        if isSelected then
+                            local Indicator = Instance.new("Frame")
+                            Indicator.Size = UDim2.new(0, 3, 0, 12)
+                            Indicator.Position = UDim2.new(0, 5, 0.5, -6)
+                            Indicator.BackgroundColor3 = THEME.Accent
+                            Indicator.BorderSizePixel = 0
+                            Indicator.ZIndex = 103
+                            Indicator.Parent = OptItem
+
+                            local IndCorner = Instance.new("UICorner")
+                            IndCorner.CornerRadius = UDim.new(1, 0)
+                            IndCorner.Parent = Indicator
+                        end
+
+                        local OptLabel = Instance.new("TextLabel")
+                        OptLabel.Size = UDim2.new(1, isSelected and -36 or -16, 1, 0)
+                        OptLabel.Position = UDim2.new(0, isSelected and 14 or 8, 0, 0)
+                        OptLabel.BackgroundTransparency = 1
+                        OptLabel.Text = opt
+                        OptLabel.Font = isSelected and THEME.FontBold or THEME.FontMain
+                        OptLabel.TextSize = szItem
+                        OptLabel.TextColor3 = isSelected and THEME.Accent or THEME.TextMain
+                        OptLabel.TextXAlignment = Enum.TextXAlignment.Left
+                        OptLabel.ZIndex = 103
+                        OptLabel.Parent = OptItem
+
+                        if isSelected then
+                            local CheckImg = Instance.new("ImageLabel")
+                            CheckImg.Size = UDim2.new(0, 11, 0, 11)
+                            CheckImg.Position = UDim2.new(1, -16, 0.5, -5.5)
+                            CheckImg.BackgroundTransparency = 1
+                            CheckImg.Image = "rbxassetid://10709790587"
+                            CheckImg.ImageColor3 = THEME.Accent
+                            CheckImg.ScaleType = Enum.ScaleType.Fit
+                            CheckImg.ZIndex = 103
+                            CheckImg.Parent = OptItem
+                        end
 
                         OptItem.MouseEnter:Connect(function()
                             if opt ~= selected then
-                                Tween(OptItem, {BackgroundTransparency = 0.9, TextColor3 = THEME.Accent}, 0.1)
+                                Tween(OptItem, {BackgroundTransparency = 0.88, BackgroundColor3 = THEME.Accent}, 0.1)
+                                Tween(OptLabel, {TextColor3 = THEME.Accent}, 0.1)
                             end
                         end)
 
                         OptItem.MouseLeave:Connect(function()
                             if opt ~= selected then
-                                Tween(OptItem, {BackgroundTransparency = 1, TextColor3 = THEME.TextMain}, 0.1)
+                                Tween(OptItem, {BackgroundTransparency = 1, BackgroundColor3 = THEME.BgSidebar}, 0.1)
+                                Tween(OptLabel, {TextColor3 = THEME.TextMain}, 0.1)
                             end
                         end)
 
@@ -3714,10 +3805,18 @@ function NamelessWare:CreateWindow(config)
                 table.insert(NamelessWare.ThemeSubscribers, function(theme)
                     Title.TextColor3 = theme.TextMuted
                     DropBtn.BackgroundColor3 = theme.BgSidebar
+                    DropBtnGrad.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0, theme.CardBgGradient or theme.BgSidebar),
+                        ColorSequenceKeypoint.new(1, theme.BgSidebar)
+                    })
                     DropStroke.Color = isOpen and theme.Accent or theme.CardBorder
                     SelLabel.TextColor3 = theme.TextMain
                     Arrow.ImageColor3 = isOpen and theme.Accent or theme.TextMuted
                     MenuList.BackgroundColor3 = theme.CardBg
+                    MenuListGrad.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0, theme.CardBgGradient or theme.CardBg),
+                        ColorSequenceKeypoint.new(1, theme.BgSidebar or theme.CardBg)
+                    })
                     MenuStroke.Color = theme.Accent
                     MenuScroll.ScrollBarImageColor3 = theme.Accent
                     RebuildOptions()
