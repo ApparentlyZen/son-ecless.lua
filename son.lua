@@ -126,16 +126,16 @@ local THEME_PRESETS = {
         Accent = Color3.fromRGB(165, 95, 255),
         AccentGradient = Color3.fromRGB(195, 135, 255),
         AccentDark = Color3.fromRGB(120, 50, 220),
-        BgMain = Color3.fromRGB(15, 15, 22),
-        BgMainGradient = Color3.fromRGB(19, 19, 28),
-        BgSidebar = Color3.fromRGB(12, 12, 17),
-        CardBg = Color3.fromRGB(20, 20, 29),
-        CardBgGradient = Color3.fromRGB(24, 24, 35),
-        CardBorder = Color3.fromRGB(36, 36, 52),
+        BgMain = Color3.fromRGB(7, 7, 10),
+        BgMainGradient = Color3.fromRGB(26, 26, 36),
+        BgSidebar = Color3.fromRGB(6, 6, 8),
+        CardBg = Color3.fromRGB(13, 13, 18),
+        CardBgGradient = Color3.fromRGB(21, 21, 30),
+        CardBorder = Color3.fromRGB(30, 30, 44),
         TextMain = Color3.fromRGB(245, 245, 252),
-        TextMuted = Color3.fromRGB(130, 130, 155),
-        CircleOff = Color3.fromRGB(26, 26, 36),
-        CircleOffBorder = Color3.fromRGB(45, 45, 62),
+        TextMuted = Color3.fromRGB(120, 120, 145),
+        CircleOff = Color3.fromRGB(18, 18, 26),
+        CircleOffBorder = Color3.fromRGB(36, 36, 50),
     },
     ["Flow Indigo"] = {
         Accent = Color3.fromRGB(130, 90, 255),
@@ -1639,6 +1639,14 @@ function NamelessWare:CreateWindow(config)
     SidebarCorner.CornerRadius = UDim.new(0, 12)
     SidebarCorner.Parent = Sidebar
 
+    local SidebarGrad = Instance.new("UIGradient")
+    SidebarGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(21, 21, 30)),
+        ColorSequenceKeypoint.new(1, THEME.BgSidebar or Color3.fromRGB(6, 6, 8))
+    })
+    SidebarGrad.Rotation = 45
+    SidebarGrad.Parent = Sidebar
+
     local SidebarStroke = Instance.new("UIStroke")
     SidebarStroke.Color = THEME.CardBorder
     SidebarStroke.Thickness = 1
@@ -2075,12 +2083,28 @@ function NamelessWare:CreateWindow(config)
 
     table.insert(NamelessWare.ThemeSubscribers, function(theme)
         MainWindow.BackgroundColor3 = theme.BgMain
+        local gStart = theme.BgMainGradient or theme.BgMain or Color3.fromRGB(26, 26, 36)
+        local gEnd = theme.BgMain or Color3.fromRGB(7, 7, 10)
+        local gMid = Color3.new(
+            gStart.R * 0.45 + gEnd.R * 0.55,
+            gStart.G * 0.45 + gEnd.G * 0.55,
+            gStart.B * 0.45 + gEnd.B * 0.55
+        )
         MainGrad.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, theme.BgMainGradient),
-            ColorSequenceKeypoint.new(1, theme.BgMain)
+            ColorSequenceKeypoint.new(0, gStart),
+            ColorSequenceKeypoint.new(0.5, gMid),
+            ColorSequenceKeypoint.new(1, gEnd)
         })
+        MainGrad.Rotation = 45
         MainStroke.Color = theme.CardBorder
         Sidebar.BackgroundColor3 = theme.BgSidebar
+        local sStart = theme.CardBgGradient or theme.BgSidebar or Color3.fromRGB(21, 21, 30)
+        local sEnd = theme.BgSidebar or Color3.fromRGB(6, 6, 8)
+        SidebarGrad.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, sStart),
+            ColorSequenceKeypoint.new(1, sEnd)
+        })
+        SidebarGrad.Rotation = 45
         SidebarStroke.Color = theme.CardBorder
         MobileBtn.BackgroundColor3 = theme.BgSidebar
         MobileBtnStroke.Color = theme.CardBorder
