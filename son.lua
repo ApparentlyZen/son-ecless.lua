@@ -1597,6 +1597,10 @@ function NamelessWare:CreateWindow(config)
     MainCorner.CornerRadius = UDim.new(0, 12)
     MainCorner.Parent = MainWindow
 
+    local MainScale = Instance.new("UIScale")
+    MainScale.Scale = 1
+    MainScale.Parent = MainWindow
+
     local MainGrad = Instance.new("UIGradient")
     local bgGrad = THEME.BgMainGradient or Color3.fromRGB(26, 26, 36)
     local bgBase = THEME.BgMain or Color3.fromRGB(7, 7, 10)
@@ -1841,8 +1845,8 @@ function NamelessWare:CreateWindow(config)
     -- =====================================================
     local KeyDrop = Instance.new("Frame")
     KeyDrop.Name = "UserKeybindPopup"
-    KeyDrop.Size = UDim2.new(0, 160, 0, 0)
-    KeyDrop.Position = UDim2.new(0, 8, 1, -165)
+    KeyDrop.Size = UDim2.new(0, 150, 0, 0)
+    KeyDrop.Position = UDim2.new(0, 8, 1, -125)
     KeyDrop.BackgroundColor3 = THEME.BgSidebar
     KeyDrop.BorderSizePixel = 0
     KeyDrop.ClipsDescendants = true
@@ -1880,7 +1884,7 @@ function NamelessWare:CreateWindow(config)
     KeyDropTitle.Parent = KeyDrop
 
     local KeyDropBtn = Instance.new("TextButton")
-    KeyDropBtn.Size = UDim2.new(1, -16, 0, 22)
+    KeyDropBtn.Size = UDim2.new(1, -16, 0, 24)
     KeyDropBtn.Position = UDim2.new(0, 8, 0, 24)
     KeyDropBtn.BackgroundColor3 = THEME.CardBg
     KeyDropBtn.Text = "[ " .. tostring(NamelessWare.ToggleKey.Name) .. " ]"
@@ -1900,38 +1904,6 @@ function NamelessWare:CreateWindow(config)
     KeyDropBtnStroke.Thickness = 1
     KeyDropBtnStroke.Parent = KeyDropBtn
 
-    local PresetsLabel = Instance.new("TextLabel")
-    PresetsLabel.Size = UDim2.new(1, -16, 0, 12)
-    PresetsLabel.Position = UDim2.new(0, 8, 0, 49)
-    PresetsLabel.BackgroundTransparency = 1
-    PresetsLabel.Text = "Quick Presets:"
-    PresetsLabel.Font = THEME.FontMain
-    PresetsLabel.TextSize = 9
-    PresetsLabel.TextColor3 = THEME.TextMuted
-    PresetsLabel.TextXAlignment = Enum.TextXAlignment.Left
-    PresetsLabel.ZIndex = 251
-    PresetsLabel.Parent = KeyDrop
-
-    local PresetsRow = Instance.new("Frame")
-    PresetsRow.Size = UDim2.new(1, -16, 0, 18)
-    PresetsRow.Position = UDim2.new(0, 8, 0, 64)
-    PresetsRow.BackgroundTransparency = 1
-    PresetsRow.ZIndex = 251
-    PresetsRow.Parent = KeyDrop
-
-    local PresetsLayout = Instance.new("UIListLayout")
-    PresetsLayout.FillDirection = Enum.FillDirection.Horizontal
-    PresetsLayout.Padding = UDim.new(0, 4)
-    PresetsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    PresetsLayout.Parent = PresetsRow
-
-    local presetKeys = {
-        { Name = "RShift", Code = Enum.KeyCode.RightShift },
-        { Name = "RCtrl", Code = Enum.KeyCode.RightControl },
-        { Name = "Insert", Code = Enum.KeyCode.Insert },
-        { Name = "F8", Code = Enum.KeyCode.F8 },
-    }
-
     local isKeyDropOpen = false
     local isListeningKey = false
     local listenConn = nil
@@ -1948,7 +1920,7 @@ function NamelessWare:CreateWindow(config)
         Tween(KeyDropBtn, {TextColor3 = THEME.Accent}, 0.15)
         Tween(UserKeyStroke, {Color = THEME.CardBorder}, 0.15)
         Tween(UserKeyIcon, {ImageColor3 = THEME.TextMuted}, 0.15)
-        local tw = Tween(KeyDrop, {Size = UDim2.new(0, 160, 0, 0)}, 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+        local tw = Tween(KeyDrop, {Size = UDim2.new(0, 150, 0, 0)}, 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
         tw.Completed:Connect(function()
             if not isKeyDropOpen then KeyDrop.Visible = false end
         end)
@@ -1962,7 +1934,7 @@ function NamelessWare:CreateWindow(config)
         KeyDropBtn.Text = "[ " .. tostring(NamelessWare.ToggleKey.Name) .. " ]"
         Tween(UserKeyStroke, {Color = THEME.Accent}, 0.15)
         Tween(UserKeyIcon, {ImageColor3 = THEME.Accent}, 0.15)
-        Tween(KeyDrop, {Size = UDim2.new(0, 160, 0, 90)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        Tween(KeyDrop, {Size = UDim2.new(0, 150, 0, 56)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
     end
 
     local function ToggleKeyDrop()
@@ -2021,40 +1993,6 @@ function NamelessWare:CreateWindow(config)
             end
         end)
     end)
-
-    for _, pk in ipairs(presetKeys) do
-        local PBtn = Instance.new("TextButton")
-        PBtn.Size = UDim2.new(0, 32, 1, 0)
-        PBtn.BackgroundColor3 = THEME.CardBg
-        PBtn.Text = pk.Name
-        PBtn.Font = THEME.FontMain
-        PBtn.TextSize = 8
-        PBtn.TextColor3 = THEME.TextMuted
-        PBtn.AutoButtonColor = false
-        PBtn.ZIndex = 252
-        PBtn.Parent = PresetsRow
-
-        local PCorner = Instance.new("UICorner")
-        PCorner.CornerRadius = UDim.new(0, 4)
-        PCorner.Parent = PBtn
-
-        local PStroke = Instance.new("UIStroke")
-        PStroke.Color = THEME.CardBorder
-        PStroke.Thickness = 1
-        PStroke.Parent = PBtn
-
-        PBtn.MouseEnter:Connect(function()
-            Tween(PBtn, {TextColor3 = THEME.Accent}, 0.1)
-            Tween(PStroke, {Color = THEME.Accent}, 0.1)
-        end)
-        PBtn.MouseLeave:Connect(function()
-            Tween(PBtn, {TextColor3 = THEME.TextMuted}, 0.1)
-            Tween(PStroke, {Color = THEME.CardBorder}, 0.1)
-        end)
-        PBtn.MouseButton1Click:Connect(function()
-            ApplyNewKey(pk.Code)
-        end)
-    end
 
     local sessionStart = tick()
     task.spawn(function()
@@ -2274,15 +2212,22 @@ function NamelessWare:CreateWindow(config)
     local function ToggleUI()
         isUIOpen = not isUIOpen
         if isUIOpen then
+            if isKeyDropOpen then CloseKeyDrop() end
             MainWindow.Visible = true
-            MainWindow.Position = UDim2.new(0.5, -280, 0.5, -160)
-            Tween(MainWindow, {Position = UDim2.new(0.5, -280, 0.5, -180)}, 0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            MainScale.Scale = 0.92
+            MainWindow.Position = UDim2.new(0.5, -280, 0.5, -168)
+            Tween(MainScale, {Scale = 1}, 0.28, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            Tween(MainWindow, {Position = UDim2.new(0.5, -280, 0.5, -180)}, 0.28, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
         else
             if ActiveDropdown then
                 ActiveDropdown()
             end
-            local tw = Tween(MainWindow, {Position = UDim2.new(0.5, -280, 0.5, -160)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
-            tw.Completed:Connect(function()
+            if isKeyDropOpen then
+                CloseKeyDrop()
+            end
+            local twScale = Tween(MainScale, {Scale = 0.92}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+            local twPos = Tween(MainWindow, {Position = UDim2.new(0.5, -280, 0.5, -168)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+            twScale.Completed:Connect(function()
                 if not isUIOpen then MainWindow.Visible = false end
             end)
         end
@@ -2391,7 +2336,6 @@ function NamelessWare:CreateWindow(config)
         KeyDropBtn.BackgroundColor3 = theme.CardBg
         KeyDropBtnStroke.Color = isListeningKey and theme.Accent or theme.CardBorder
         KeyDropBtn.TextColor3 = theme.Accent
-        PresetsLabel.TextColor3 = theme.TextMuted
     end)
 
     function Window:AddCategory(catName)
