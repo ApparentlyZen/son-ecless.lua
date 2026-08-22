@@ -1551,8 +1551,8 @@ function NamelessWare:CreateWindow(config)
     MobileBtnCorner.Parent = MobileBtn
 
     local MobileBtnStroke = Instance.new("UIStroke")
-    MobileBtnStroke.Color = AccentColor
-    MobileBtnStroke.Thickness = 2
+    MobileBtnStroke.Color = THEME.CardBorder
+    MobileBtnStroke.Thickness = 1.2
     MobileBtnStroke.Parent = MobileBtn
 
     if customLogoAsset then
@@ -1628,8 +1628,8 @@ function NamelessWare:CreateWindow(config)
     LogoBoxCorner.Parent = LogoBox
 
     local LogoGlow = Instance.new("UIStroke")
-    LogoGlow.Color = AccentColor
-    LogoGlow.Thickness = 1.2
+    LogoGlow.Color = THEME.CardBorder
+    LogoGlow.Thickness = 1
     LogoGlow.Parent = LogoBox
 
     if customLogoAsset then
@@ -2035,9 +2035,9 @@ function NamelessWare:CreateWindow(config)
         Sidebar.BackgroundColor3 = theme.BgSidebar
         SidebarStroke.Color = theme.CardBorder
         MobileBtn.BackgroundColor3 = theme.BgSidebar
-        MobileBtnStroke.Color = theme.Accent
+        MobileBtnStroke.Color = theme.CardBorder
         LogoBox.BackgroundColor3 = theme.CardBg
-        LogoGlow.Color = theme.Accent
+        LogoGlow.Color = theme.CardBorder
         BrandTitle.TextColor3 = theme.TextMain
         HeaderTabTitle.TextColor3 = theme.TextMain
         HeaderTabSub.TextColor3 = theme.TextMuted
