@@ -3456,14 +3456,14 @@ function NamelessWare:CreateWindow(config)
                     local dist = delta.Magnitude
                     local clampedDist = math.clamp(dist, 0, radius)
 
+                    local dir = (dist > 0) and (delta / dist) or Vector2.new(0, 0)
+                    local dotX = radius + dir.X * clampedDist
+                    local dotY = radius + dir.Y * clampedDist
+                    WheelDot.Position = UDim2.new(0, dotX, 0, dotY)
+
                     local angle = math.atan2(delta.Y, delta.X)
                     currentHue = ((math.pi - angle) / (math.pi * 2)) % 1
                     currentSat = math.clamp(clampedDist / radius, 0, 1)
-
-                    local dotAngle = math.pi - (currentHue * math.pi * 2)
-                    local dotX = radius + math.cos(dotAngle) * clampedDist
-                    local dotY = radius + math.sin(dotAngle) * clampedDist
-                    WheelDot.Position = UDim2.new(0, dotX, 0, dotY)
 
                     currentColor = Color3.fromHSV(currentHue, currentSat, currentVal)
                     SwatchBtn.BackgroundColor3 = currentColor
@@ -3509,10 +3509,9 @@ function NamelessWare:CreateWindow(config)
                     end
                 end)
 
-                Wheel.MouseButton1Down:Connect(function()
+                Wheel.MouseButton1Down:Connect(function(x, y)
                     activeWheelInput = true
-                    local mousePos = UserInputService:GetMouseLocation()
-                    UpdateFromWheelPos(mousePos.X, mousePos.Y)
+                    UpdateFromWheelPos(x, y)
                 end)
 
                 ValTrack.InputBegan:Connect(function(input)
@@ -3522,19 +3521,16 @@ function NamelessWare:CreateWindow(config)
                     end
                 end)
 
-                ValTrack.MouseButton1Down:Connect(function()
+                ValTrack.MouseButton1Down:Connect(function(x, y)
                     activeValInput = true
-                    local mousePos = UserInputService:GetMouseLocation()
-                    UpdateFromValPos(mousePos.X)
+                    UpdateFromValPos(x)
                 end)
 
                 UserInputService.InputChanged:Connect(function(input)
                     if activeWheelInput and (input == activeWheelInput or input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                        local mousePos = (input.UserInputType == Enum.UserInputType.MouseMovement) and UserInputService:GetMouseLocation() or input.Position
-                        UpdateFromWheelPos(mousePos.X, mousePos.Y)
+                        UpdateFromWheelPos(input.Position.X, input.Position.Y)
                     elseif activeValInput and (input == activeValInput or input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                        local mousePos = (input.UserInputType == Enum.UserInputType.MouseMovement) and UserInputService:GetMouseLocation() or input.Position
-                        UpdateFromValPos(mousePos.X)
+                        UpdateFromValPos(input.Position.X)
                     end
                 end)
 
