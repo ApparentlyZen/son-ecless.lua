@@ -1598,20 +1598,15 @@ function NamelessWare:CreateWindow(config)
     SafeParentGui(ScreenGui)
     _G.NamelessWareInstance = ScreenGui
 
-    local activeLogo = ResolveLogoAsset(config.Logo or config.LogoUrl or config.LogoAsset)
+    local LogoUrl = config.LogoUrl or config.Logo or RAW_LOGO_URL
+    local customLogoAsset = ResolveLogoAsset(LogoUrl)
 
-    local MobileBtn = Instance.new("TextButton")
+    local MobileBtn = Instance.new("ImageButton")
     MobileBtn.Name = "NamelessMobileBtn"
-    MobileBtn.Size = UDim2.new(0, 48, 0, 48)
-    MobileBtn.Position = UDim2.new(0, 16, 0.5, -24)
-    MobileBtn.BackgroundTransparency = activeLogo and 1 or 0
+    MobileBtn.Size = UDim2.new(0, 50, 0, 50)
+    MobileBtn.Position = UDim2.new(0, 16, 0.5, -25)
     MobileBtn.BackgroundColor3 = THEME.BgSidebar
-    MobileBtn.Text = activeLogo and "" or "NW"
-    MobileBtn.Font = THEME.FontBold
-    MobileBtn.TextSize = 14
-    MobileBtn.TextColor3 = AccentColor
     MobileBtn.AutoButtonColor = false
-    MobileBtn.ClipsDescendants = true
     MobileBtn.Parent = ScreenGui
 
     local MobileBtnCorner = Instance.new("UICorner")
@@ -1621,21 +1616,19 @@ function NamelessWare:CreateWindow(config)
     local MobileBtnStroke = Instance.new("UIStroke")
     MobileBtnStroke.Color = THEME.CardBorder
     MobileBtnStroke.Thickness = 1.2
-    MobileBtnStroke.Enabled = not activeLogo
     MobileBtnStroke.Parent = MobileBtn
 
-    if activeLogo then
-        local MobileImg = Instance.new("ImageLabel")
-        MobileImg.Size = UDim2.new(1, 0, 1, 0)
-        MobileImg.Position = UDim2.new(0, 0, 0, 0)
-        MobileImg.BackgroundTransparency = 1
-        MobileImg.Image = activeLogo
-        MobileImg.ScaleType = Enum.ScaleType.Fit
-        MobileImg.Parent = MobileBtn
-
-        local MobileImgCorner = Instance.new("UICorner")
-        MobileImgCorner.CornerRadius = UDim.new(1, 0)
-        MobileImgCorner.Parent = MobileImg
+    if customLogoAsset then
+        MobileBtn.Image = customLogoAsset
+    else
+        local FallbackText = Instance.new("TextLabel")
+        FallbackText.Size = UDim2.new(1, 0, 1, 0)
+        FallbackText.BackgroundTransparency = 1
+        FallbackText.Text = "NW"
+        FallbackText.Font = THEME.FontBold
+        FallbackText.TextSize = 16
+        FallbackText.TextColor3 = AccentColor
+        FallbackText.Parent = MobileBtn
     end
 
     MakeDraggable(MobileBtn)
@@ -1705,18 +1698,13 @@ function NamelessWare:CreateWindow(config)
     WLogoCorner.CornerRadius = UDim.new(0, 4)
     WLogoCorner.Parent = WLogoBox
 
-    if activeLogo then
+    if customLogoAsset then
         local WLogoImg = Instance.new("ImageLabel")
         WLogoImg.Size = UDim2.new(1, 0, 1, 0)
-        WLogoImg.Position = UDim2.new(0, 0, 0, 0)
         WLogoImg.BackgroundTransparency = 1
-        WLogoImg.Image = activeLogo
+        WLogoImg.Image = customLogoAsset
         WLogoImg.ScaleType = Enum.ScaleType.Fit
         WLogoImg.Parent = WLogoBox
-
-        local WLogoImgCorner = Instance.new("UICorner")
-        WLogoImgCorner.CornerRadius = UDim.new(0, 4)
-        WLogoImgCorner.Parent = WLogoImg
     else
         local WLogoTxt = Instance.new("TextLabel")
         WLogoTxt.Size = UDim2.new(1, 0, 1, 0)
@@ -1893,27 +1881,27 @@ function NamelessWare:CreateWindow(config)
         platformIcon = "rbxassetid://105451070737074"
     end
 
-    local winWidth = isMobilePlatform and 550 or 630
-    local winHeight = isMobilePlatform and 350 or 430
-    local sidebarWidth = isMobilePlatform and 150 or 165
-    local winPosCenter = UDim2.new(0.5, -math.floor(winWidth / 2), 0.5, -math.floor(winHeight / 2))
-    local winPosOffset = UDim2.new(0.5, -math.floor(winWidth / 2), 0.5, -math.floor(winHeight / 2) + 14)
+    local winWidth = 600
+    local winHeight = 445
+    local sidebarWidth = 155
+    local winPosCenter = UDim2.new(0.5, -300, 0.5, -222)
+    local winPosOffset = UDim2.new(0.5, -300, 0.5, -208)
 
-    local szBrand = isMobilePlatform and 10.5 or 12
-    local szHeader = isMobilePlatform and 15 or 16.5
-    local szSub = isMobilePlatform and 10 or 11
-    local szTab = isMobilePlatform and 11 or 12
-    local szSec = isMobilePlatform and 11 or 12.5
-    local szSubHeader = isMobilePlatform and 10 or 11
-    local szItem = isMobilePlatform and 10 or 11.5
-    local szBadge = isMobilePlatform and 9 or 10
-    local szInput = isMobilePlatform and 10 or 11
-    local szUser = isMobilePlatform and 10 or 11
-    local szTimer = isMobilePlatform and 9 or 10
+    local szBrand = 12
+    local szHeader = 16
+    local szSub = 10
+    local szTab = 11
+    local szSec = 11
+    local szSubHeader = 10
+    local szItem = 10
+    local szBadge = 8
+    local szInput = 10
+    local szUser = 10
+    local szTimer = 9
 
     local MainWindow = Instance.new("Frame")
     MainWindow.Name = "MainWindow"
-    MainWindow.Size = UDim2.new(0, winWidth, 0, winHeight)
+    MainWindow.Size = UDim2.new(0, 600, 0, 445)
     MainWindow.Position = winPosCenter
     MainWindow.BackgroundColor3 = THEME.BgMain
     MainWindow.BorderSizePixel = 0
@@ -1951,7 +1939,7 @@ function NamelessWare:CreateWindow(config)
 
     local Sidebar = Instance.new("Frame")
     Sidebar.Name = "Sidebar"
-    Sidebar.Size = UDim2.new(0, sidebarWidth, 1, 0)
+    Sidebar.Size = UDim2.new(0, 155, 1, 0)
     Sidebar.BackgroundColor3 = THEME.BgSidebar
     Sidebar.BorderSizePixel = 0
     Sidebar.Parent = MainWindow
@@ -1982,7 +1970,6 @@ function NamelessWare:CreateWindow(config)
     LogoBox.Size = UDim2.new(0, 26, 0, 26)
     LogoBox.Position = UDim2.new(0, 12, 0.5, -13)
     LogoBox.BackgroundColor3 = THEME.CardBg
-    LogoBox.ClipsDescendants = true
     LogoBox.Parent = BrandFrame
 
     local LogoBoxCorner = Instance.new("UICorner")
@@ -1994,18 +1981,14 @@ function NamelessWare:CreateWindow(config)
     LogoGlow.Thickness = 1
     LogoGlow.Parent = LogoBox
 
-    if activeLogo then
+    if customLogoAsset then
         local LogoImg = Instance.new("ImageLabel")
-        LogoImg.Size = UDim2.new(1, 0, 1, 0)
-        LogoImg.Position = UDim2.new(0, 0, 0, 0)
+        LogoImg.Size = UDim2.new(1, -2, 1, -2)
+        LogoImg.Position = UDim2.new(0, 1, 0, 1)
         LogoImg.BackgroundTransparency = 1
-        LogoImg.Image = activeLogo
+        LogoImg.Image = customLogoAsset
         LogoImg.ScaleType = Enum.ScaleType.Fit
         LogoImg.Parent = LogoBox
-
-        local LogoImgCorner = Instance.new("UICorner")
-        LogoImgCorner.CornerRadius = UDim.new(0, 7)
-        LogoImgCorner.Parent = LogoImg
     else
         local LogoTxt = Instance.new("TextLabel")
         LogoTxt.Size = UDim2.new(1, 0, 1, 0)
@@ -2033,13 +2016,13 @@ function NamelessWare:CreateWindow(config)
     end
 
     local BrandTitle = Instance.new("TextLabel")
-    BrandTitle.Size = UDim2.new(1, -44, 1, 0)
-    BrandTitle.Position = UDim2.new(0, 42, 0, 0)
+    BrandTitle.Size = UDim2.new(1, -48, 1, 0)
+    BrandTitle.Position = UDim2.new(0, 44, 0, 0)
     BrandTitle.BackgroundTransparency = 1
     BrandTitle.RichText = true
     BrandTitle.Text = FormatBrandTitle(Title)
     BrandTitle.Font = THEME.FontBold
-    BrandTitle.TextSize = szBrand
+    BrandTitle.TextSize = 12
     BrandTitle.TextColor3 = THEME.TextMain
     BrandTitle.TextXAlignment = Enum.TextXAlignment.Left
     BrandTitle.Parent = BrandFrame
@@ -2426,8 +2409,8 @@ function NamelessWare:CreateWindow(config)
 
     local HeaderFrame = Instance.new("Frame")
     HeaderFrame.Name = "HeaderFrame"
-    HeaderFrame.Size = UDim2.new(1, -(sidebarWidth + 10), 0, isMobilePlatform and 44 or 46)
-    HeaderFrame.Position = UDim2.new(0, sidebarWidth + 5, 0, 4)
+    HeaderFrame.Size = UDim2.new(1, -165, 0, 48)
+    HeaderFrame.Position = UDim2.new(0, 160, 0, 4)
     HeaderFrame.BackgroundTransparency = 1
     HeaderFrame.Parent = MainWindow
 
@@ -2440,7 +2423,7 @@ function NamelessWare:CreateWindow(config)
     HeaderTabTitle.BackgroundTransparency = 1
     HeaderTabTitle.Text = "Combat"
     HeaderTabTitle.Font = THEME.FontBold
-    HeaderTabTitle.TextSize = szHeader
+    HeaderTabTitle.TextSize = 16
     HeaderTabTitle.TextColor3 = THEME.TextMain
     HeaderTabTitle.TextXAlignment = Enum.TextXAlignment.Left
     HeaderTabTitle.Parent = HeaderFrame
@@ -2451,7 +2434,7 @@ function NamelessWare:CreateWindow(config)
     HeaderTabSub.BackgroundTransparency = 1
     HeaderTabSub.Text = SubTitle
     HeaderTabSub.Font = THEME.FontMain
-    HeaderTabSub.TextSize = szSub
+    HeaderTabSub.TextSize = 10
     HeaderTabSub.TextColor3 = THEME.TextMuted
     HeaderTabSub.TextXAlignment = Enum.TextXAlignment.Left
     HeaderTabSub.Parent = HeaderFrame
@@ -2490,7 +2473,7 @@ function NamelessWare:CreateWindow(config)
     SearchInput.PlaceholderText = "Search..."
     SearchInput.PlaceholderColor3 = THEME.TextMuted
     SearchInput.Font = THEME.FontMain
-    SearchInput.TextSize = szInput
+    SearchInput.TextSize = 10
     SearchInput.TextColor3 = THEME.TextMain
     SearchInput.TextXAlignment = Enum.TextXAlignment.Left
     SearchInput.ClearTextOnFocus = false
@@ -2539,7 +2522,7 @@ function NamelessWare:CreateWindow(config)
     DeviceLabel.BackgroundTransparency = 1
     DeviceLabel.Text = platformName
     DeviceLabel.Font = THEME.FontBold
-    DeviceLabel.TextSize = szBadge
+    DeviceLabel.TextSize = 8
     DeviceLabel.TextColor3 = THEME.TextMain
     DeviceLabel.TextXAlignment = Enum.TextXAlignment.Left
     DeviceLabel.Parent = DeviceBadge
@@ -2598,8 +2581,8 @@ function NamelessWare:CreateWindow(config)
 
     local ContentArea = Instance.new("Frame")
     ContentArea.Name = "ContentArea"
-    ContentArea.Size = UDim2.new(1, -(sidebarWidth + 10), 1, isMobilePlatform and -52 or -56)
-    ContentArea.Position = UDim2.new(0, sidebarWidth + 5, 0, isMobilePlatform and 48 or 50)
+    ContentArea.Size = UDim2.new(1, -165, 1, -56)
+    ContentArea.Position = UDim2.new(0, 160, 0, 50)
     ContentArea.BackgroundTransparency = 1
     ContentArea.Parent = MainWindow
 
