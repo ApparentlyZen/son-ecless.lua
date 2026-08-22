@@ -267,12 +267,21 @@ local NamelessWare = {
     ShowKeybinds = not isMobileDevice,
     ShowKeybindsHud = false,
     KeybindHUD = nil,
+    ShowWatermark = true,
+    WatermarkElement = nil,
     CurrentTheme = "Nameless Violet",
     ToggleKey = Enum.KeyCode.RightShift,
     ActiveWindow = nil,
     Notifications = nil,
 }
 NamelessWare.__index = NamelessWare
+
+function NamelessWare:SetWatermarkVisibility(visible)
+    self.ShowWatermark = visible
+    if self.WatermarkElement then
+        self.WatermarkElement.Visible = visible
+    end
+end
 
 function NamelessWare:RegisterKeybind(info)
     if not info or not info.Name then return end
@@ -1183,6 +1192,14 @@ function SettingsManager:BuildSettingsSection(Section)
         end
     })
 
+    Section:AddToggle({
+        Name = "Telemetry Watermark",
+        Default = NamelessWare.ShowWatermark,
+        Callback = function(state)
+            NamelessWare:SetWatermarkVisibility(state)
+        end
+    })
+
     if NamelessWare.ActiveWindow and NamelessWare.ActiveWindow.MobileBtn then
         Section:AddToggle({
             Name = "Mobile Floating Button",
@@ -1584,6 +1601,233 @@ function NamelessWare:CreateWindow(config)
 
     MakeDraggable(MobileBtn)
 
+    -- =========================================================
+    -- TELEMETRY WATERMARK HUD
+    -- =========================================================
+    local Watermark = Instance.new("Frame")
+    Watermark.Name = "NamelessWatermark"
+    Watermark.Position = UDim2.new(0, 16, 0, 16)
+    Watermark.BackgroundColor3 = THEME.BgMain
+    Watermark.BorderSizePixel = 0
+    Watermark.AutomaticSize = Enum.AutomaticSize.XY
+    Watermark.ZIndex = 50
+    Watermark.Visible = NamelessWare.ShowWatermark
+    Watermark.Parent = ScreenGui
+
+    local WatermarkCorner = Instance.new("UICorner")
+    WatermarkCorner.CornerRadius = UDim.new(0, 6)
+    WatermarkCorner.Parent = Watermark
+
+    local WatermarkGrad = Instance.new("UIGradient")
+    local wGrad = THEME.BgMainGradient or Color3.fromRGB(26, 26, 36)
+    local wBase = THEME.BgMain or Color3.fromRGB(7, 7, 10)
+    local wMid = Color3.new(
+        wGrad.R * 0.45 + wBase.R * 0.55,
+        wGrad.G * 0.45 + wBase.G * 0.55,
+        wGrad.B * 0.45 + wBase.B * 0.55
+    )
+    WatermarkGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, wGrad),
+        ColorSequenceKeypoint.new(0.5, wMid),
+        ColorSequenceKeypoint.new(1, wBase)
+    })
+    WatermarkGrad.Rotation = 45
+    WatermarkGrad.Parent = Watermark
+
+    local WatermarkStroke = Instance.new("UIStroke")
+    WatermarkStroke.Color = THEME.CardBorder
+    WatermarkStroke.Thickness = 1
+    WatermarkStroke.Parent = Watermark
+
+    local WatermarkPadding = Instance.new("UIPadding")
+    WatermarkPadding.PaddingTop = UDim.new(0, 5)
+    WatermarkPadding.PaddingBottom = UDim.new(0, 5)
+    WatermarkPadding.PaddingLeft = UDim.new(0, 8)
+    WatermarkPadding.PaddingRight = UDim.new(0, 8)
+    WatermarkPadding.Parent = Watermark
+
+    local WatermarkLayout = Instance.new("UIListLayout")
+    WatermarkLayout.FillDirection = Enum.FillDirection.Horizontal
+    WatermarkLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+    WatermarkLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    WatermarkLayout.Padding = UDim.new(0, 6)
+    WatermarkLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    WatermarkLayout.Parent = Watermark
+
+    local WLogoBox = Instance.new("Frame")
+    WLogoBox.Size = UDim2.new(0, 15, 0, 15)
+    WLogoBox.BackgroundColor3 = THEME.CardBg
+    WLogoBox.BorderSizePixel = 0
+    WLogoBox.LayoutOrder = 1
+    WLogoBox.Parent = Watermark
+
+    local WLogoCorner = Instance.new("UICorner")
+    WLogoCorner.CornerRadius = UDim.new(0, 4)
+    WLogoCorner.Parent = WLogoBox
+
+    if customLogoAsset then
+        local WLogoImg = Instance.new("ImageLabel")
+        WLogoImg.Size = UDim2.new(1, 0, 1, 0)
+        WLogoImg.BackgroundTransparency = 1
+        WLogoImg.Image = customLogoAsset
+        WLogoImg.ScaleType = Enum.ScaleType.Fit
+        WLogoImg.Parent = WLogoBox
+    else
+        local WLogoTxt = Instance.new("TextLabel")
+        WLogoTxt.Size = UDim2.new(1, 0, 1, 0)
+        WLogoTxt.BackgroundTransparency = 1
+        WLogoTxt.Text = "NW"
+        WLogoTxt.Font = THEME.FontBold
+        WLogoTxt.TextSize = 8
+        WLogoTxt.TextColor3 = AccentColor
+        WLogoTxt.Parent = WLogoBox
+    end
+
+    local WTitle = Instance.new("TextLabel")
+    WTitle.AutomaticSize = Enum.AutomaticSize.X
+    WTitle.Size = UDim2.new(0, 0, 0, 16)
+    WTitle.BackgroundTransparency = 1
+    WTitle.RichText = true
+    WTitle.Text = 'NAMELESS <font color="#A55FFF">WARE</font>'
+    WTitle.Font = THEME.FontBold
+    WTitle.TextSize = 10
+    WTitle.TextColor3 = THEME.TextMain
+    WTitle.LayoutOrder = 2
+    WTitle.Parent = Watermark
+
+    local WSep1 = Instance.new("TextLabel")
+    WSep1.AutomaticSize = Enum.AutomaticSize.X
+    WSep1.Size = UDim2.new(0, 0, 0, 16)
+    WSep1.BackgroundTransparency = 1
+    WSep1.Text = "|"
+    WSep1.Font = THEME.FontBold
+    WSep1.TextSize = 9
+    WSep1.TextColor3 = THEME.TextMuted
+    WSep1.LayoutOrder = 3
+    WSep1.Parent = Watermark
+
+    local WVer = Instance.new("TextLabel")
+    WVer.AutomaticSize = Enum.AutomaticSize.X
+    WVer.Size = UDim2.new(0, 0, 0, 16)
+    WVer.BackgroundTransparency = 1
+    WVer.Text = "v1.0.0"
+    WVer.Font = THEME.FontMain
+    WVer.TextSize = 10
+    WVer.TextColor3 = THEME.TextMuted
+    WVer.LayoutOrder = 4
+    WVer.Parent = Watermark
+
+    local WSep2 = Instance.new("TextLabel")
+    WSep2.AutomaticSize = Enum.AutomaticSize.X
+    WSep2.Size = UDim2.new(0, 0, 0, 16)
+    WSep2.BackgroundTransparency = 1
+    WSep2.Text = "|"
+    WSep2.Font = THEME.FontBold
+    WSep2.TextSize = 9
+    WSep2.TextColor3 = THEME.TextMuted
+    WSep2.LayoutOrder = 5
+    WSep2.Parent = Watermark
+
+    local WFPS = Instance.new("TextLabel")
+    WFPS.AutomaticSize = Enum.AutomaticSize.X
+    WFPS.Size = UDim2.new(0, 0, 0, 16)
+    WFPS.BackgroundTransparency = 1
+    WFPS.Text = "60 FPS"
+    WFPS.Font = THEME.FontMain
+    WFPS.TextSize = 10
+    WFPS.TextColor3 = THEME.TextMain
+    WFPS.LayoutOrder = 6
+    WFPS.Parent = Watermark
+
+    local WSep3 = Instance.new("TextLabel")
+    WSep3.AutomaticSize = Enum.AutomaticSize.X
+    WSep3.Size = UDim2.new(0, 0, 0, 16)
+    WSep3.BackgroundTransparency = 1
+    WSep3.Text = "|"
+    WSep3.Font = THEME.FontBold
+    WSep3.TextSize = 9
+    WSep3.TextColor3 = THEME.TextMuted
+    WSep3.LayoutOrder = 7
+    WSep3.Parent = Watermark
+
+    local WPing = Instance.new("TextLabel")
+    WPing.AutomaticSize = Enum.AutomaticSize.X
+    WPing.Size = UDim2.new(0, 0, 0, 16)
+    WPing.BackgroundTransparency = 1
+    WPing.Text = "0ms"
+    WPing.Font = THEME.FontMain
+    WPing.TextSize = 10
+    WPing.TextColor3 = THEME.TextMain
+    WPing.LayoutOrder = 8
+    WPing.Parent = Watermark
+
+    local WSep4 = Instance.new("TextLabel")
+    WSep4.AutomaticSize = Enum.AutomaticSize.X
+    WSep4.Size = UDim2.new(0, 0, 0, 16)
+    WSep4.BackgroundTransparency = 1
+    WSep4.Text = "|"
+    WSep4.Font = THEME.FontBold
+    WSep4.TextSize = 9
+    WSep4.TextColor3 = THEME.TextMuted
+    WSep4.LayoutOrder = 9
+    WSep4.Parent = Watermark
+
+    local WTime = Instance.new("TextLabel")
+    WTime.AutomaticSize = Enum.AutomaticSize.X
+    WTime.Size = UDim2.new(0, 0, 0, 16)
+    WTime.BackgroundTransparency = 1
+    WTime.Text = os.date("%H:%M:%S")
+    WTime.Font = THEME.FontMain
+    WTime.TextSize = 10
+    WTime.TextColor3 = THEME.TextMuted
+    WTime.LayoutOrder = 10
+    WTime.Parent = Watermark
+
+    MakeDraggable(Watermark)
+    NamelessWare.WatermarkElement = Watermark
+
+    task.spawn(function()
+        local frameCount = 0
+        local lastTime = tick()
+        local currentFPS = 60
+
+        local stepConn = RunService.RenderStepped:Connect(function()
+            frameCount = frameCount + 1
+            local now = tick()
+            if now - lastTime >= 1 then
+                currentFPS = math.floor(frameCount / (now - lastTime))
+                frameCount = 0
+                lastTime = now
+            end
+        end)
+
+        while ScreenGui and ScreenGui.Parent do
+            local pingVal = 0
+            pcall(function()
+                local statsService = game:GetService("Stats")
+                local netStats = statsService and statsService.Network
+                local serverItem = netStats and netStats.ServerStatsItem
+                local pingItem = serverItem and serverItem["Data Ping"]
+                if pingItem then
+                    pingVal = math.floor(pingItem:GetValue())
+                end
+            end)
+
+            if WFPS and WFPS.Parent then
+                WFPS.Text = tostring(currentFPS) .. " FPS"
+            end
+            if WPing and WPing.Parent then
+                WPing.Text = tostring(pingVal) .. "ms"
+            end
+            if WTime and WTime.Parent then
+                WTime.Text = os.date("%H:%M:%S")
+            end
+
+            task.wait(0.5)
+        end
+        if stepConn then stepConn:Disconnect() end
+    end)
+
     local MainWindow = Instance.new("Frame")
     MainWindow.Name = "MainWindow"
     MainWindow.Size = UDim2.new(0, 560, 0, 360)
@@ -1845,8 +2089,8 @@ function NamelessWare:CreateWindow(config)
     -- =====================================================
     local KeyDrop = Instance.new("Frame")
     KeyDrop.Name = "UserKeybindPopup"
-    KeyDrop.Size = UDim2.new(0, 150, 0, 0)
-    KeyDrop.Position = UDim2.new(0, 8, 1, -125)
+    KeyDrop.Size = UDim2.new(0, 160, 0, 0)
+    KeyDrop.Position = UDim2.new(0, 8, 1, -152)
     KeyDrop.BackgroundColor3 = THEME.BgSidebar
     KeyDrop.BorderSizePixel = 0
     KeyDrop.ClipsDescendants = true
@@ -1875,7 +2119,7 @@ function NamelessWare:CreateWindow(config)
     KeyDropTitle.Size = UDim2.new(1, -16, 0, 14)
     KeyDropTitle.Position = UDim2.new(0, 8, 0, 7)
     KeyDropTitle.BackgroundTransparency = 1
-    KeyDropTitle.Text = "Menu Keybind (PC)"
+    KeyDropTitle.Text = "Menu Controls"
     KeyDropTitle.Font = THEME.FontBold
     KeyDropTitle.TextSize = 10
     KeyDropTitle.TextColor3 = THEME.TextMain
@@ -1884,7 +2128,7 @@ function NamelessWare:CreateWindow(config)
     KeyDropTitle.Parent = KeyDrop
 
     local KeyDropBtn = Instance.new("TextButton")
-    KeyDropBtn.Size = UDim2.new(1, -16, 0, 24)
+    KeyDropBtn.Size = UDim2.new(1, -16, 0, 22)
     KeyDropBtn.Position = UDim2.new(0, 8, 0, 24)
     KeyDropBtn.BackgroundColor3 = THEME.CardBg
     KeyDropBtn.Text = "[ " .. tostring(NamelessWare.ToggleKey.Name) .. " ]"
@@ -1904,6 +2148,90 @@ function NamelessWare:CreateWindow(config)
     KeyDropBtnStroke.Thickness = 1
     KeyDropBtnStroke.Parent = KeyDropBtn
 
+    local WatermarkRow = Instance.new("TextButton")
+    WatermarkRow.Size = UDim2.new(1, -16, 0, 24)
+    WatermarkRow.Position = UDim2.new(0, 8, 0, 52)
+    WatermarkRow.BackgroundTransparency = 1
+    WatermarkRow.Text = ""
+    WatermarkRow.AutoButtonColor = false
+    WatermarkRow.ZIndex = 251
+    WatermarkRow.Parent = KeyDrop
+
+    local WRowLabel = Instance.new("TextLabel")
+    WRowLabel.Size = UDim2.new(1, -34, 1, 0)
+    WRowLabel.Position = UDim2.new(0, 0, 0, 0)
+    WRowLabel.BackgroundTransparency = 1
+    WRowLabel.Text = "Watermark"
+    WRowLabel.Font = THEME.FontBold
+    WRowLabel.TextSize = 9.5
+    WRowLabel.TextColor3 = THEME.TextMain
+    WRowLabel.TextXAlignment = Enum.TextXAlignment.Left
+    WRowLabel.ZIndex = 251
+    WRowLabel.Parent = WatermarkRow
+
+    local WSwitch = Instance.new("Frame")
+    WSwitch.Size = UDim2.new(0, 28, 0, 15)
+    WSwitch.Position = UDim2.new(1, -28, 0.5, -7.5)
+    WSwitch.BackgroundColor3 = NamelessWare.ShowWatermark and THEME.Accent or THEME.CardBg
+    WSwitch.BorderSizePixel = 0
+    WSwitch.ZIndex = 251
+    WSwitch.Parent = WatermarkRow
+
+    local WSwitchCorner = Instance.new("UICorner")
+    WSwitchCorner.CornerRadius = UDim.new(1, 0)
+    WSwitchCorner.Parent = WSwitch
+
+    local WSwitchGrad = Instance.new("UIGradient")
+    WSwitchGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, NamelessWare.ShowWatermark and (THEME.AccentGradient or Color3.fromRGB(165, 95, 255)) or (THEME.CardBgGradient or Color3.fromRGB(21, 21, 30))),
+        ColorSequenceKeypoint.new(1, NamelessWare.ShowWatermark and (THEME.Accent or Color3.fromRGB(130, 60, 230)) or (THEME.CardBg or Color3.fromRGB(13, 13, 18)))
+    })
+    WSwitchGrad.Rotation = 45
+    WSwitchGrad.Parent = WSwitch
+
+    local WSwitchStroke = Instance.new("UIStroke")
+    WSwitchStroke.Color = NamelessWare.ShowWatermark and THEME.Accent or THEME.CardBorder
+    WSwitchStroke.Thickness = 1
+    WSwitchStroke.Parent = WSwitch
+
+    local WKnob = Instance.new("Frame")
+    WKnob.Size = UDim2.new(0, 11, 0, 11)
+    WKnob.Position = UDim2.new(NamelessWare.ShowWatermark and 1 or 0, NamelessWare.ShowWatermark and -13 or 2, 0.5, -5.5)
+    WKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    WKnob.BorderSizePixel = 0
+    WKnob.ZIndex = 252
+    WKnob.Parent = WSwitch
+
+    local WKnobCorner = Instance.new("UICorner")
+    WKnobCorner.CornerRadius = UDim.new(1, 0)
+    WKnobCorner.Parent = WKnob
+
+    local function UpdateWatermarkSwitchUI(state)
+        if state then
+            Tween(WKnob, {Position = UDim2.new(1, -13, 0.5, -5.5)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+            Tween(WSwitch, {BackgroundColor3 = THEME.Accent}, 0.18)
+            WSwitchGrad.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, THEME.AccentGradient or Color3.fromRGB(165, 95, 255)),
+                ColorSequenceKeypoint.new(1, THEME.Accent or Color3.fromRGB(130, 60, 230))
+            })
+            Tween(WSwitchStroke, {Color = THEME.Accent}, 0.18)
+        else
+            Tween(WKnob, {Position = UDim2.new(0, 2, 0.5, -5.5)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+            Tween(WSwitch, {BackgroundColor3 = THEME.CardBg}, 0.18)
+            WSwitchGrad.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, THEME.CardBgGradient or Color3.fromRGB(21, 21, 30)),
+                ColorSequenceKeypoint.new(1, THEME.CardBg or Color3.fromRGB(13, 13, 18))
+            })
+            Tween(WSwitchStroke, {Color = THEME.CardBorder}, 0.18)
+        end
+    end
+
+    WatermarkRow.MouseButton1Click:Connect(function()
+        local newState = not NamelessWare.ShowWatermark
+        NamelessWare:SetWatermarkVisibility(newState)
+        UpdateWatermarkSwitchUI(newState)
+    end)
+
     local isKeyDropOpen = false
     local isListeningKey = false
     local listenConn = nil
@@ -1920,7 +2248,7 @@ function NamelessWare:CreateWindow(config)
         Tween(KeyDropBtn, {TextColor3 = THEME.Accent}, 0.15)
         Tween(UserKeyStroke, {Color = THEME.CardBorder}, 0.15)
         Tween(UserKeyIcon, {ImageColor3 = THEME.TextMuted}, 0.15)
-        local tw = Tween(KeyDrop, {Size = UDim2.new(0, 150, 0, 0)}, 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+        local tw = Tween(KeyDrop, {Size = UDim2.new(0, 160, 0, 0)}, 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
         tw.Completed:Connect(function()
             if not isKeyDropOpen then KeyDrop.Visible = false end
         end)
@@ -1932,9 +2260,10 @@ function NamelessWare:CreateWindow(config)
         isKeyDropOpen = true
         KeyDrop.Visible = true
         KeyDropBtn.Text = "[ " .. tostring(NamelessWare.ToggleKey.Name) .. " ]"
+        UpdateWatermarkSwitchUI(NamelessWare.ShowWatermark)
         Tween(UserKeyStroke, {Color = THEME.Accent}, 0.15)
         Tween(UserKeyIcon, {ImageColor3 = THEME.Accent}, 0.15)
-        Tween(KeyDrop, {Size = UDim2.new(0, 150, 0, 56)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        Tween(KeyDrop, {Size = UDim2.new(0, 160, 0, 84)}, 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
     end
 
     local function ToggleKeyDrop()
@@ -2336,6 +2665,33 @@ function NamelessWare:CreateWindow(config)
         KeyDropBtn.BackgroundColor3 = theme.CardBg
         KeyDropBtnStroke.Color = isListeningKey and theme.Accent or theme.CardBorder
         KeyDropBtn.TextColor3 = theme.Accent
+        WRowLabel.TextColor3 = theme.TextMain
+        UpdateWatermarkSwitchUI(NamelessWare.ShowWatermark)
+
+        Watermark.BackgroundColor3 = theme.BgMain
+        local wStart = theme.BgMainGradient or theme.BgMain or Color3.fromRGB(26, 26, 36)
+        local wEnd = theme.BgMain or Color3.fromRGB(7, 7, 10)
+        local wMidTheme = Color3.new(
+            wStart.R * 0.45 + wEnd.R * 0.55,
+            wStart.G * 0.45 + wEnd.G * 0.55,
+            wStart.B * 0.45 + wEnd.B * 0.55
+        )
+        WatermarkGrad.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, wStart),
+            ColorSequenceKeypoint.new(0.5, wMidTheme),
+            ColorSequenceKeypoint.new(1, wEnd)
+        })
+        WatermarkStroke.Color = theme.CardBorder
+        WLogoBox.BackgroundColor3 = theme.CardBg
+        WTitle.TextColor3 = theme.TextMain
+        WSep1.TextColor3 = theme.TextMuted
+        WSep2.TextColor3 = theme.TextMuted
+        WSep3.TextColor3 = theme.TextMuted
+        WSep4.TextColor3 = theme.TextMuted
+        WVer.TextColor3 = theme.TextMuted
+        WFPS.TextColor3 = theme.TextMain
+        WPing.TextColor3 = theme.TextMain
+        WTime.TextColor3 = theme.TextMuted
     end)
 
     function Window:AddCategory(catName)
