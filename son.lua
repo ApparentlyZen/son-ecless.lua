@@ -1602,15 +1602,14 @@ function NamelessWare:CreateWindow(config)
 
     local MobileBtn = Instance.new("TextButton")
     MobileBtn.Name = "NamelessMobileBtn"
-    MobileBtn.Size = UDim2.new(0, 50, 0, 50)
-    MobileBtn.Position = UDim2.new(0, 16, 0.5, -25)
+    MobileBtn.Size = UDim2.new(0, 44, 0, 44)
+    MobileBtn.Position = UDim2.new(0, 16, 0.5, -22)
     MobileBtn.BackgroundColor3 = THEME.BgSidebar
     MobileBtn.Text = activeLogo and "" or "NW"
     MobileBtn.Font = THEME.FontBold
-    MobileBtn.TextSize = 16
+    MobileBtn.TextSize = 14
     MobileBtn.TextColor3 = AccentColor
     MobileBtn.AutoButtonColor = false
-    MobileBtn.ClipsDescendants = true
     MobileBtn.Parent = ScreenGui
 
     local MobileBtnCorner = Instance.new("UICorner")
@@ -1624,16 +1623,12 @@ function NamelessWare:CreateWindow(config)
 
     if activeLogo then
         local MobileImg = Instance.new("ImageLabel")
-        MobileImg.Size = UDim2.new(1, 0, 1, 0)
-        MobileImg.Position = UDim2.new(0, 0, 0, 0)
+        MobileImg.Size = UDim2.new(1, -10, 1, -10)
+        MobileImg.Position = UDim2.new(0, 5, 0, 5)
         MobileImg.BackgroundTransparency = 1
         MobileImg.Image = activeLogo
-        MobileImg.ScaleType = Enum.ScaleType.Crop
+        MobileImg.ScaleType = Enum.ScaleType.Fit
         MobileImg.Parent = MobileBtn
-
-        local MobileImgCorner = Instance.new("UICorner")
-        MobileImgCorner.CornerRadius = UDim.new(1, 0)
-        MobileImgCorner.Parent = MobileImg
     end
 
     MakeDraggable(MobileBtn)
@@ -1695,7 +1690,6 @@ function NamelessWare:CreateWindow(config)
     WLogoBox.Size = UDim2.new(0, 15, 0, 15)
     WLogoBox.BackgroundColor3 = THEME.CardBg
     WLogoBox.BorderSizePixel = 0
-    WLogoBox.ClipsDescendants = true
     WLogoBox.LayoutOrder = 1
     WLogoBox.Parent = Watermark
 
@@ -1706,15 +1700,10 @@ function NamelessWare:CreateWindow(config)
     if activeLogo then
         local WLogoImg = Instance.new("ImageLabel")
         WLogoImg.Size = UDim2.new(1, 0, 1, 0)
-        WLogoImg.Position = UDim2.new(0, 0, 0, 0)
         WLogoImg.BackgroundTransparency = 1
         WLogoImg.Image = activeLogo
-        WLogoImg.ScaleType = Enum.ScaleType.Crop
+        WLogoImg.ScaleType = Enum.ScaleType.Fit
         WLogoImg.Parent = WLogoBox
-
-        local WLogoImgCorner = Instance.new("UICorner")
-        WLogoImgCorner.CornerRadius = UDim.new(0, 4)
-        WLogoImgCorner.Parent = WLogoImg
     else
         local WLogoTxt = Instance.new("TextLabel")
         WLogoTxt.Size = UDim2.new(1, 0, 1, 0)
@@ -1980,7 +1969,6 @@ function NamelessWare:CreateWindow(config)
     LogoBox.Size = UDim2.new(0, 26, 0, 26)
     LogoBox.Position = UDim2.new(0, 12, 0.5, -13)
     LogoBox.BackgroundColor3 = THEME.CardBg
-    LogoBox.ClipsDescendants = true
     LogoBox.Parent = BrandFrame
 
     local LogoBoxCorner = Instance.new("UICorner")
@@ -1994,16 +1982,12 @@ function NamelessWare:CreateWindow(config)
 
     if activeLogo then
         local LogoImg = Instance.new("ImageLabel")
-        LogoImg.Size = UDim2.new(1, 0, 1, 0)
-        LogoImg.Position = UDim2.new(0, 0, 0, 0)
+        LogoImg.Size = UDim2.new(1, -2, 1, -2)
+        LogoImg.Position = UDim2.new(0, 1, 0, 1)
         LogoImg.BackgroundTransparency = 1
         LogoImg.Image = activeLogo
-        LogoImg.ScaleType = Enum.ScaleType.Crop
+        LogoImg.ScaleType = Enum.ScaleType.Fit
         LogoImg.Parent = LogoBox
-
-        local LogoImgCorner = Instance.new("UICorner")
-        LogoImgCorner.CornerRadius = UDim.new(0, 7)
-        LogoImgCorner.Parent = LogoImg
     else
         local LogoTxt = Instance.new("TextLabel")
         LogoTxt.Size = UDim2.new(1, 0, 1, 0)
