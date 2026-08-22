@@ -66,6 +66,73 @@ local function ResolveLogoAsset(logoConfig)
     return nil
 end
 
+local CustomFont = {}
+do
+    function CustomFont:Get(Name, Weight, Style, Url)
+        Name = Name or "Inter"
+        Weight = Weight or 400
+        Style = Style or "Normal"
+        Url = Url or "https://github.com/sametexe001/luas/raw/refs/heads/main/fonts/InterSemibold.ttf"
+
+        local fallbackFont = Font.fromEnum(Enum.Font.GothamMedium)
+
+        if not isfile or not writefile or not getcustomasset then
+            return fallbackFont
+        end
+
+        local ttfFile = "Nameless_" .. Name .. ".ttf"
+        local jsonFile = "Nameless_" .. Name .. ".json"
+
+        if isfile(jsonFile) then
+            local s, f = pcall(function() return Font.new(getcustomasset(jsonFile)) end)
+            if s and f then return f end
+        end
+
+        if not isfile(ttfFile) then
+            pcall(function()
+                local content = nil
+                if syn and syn.request then
+                    content = syn.request({Url = Url, Method = "GET"}).Body
+                elseif http_request then
+                    content = http_request({Url = Url, Method = "GET"}).Body
+                elseif request then
+                    content = request({Url = Url, Method = "GET"}).Body
+                elseif game.HttpGet then
+                    content = game:HttpGet(Url)
+                end
+                if content and #content > 0 then
+                    writefile(ttfFile, content)
+                end
+            end)
+        end
+
+        if isfile(ttfFile) then
+            local fontData = {
+                name = Name,
+                faces = {
+                    {
+                        name = "Regular",
+                        weight = Weight,
+                        style = Style,
+                        assetId = getcustomasset(ttfFile)
+                    }
+                }
+            }
+            pcall(function()
+                writefile(jsonFile, HttpService:JSONEncode(fontData))
+            end)
+            if isfile(jsonFile) then
+                local s, f = pcall(function() return Font.new(getcustomasset(jsonFile)) end)
+                if s and f then return f end
+            end
+        end
+
+        return fallbackFont
+    end
+end
+
+local InterFont = CustomFont:Get("Inter", 600, "Regular", "https://github.com/sametexe001/luas/raw/refs/heads/main/fonts/InterSemibold.ttf")
+
 local function Tween(obj, props, time, style, dir)
     time = time or 0.18
     style = style or Enum.EasingStyle.Quad
@@ -1601,24 +1668,21 @@ function NamelessWare:CreateWindow(config)
     _G.NamelessWareInstance = ScreenGui
 
     pcall(function()
-        if Font and Font.new then
-            local uFaceReg = Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
-            local uFaceBold = Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+        if InterFont then
             ScreenGui.DescendantAdded:Connect(function(obj)
                 if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
                     pcall(function()
-                        if CurrentLanguage == "ja" or CurrentLanguage == "zh" then
-                            local fontStr = tostring(obj.Font.Name or "")
-                            local isBold = string.find(fontStr, "Bold") or string.find(fontStr, "Black") or obj.Font == THEME.FontBold
-                            obj.Font = isBold and Enum.Font.GothamBold or Enum.Font.GothamMedium
-                        else
-                            local fontStr = tostring(obj.Font.Name or "")
-                            local isBold = string.find(fontStr, "Bold") or string.find(fontStr, "Black") or obj.Font == THEME.FontBold
-                            obj.FontFace = isBold and uFaceBold or uFaceReg
-                        end
+                        obj.FontFace = InterFont
                     end)
                 end
             end)
+            for _, obj in ipairs(ScreenGui:GetDescendants()) do
+                if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+                    pcall(function()
+                        obj.FontFace = InterFont
+                    end)
+                end
+            end
         end
     end)
 
@@ -2646,11 +2710,82 @@ function NamelessWare:CreateWindow(config)
         end
     end
 
+    local function SetUIVisible(state)
+        if state == isUIOpen then return end
+        ToggleUI()
+    end
+
+    local function ResetUI()
+        MainWindow.AnchorPoint = Vector2.new(0.5, 0.5)
+        MainWindow.Position = UDim2.new(0.5, 0, 0.5, 0)
+        MainScale.Scale = 1
+        MainWindow.Visible = true
+        isUIOpen = true
+
+        MobileBtn.Position = UDim2.new(0, 16, 0.5, -25)
+        MobileBtn.Visible = true
+
+        Watermark.Position = UDim2.new(0, 20, 0, 20)
+
+        SearchInput.Text = ""
+        PerformSearch("")
+
+        if ActiveDropdown then
+            ActiveDropdown()
+        end
+        if isKeyDropOpen then
+            CloseKeyDrop()
+        end
+
+        NamelessWare:Notify({
+            Title = "Menu Reset",
+            Content = "Menu position, elements, and search have been restored.",
+            Duration = 2,
+            Type = "Success"
+        })
+    end
+
     MobileBtn.MouseButton1Click:Connect(ToggleUI)
 
     UserInputService.InputBegan:Connect(function(input, gp)
         if not gp and input.KeyCode == NamelessWare.ToggleKey then
             ToggleUI()
+        end
+    end)
+
+    -- Chat commands (/e hide, /e show, /e toggle, /e reset)
+    local function HandleChatCommand(message)
+        if type(message) ~= "string" then return end
+        local raw = string.lower(string.gsub(message, "^%s*(.-)%s*$", "%1"))
+        if raw == "/e hide" or raw == "/hide" or raw == "!hide" or raw == ".hide" then
+            if isUIOpen then
+                ToggleUI()
+            end
+        elseif raw == "/e show" or raw == "/show" or raw == "!show" or raw == ".show" then
+            if not isUIOpen then
+                ToggleUI()
+            end
+        elseif raw == "/e toggle" or raw == "/toggle" or raw == "!toggle" or raw == ".toggle" then
+            ToggleUI()
+        elseif raw == "/e reset" or raw == "/reset" or raw == "!reset" or raw == ".reset" then
+            ResetUI()
+        end
+    end
+
+    if LocalPlayer then
+        LocalPlayer.Chatted:Connect(function(msg)
+            HandleChatCommand(msg)
+        end)
+    end
+
+    pcall(function()
+        local TextChatService = game:GetService("TextChatService")
+        if TextChatService and TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+            TextChatService.MessageReceived:Connect(function(textChatMessage)
+                if textChatMessage.TextSource and textChatMessage.TextSource.UserId == LocalPlayer.UserId then
+                    HandleChatCommand(textChatMessage.Text)
+                end
+            end)
         end
     end)
 
@@ -2684,9 +2819,14 @@ function NamelessWare:CreateWindow(config)
         DeviceBadge = DeviceBadge,
         NavScroll = NavScroll,
         ContentArea = ContentArea,
+        Toggle = ToggleUI,
+        SetVisible = SetUIVisible,
+        Reset = ResetUI,
         Tabs = {}
     }
     NamelessWare.ActiveWindow = Window
+    NamelessWare.ToggleUI = ToggleUI
+    NamelessWare.ResetUI = ResetUI
 
     table.insert(NamelessWare.ThemeSubscribers, function(theme)
         MainWindow.BackgroundColor3 = theme.BgMain
