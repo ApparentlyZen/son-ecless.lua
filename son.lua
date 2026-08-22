@@ -1750,13 +1750,13 @@ function NamelessWare:CreateWindow(config)
     BrandFrame.Parent = Sidebar
 
     local LogoBox = Instance.new("Frame")
-    LogoBox.Size = UDim2.new(0, 28, 0, 28)
-    LogoBox.Position = UDim2.new(0, 10, 0.5, -14)
+    LogoBox.Size = UDim2.new(0, 26, 0, 26)
+    LogoBox.Position = UDim2.new(0, 12, 0.5, -13)
     LogoBox.BackgroundColor3 = THEME.CardBg
     LogoBox.Parent = BrandFrame
 
     local LogoBoxCorner = Instance.new("UICorner")
-    LogoBoxCorner.CornerRadius = UDim.new(0, 8)
+    LogoBoxCorner.CornerRadius = UDim.new(0, 7)
     LogoBoxCorner.Parent = LogoBox
 
     local LogoGlow = Instance.new("UIStroke")
@@ -1766,17 +1766,12 @@ function NamelessWare:CreateWindow(config)
 
     if customLogoAsset then
         local LogoImg = Instance.new("ImageLabel")
-        LogoImg.Size = UDim2.new(1, 0, 1, 0)
-        LogoImg.Position = UDim2.new(0, 0, 0, 0)
+        LogoImg.Size = UDim2.new(1, -2, 1, -2)
+        LogoImg.Position = UDim2.new(0, 1, 0, 1)
         LogoImg.BackgroundTransparency = 1
         LogoImg.Image = customLogoAsset
         LogoImg.ScaleType = Enum.ScaleType.Fit
-        LogoImg.ResampleMode = Enum.ResamplerMode.Default
         LogoImg.Parent = LogoBox
-
-        local LogoImgCorner = Instance.new("UICorner")
-        LogoImgCorner.CornerRadius = UDim.new(0, 7)
-        LogoImgCorner.Parent = LogoImg
     else
         local LogoTxt = Instance.new("TextLabel")
         LogoTxt.Size = UDim2.new(1, 0, 1, 0)
