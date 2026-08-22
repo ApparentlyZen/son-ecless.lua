@@ -477,6 +477,52 @@ function NamelessWare:SetCardTransparency(alpha)
     end
 end
 
+local FONT_MAP = {
+    ["Gotham (Default)"] = { Main = Enum.Font.GothamMedium, Bold = Enum.Font.GothamBold },
+    ["Montserrat"] = { Main = Enum.Font.Montserrat, Bold = Enum.Font.MontserratBold },
+    ["Ubuntu"] = { Main = Enum.Font.Ubuntu, Bold = Enum.Font.UbuntuBold },
+    ["SourceSans"] = { Main = Enum.Font.SourceSans, Bold = Enum.Font.SourceSansBold },
+    ["Roboto"] = { Main = Enum.Font.Roboto, Bold = Enum.Font.RobotoBold },
+    ["RobotoCondensed"] = { Main = Enum.Font.RobotoCondensed, Bold = Enum.Font.RobotoCondensedBold },
+    ["RobotoMono (Code)"] = { Main = Enum.Font.RobotoMono, Bold = Enum.Font.RobotoMono },
+    ["JosefinSans"] = { Main = Enum.Font.JosefinSans, Bold = Enum.Font.JosefinSansBold },
+    ["Nunito"] = { Main = Enum.Font.Nunito, Bold = Enum.Font.NunitoBold },
+    ["Oswald"] = { Main = Enum.Font.Oswald, Bold = Enum.Font.OswaldBold },
+    ["BuilderSans"] = { Main = Enum.Font.BuilderSansMedium, Bold = Enum.Font.BuilderSansBold },
+    ["FredokaOne"] = { Main = Enum.Font.FredokaOne, Bold = Enum.Font.FredokaOne },
+    ["LuckiestGuy"] = { Main = Enum.Font.LuckiestGuy, Bold = Enum.Font.LuckiestGuy },
+    ["AmaticSC"] = { Main = Enum.Font.AmaticSC, Bold = Enum.Font.AmaticSC },
+    ["SciFi"] = { Main = Enum.Font.SciFi, Bold = Enum.Font.SciFi },
+    ["Code"] = { Main = Enum.Font.Code, Bold = Enum.Font.Code },
+    ["Arcade"] = { Main = Enum.Font.Arcade, Bold = Enum.Font.Arcade },
+    ["Sarpanch"] = { Main = Enum.Font.Sarpanch, Bold = Enum.Font.SarpanchBold },
+    ["DenkOne"] = { Main = Enum.Font.DenkOne, Bold = Enum.Font.DenkOne },
+    ["Michroma"] = { Main = Enum.Font.Michroma, Bold = Enum.Font.Michroma },
+    ["Creepster"] = { Main = Enum.Font.Creepster, Bold = Enum.Font.Creepster },
+    ["SpecialElite"] = { Main = Enum.Font.SpecialElite, Bold = Enum.Font.SpecialElite },
+    ["Fondamento"] = { Main = Enum.Font.Fondamento, Bold = Enum.Font.Fondamento }
+}
+
+function NamelessWare:SetFontByName(fontName)
+    local preset = FONT_MAP[fontName] or FONT_MAP["Gotham (Default)"]
+    THEME.FontMain = preset.Main
+    THEME.FontBold = preset.Bold
+    if self.ActiveWindow and self.ActiveWindow.ScreenGui then
+        for _, obj in ipairs(self.ActiveWindow.ScreenGui:GetDescendants()) do
+            if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+                pcall(function()
+                    local fontStr = tostring(obj.Font.Name or "")
+                    if string.find(fontStr, "Bold") then
+                        obj.Font = THEME.FontBold
+                    else
+                        obj.Font = THEME.FontMain
+                    end
+                end)
+            end
+        end
+    end
+end
+
 -- =========================================================
 -- THEME MANAGER
 -- =========================================================
@@ -771,6 +817,49 @@ function ThemeManager:BuildThemeSection(Section)
         Suffix = "%",
         Callback = function(val)
             NamelessWare:SetCardTransparency(val / 100)
+        end
+    })
+
+    Section:AddSubHeader("Typography & Font (Preview)", "rbxassetid://10709791437")
+
+    local fontNames = {
+        "Gotham (Default)",
+        "Montserrat",
+        "Ubuntu",
+        "SourceSans",
+        "Roboto",
+        "RobotoCondensed",
+        "RobotoMono (Code)",
+        "JosefinSans",
+        "Nunito",
+        "Oswald",
+        "BuilderSans",
+        "FredokaOne",
+        "LuckiestGuy",
+        "AmaticSC",
+        "SciFi",
+        "Code",
+        "Arcade",
+        "Sarpanch",
+        "DenkOne",
+        "Michroma",
+        "Creepster",
+        "SpecialElite",
+        "Fondamento"
+    }
+
+    Section:AddDropdown({
+        Name = "UI Font Family",
+        Options = fontNames,
+        Default = "Gotham (Default)",
+        Callback = function(chosenFont)
+            NamelessWare:SetFontByName(chosenFont)
+            NamelessWare:Notify({
+                Title = "Font Changed",
+                Content = "Previewing: " .. chosenFont,
+                Duration = 1.5,
+                Type = "Success"
+            })
         end
     })
 
@@ -1361,6 +1450,49 @@ function SettingsManager:BuildSettingsSection(Section)
         Suffix = "%",
         Callback = function(val)
             NamelessWare:SetCardTransparency(val / 100)
+        end
+    })
+
+    Section:AddSubHeader("Typography & Font (Preview)", "rbxassetid://10709791437")
+
+    local fontNames = {
+        "Gotham (Default)",
+        "Montserrat",
+        "Ubuntu",
+        "SourceSans",
+        "Roboto",
+        "RobotoCondensed",
+        "RobotoMono (Code)",
+        "JosefinSans",
+        "Nunito",
+        "Oswald",
+        "BuilderSans",
+        "FredokaOne",
+        "LuckiestGuy",
+        "AmaticSC",
+        "SciFi",
+        "Code",
+        "Arcade",
+        "Sarpanch",
+        "DenkOne",
+        "Michroma",
+        "Creepster",
+        "SpecialElite",
+        "Fondamento"
+    }
+
+    Section:AddDropdown({
+        Name = "UI Font Family",
+        Options = fontNames,
+        Default = "Gotham (Default)",
+        Callback = function(chosenFont)
+            NamelessWare:SetFontByName(chosenFont)
+            NamelessWare:Notify({
+                Title = "Font Changed",
+                Content = "Previewing: " .. chosenFont,
+                Duration = 1.5,
+                Type = "Success"
+            })
         end
     })
 
